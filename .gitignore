@@ -34,10 +34,12 @@ ENV/
 *~
 
 # Models (large files)
-models/*.pth
-models/*.onnx
-models/*.pb
-models/*.h5
+models/
+*.pth
+*.onnx
+*.pb
+*.h5
+*.fst
 
 # Logs
 logs/

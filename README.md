@@ -41,26 +41,6 @@ Hệ thống AI nhận diện và phân loại cảm xúc của con người t�
 - **Python**: 3.9 hoặc 3.10
 - **OS**: Windows 10/11, Ubuntu 20.04+, hoặc macOS 11+
 
-## Tiến Độ Phát Triển
-
-### Phase 1: Data Preparation Pipeline ✅ (Đang thực hiện)
-
-- ✅ **Task 1**: Thiết lập cấu trúc project cho data preparation
-- ✅ **Task 2**: Implement Dataset Aggregator
-  - ✅ Dataset downloaders (FER2013, CK+, AffectNet, RAF-DB)
-  - ✅ Label harmonization (7 emotions chuẩn)
-  - ✅ Statistics report generation (JSON & HTML)
-- ⏳ **Task 3**: Implement Image Quality Assessor
-- ⏳ **Task 4**: Implement Data Cleaner
-- ⏳ **Task 5**: Implement Label Validator
-- ⏳ **Task 6**: Implement data pipeline orchestration
-
-### Phase 2: Model Training & Inference ✅ (Đã hoàn thành cơ bản)
-
-- ✅ **Task 8**: Thiết lập cấu trúc project và dependencies
-- ✅ **Task 9**: Implement Configuration Manager
-- ⏳ Các tasks khác đang chờ hoàn thành Phase 1
-
 ## Cài Đặt
 
 ### Bước 1: Clone Repository

@@ -1,0 +1,149 @@
+# Whisper Large-v3 Vietnamese Configuration
+# Optimized for maximum accuracy with Vietnamese language
+# Requires powerful hardware for real-time processing
+
+# Audio Capture Settings
+audio:
+  sample_rate: 16000          # Hz - Whisper requires 16kHz
+  channels: 1                 # Mono
+  format: "paInt16"           # 16-bit PCM
+  chunk_size: 2048            # Larger chunks for better quality
+  buffer_duration: 30         # Seconds - maximum buffer size
+  device_index: null          # null = default microphone
+
+# Enhanced Speech-to-Text Settings with Whisper Large-v3
+speech_to_text:
+  # Model selection - Large-v3 for maximum accuracy
+  model_type: "whisper"       # Use Whisper
+  model_size: "large-v3"      # Large-v3 model (highest accuracy)
+  model_path: null            # null = auto-download
+  
+  # Quantization for optimization
+  compute_type: "int8"        # Options: int8 (fastest), float16, float32
+                              # int8 recommended even for large model
+  device: "cpu"               # Use CPU (or "cuda" if GPU available)
+  num_threads: 8              # Number of CPU threads (increase for large model)
+  
+  # Language settings
+  language: "vi"              # Vietnamese
+  task: "transcribe"          # transcribe (not translate)
+  
+  # Audio preprocessing
+  enable_audio_cleaning: true # Enable noise reduction and normalization
+  enable_vad: true            # Enable Voice Activity Detection
+  vad_method: "silero"        # Options: silero (best), webrtc, energy
+  
+  # Overlap handling for continuous transcription
+  overlap_duration: 1.0       # Seconds - longer overlap for better accuracy
+  max_buffer_size: 10         # Maximum number of buffered segments
+  
+  # Custom vocabulary for Vietnamese proper nouns
+  enable_vocabulary: true     # Enable custom vocabulary
+  vocabulary_file: "config/vietnamese_video_vocabulary.json"
+  
+  # Performance limits
+  max_memory_mb: 2000         # Increased for large model
+  cpu_limit_percent: 80.0     # Higher CPU usage allowed
+  min_real_time_factor: 0.5   # Can be slower than real-time
+  
+  # Whisper-specific settings for maximum accuracy
+  beam_size: 10               # Higher beam search (more accurate)
+  best_of: 10                 # More candidates to consider
+  temperature: 0.0            # Deterministic output
+  word_timestamps: true       # Extract word-level timestamps
+  condition_on_previous_text: true  # Use context from previous segments
+  
+  # Vietnamese optimization
+  enable_vietnamese_optimization: true
+  vietnamese_confidence_threshold: 0.7  # Threshold for post-correction
+  enable_diacritic_validation: true     # Validate Vietnamese diacritics
+  diacritic_accuracy_threshold: 0.98    # 98% accuracy requirement
+  
+  # Fallback settings
+  fallback_to_vosk: false     # Don't fallback with large model
+  
+  # Legacy settings (for compatibility)
+  chunk_duration: 2.0         # Seconds
+  max_latency: 3.0            # Seconds - allow more latency for accuracy
+
+# Quality Analysis Settings
+quality:
+  clarity_threshold: 70.0     # Higher threshold for large model
+  snr_weight: 0.4             # Weight for Signal-to-Noise Ratio
+  spectral_weight: 0.4        # Weight for Spectral Clarity
+  zcr_weight: 0.2             # Weight for Zero Crossing Rate
+  
+  fluency_threshold: 70.0     # Higher threshold
+  speech_rate_weight: 0.3     # Weight for speech rate
+  pause_weight: 0.4           # Weight for pause analysis
+  rhythm_weight: 0.3          # Weight for rhythm consistency
+  
+  optimal_speech_rate_min: 3.0  # Syllables per second (Vietnamese)
+  optimal_speech_rate_max: 5.0  # Syllables per second
+  
+  pause_threshold: 0.3        # Seconds
+  long_pause_threshold: 1.0   # Seconds
+  update_interval: 2.0        # Seconds
+
+# Text Storage Settings
+storage:
+  output_dir: "transcripts"
+  filename_format: "transcript_large_v3_%Y%m%d_%H%M%S.txt"
+  encoding: "utf-8"
+  auto_save_interval: 30
+  create_backup: true
+  include_metadata: true
+  include_statistics: true
+  include_recommendations: true
+
+# Performance Settings
+performance:
+  max_memory_mb: 2000         # Increased for large model
+  audio_thread_priority: "high"
+  processing_thread_priority: "high"  # Higher priority for large model
+  gui_update_rate: 10
+
+# Logging Settings
+logging:
+  enabled: true
+  log_file: "logs/speech_analysis_large_v3.log"
+  log_level: "INFO"
+  max_log_size_mb: 20
+  backup_count: 5
+
+# Large-v3 Model Specifications:
+#
+# Parameters: ~1550M
+# Accuracy: 95-98% for Vietnamese (highest available)
+# CPU Requirements: 8+ cores recommended
+# RAM Requirements: 10GB+ recommended
+# Real-time factor: 0.3-0.8x (may be slower than real-time on CPU)
+# GPU: Highly recommended for real-time processing
+#
+# Best for:
+# - Video transcription (offline processing)
+# - High-accuracy requirements
+# - Professional applications
+# - When processing time is not critical
+#
+# Hardware Recommendations:
+# - CPU: Intel i7/i9 or AMD Ryzen 7/9 (8+ cores)
+# - RAM: 16GB+ system memory
+# - GPU: NVIDIA RTX 3060+ (optional but recommended)
+# - Storage: SSD for model loading
+
+# Vietnamese Optimization Features:
+# 1. Custom vocabulary for proper nouns and technical terms
+# 2. Diacritic validation (98% accuracy threshold)
+# 3. Post-correction for low confidence words
+# 4. Context-aware transcription
+# 5. Word-level timestamps for subtitle generation
+
+# Tips for Best Results:
+# 1. Use GPU if available (change device to "cuda")
+# 2. Ensure quiet environment and good microphone
+# 3. Speak clearly at normal pace
+# 4. Update vocabulary file with domain-specific terms
+# 5. Monitor diacritic accuracy in logs
+# 6. Adjust confidence_threshold based on your needs
+# 7. For video processing, consider batch processing

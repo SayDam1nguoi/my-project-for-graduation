@@ -1,0 +1,82 @@
+
+======================================================================
+           BAO CAO THONG KE NHAN DIEN CAM XUC
+======================================================================
+
+Thoi gian tao bao cao: 16/12/2025 09:32:31
+
+======================================================================
+                 THONG TIN PHIEN LAM VIEC
+======================================================================
+
+Thoi gian lam viec:     169.8 giay (2.8 phut)
+Tong so khung hinh:     1474
+Tong so khuon mat:      208
+Nguon video:            Camera
+
+======================================================================
+                    PHAN BO CAM XUC
+======================================================================
+
+Cam xuc pho bien nhat: NEUTRAL (533 lan, 96.9%)
+
+Chi tiet phan bo:
+  Angry       :     0 (  0.0%)  
+  Disgust     :     0 (  0.0%)  
+  Fear        :     0 (  0.0%)  
+  Happy       :    17 (  3.1%)  █
+  Neutral     :   533 ( 96.9%)  ████████████████████████████████████████████████
+  Sad         :     0 (  0.0%)  
+  Surprise    :     0 (  0.0%)  
+
+
+======================================================================
+                   THONG KE TAP TRUNG
+======================================================================
+
+Diem tap trung trung binh:  67/100
+
+Ti le tap trung:            83.4%
+Ti le mat tap trung:        16.6%
+
+
+--- CONG THUC TINH DIEM (4 THANH PHAN) ---
+
+FocusScore = (
+    FacePresence * 0.40 +
+    GazeFocus    * 0.30 +
+    HeadFocus    * 0.20 +
+    DriftScore   * 0.10
+) * 10
+
+Chi tiet:
+  Face Presence:  100.0% (40%)
+  Gaze Focus:     100.0% (30%)
+    → Status: center
+  Head Focus:     100.0% (20%)
+    → Status: straight
+  Drift Score:    0.0% (10%)
+    → Events: 5
+
+Tong diem:        9.00/10
+
+Ti le mat nham:             0.0%
+Ti le nhin ra ngoai:        0.0%
+So lan chop mat:            0
+
+
+======================================================================
+                    HIEU SUAT XU LY
+======================================================================
+
+Thoi gian xu ly trung binh:    41.09ms
+Thoi gian xu ly toi thieu:     27.85ms
+Thoi gian xu ly toi da:        64.60ms
+Dat yeu cau (<30ms):           NO
+
+
+======================================================================
+                      KET THUC BAO CAO
+======================================================================
+
+File duoc luu tai: reports\statistics_20251216_093231.txt

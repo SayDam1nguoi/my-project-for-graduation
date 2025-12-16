@@ -1,0 +1,2 @@
+# This file ensures the recordings directory is tracked by git
+# even when it's empty. WAV files in this directory are ignored.

@@ -1,0 +1,127 @@
+================================================================================
+EMOTION SCORING REPORT
+================================================================================
+
+Candidate ID: CAND_2024_001
+Video: sample_interview.mp4
+Report Generated: 2025-12-02 11:50:44
+
+Total Score: 7.79/10
+
+--------------------------------------------------------------------------------
+CRITERION SCORES
+--------------------------------------------------------------------------------
+
+Calmness
+  Score: 7.50/10
+  Confidence: 0.95
+  Explanation: The candidate demonstrated high calmness with a score of 7.5/10. This excellent result indicates that the candidate maintained composure well throughout the interview. Calm expressions were observed in 75.0% of analyzed frames.
+
+Expression Control
+  Score: 8.20/10
+  Confidence: 0.95
+  Explanation: Expression control was high with a score of 8.2/10. The candidate's ability to maintain appropriate facial expressions was excellent. Emotional changes occurred at a rate of 15.0%, indicating good emotional regulation.
+
+Confidence
+  Score: 6.80/10
+  Confidence: 0.95
+  Explanation: The candidate showed moderate confidence with a score of 6.8/10. This satisfactory assessment is based on posture, eye contact, and facial expressions. Eye contact was maintained 68.5% of the time, showing adequate presence.
+
+Friendliness
+  Score: 9.10/10
+  Confidence: 0.95
+  Explanation: Friendliness was high with a score of 9.1/10. The candidate's warmth and approachability were excellent. Genuine smiles were detected in 12 frames, creating a positive impression.
+
+Enthusiasm
+  Score: 7.30/10
+  Confidence: 0.95
+  Explanation: The candidate displayed high enthusiasm with a score of 7.3/10. Energy levels and engagement were excellent. Average energy level was 0.72, indicating strong interest.
+
+Professionalism
+  Score: 8.50/10
+  Confidence: 0.95
+  Explanation: Professionalism was high with a score of 8.5/10. The candidate's professional demeanor was excellent. Appropriate emotions were displayed 82.0% of the time, reflecting strong professional standards.
+
+Authenticity
+  Score: 7.80/10
+  Confidence: 0.95
+  Explanation: Authenticity was high with a score of 7.8/10. The genuineness of emotional expressions was excellent. Micro-expression consistency was 0.85, suggesting genuine emotions.
+
+Eye Contact
+  Score: 6.50/10
+  Confidence: 0.95
+  Explanation: Eye contact was moderate with a score of 6.5/10. The candidate's gaze patterns were satisfactory. Eye contact was maintained 68.5% of the time, showing adequate attention.
+
+Facial Interaction
+  Score: 8.00/10
+  Confidence: 0.95
+  Explanation: Facial interaction was high with a score of 8.0/10. The candidate's facial responsiveness was excellent. Responsiveness rate was 78.0%, showing strong engagement.
+
+Contextual Appropriateness
+  Score: 7.60/10
+  Confidence: 0.95
+  Explanation: Contextual appropriateness was high with a score of 7.6/10. The alignment of expressions with conversation context was excellent. Appropriate expressions were shown 82.0% of the time, demonstrating excellent emotional intelligence.
+
+Emotion Consistency
+  Score: 8.30/10
+  Confidence: 0.95
+  Explanation: Emotion consistency was high with a score of 8.3/10. The stability of emotional states was excellent. Emotional changes occurred at a rate of 12.0%, indicating strong emotional stability.
+
+Sentiment Alignment
+  Score: 7.90/10
+  Confidence: 0.95
+  Explanation: Sentiment alignment was high with a score of 7.9/10. The candidate's emotional alignment with the interviewer was excellent. Alignment frequency was 81.0%, demonstrating excellent empathy.
+
+--------------------------------------------------------------------------------
+KEY MOMENTS
+--------------------------------------------------------------------------------
+
+1. Strong confidence indicators
+   Time: 6.00s
+   Criterion: confidence
+   Emotion: neutral
+   Intensity: 0.95
+
+2. High enthusiasm detected
+   Time: 12.00s
+   Criterion: enthusiasm
+   Emotion: happy
+   Intensity: 0.78
+
+3. Strong confidence indicators
+   Time: 18.00s
+   Criterion: confidence
+   Emotion: neutral
+   Intensity: 0.94
+
+4. Genuine smile detected
+   Time: 21.00s
+   Criterion: friendliness
+   Emotion: happy
+   Intensity: 0.34
+
+5. High enthusiasm detected
+   Time: 30.00s
+   Criterion: enthusiasm
+   Emotion: happy
+   Intensity: 0.78
+
+6. Genuine smile detected
+   Time: 30.00s
+   Criterion: friendliness
+   Emotion: happy
+   Intensity: 0.35
+
+7. Strong confidence indicators
+   Time: 39.00s
+   Criterion: confidence
+   Emotion: neutral
+   Intensity: 0.95
+
+8. High enthusiasm detected
+   Time: 48.00s
+   Criterion: enthusiasm
+   Emotion: happy
+   Intensity: 0.80
+
+================================================================================

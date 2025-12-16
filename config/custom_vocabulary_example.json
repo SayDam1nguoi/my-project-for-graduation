@@ -1,0 +1,158 @@
+{
+    "words": [
+        {
+            "text": "TensorFlow",
+            "priority": 10,
+            "description": "Machine learning framework"
+        },
+        {
+            "text": "PyTorch",
+            "priority": 10,
+            "description": "Deep learning framework"
+        },
+        {
+            "text": "Kubernetes",
+            "priority": 9,
+            "description": "Container orchestration"
+        },
+        {
+            "text": "Docker",
+            "priority": 9,
+            "description": "Containerization platform"
+        },
+        {
+            "text": "API",
+            "priority": 8,
+            "description": "Application Programming Interface"
+        },
+        {
+            "text": "REST",
+            "priority": 8,
+            "description": "RESTful API"
+        },
+        {
+            "text": "GraphQL",
+            "priority": 8,
+            "description": "Query language for APIs"
+        },
+        {
+            "text": "Nguyễn Văn A",
+            "priority": 7,
+            "description": "Example Vietnamese name with diacritics"
+        },
+        {
+            "text": "Trần Thị B",
+            "priority": 7,
+            "description": "Example Vietnamese name with diacritics"
+        },
+        {
+            "text": "Hồ Chí Minh",
+            "priority": 7,
+            "description": "Vietnamese historical figure"
+        },
+        {
+            "text": "Hà Nội",
+            "priority": 6,
+            "description": "Capital of Vietnam"
+        },
+        {
+            "text": "Sài Gòn",
+            "priority": 6,
+            "description": "Former name of Ho Chi Minh City"
+        },
+        {
+            "text": "Đà Nẵng",
+            "priority": 6,
+            "description": "City in Vietnam"
+        },
+        {
+            "text": "COVID-19",
+            "priority": 8,
+            "description": "Coronavirus disease"
+        },
+        {
+            "text": "AI",
+            "priority": 9,
+            "description": "Artificial Intelligence"
+        },
+        {
+            "text": "ML",
+            "priority": 9,
+            "description": "Machine Learning"
+        },
+        {
+            "text": "GPU",
+            "priority": 7,
+            "description": "Graphics Processing Unit"
+        },
+        {
+            "text": "CPU",
+            "priority": 7,
+            "description": "Central Processing Unit"
+        }
+    ],
+    "phrases": [
+        {
+            "text": "machine learning",
+            "priority": 9,
+            "description": "AI/ML term"
+        },
+        {
+            "text": "deep learning",
+            "priority": 9,
+            "description": "AI/ML term"
+        },
+        {
+            "text": "neural network",
+            "priority": 8,
+            "description": "AI/ML term"
+        },
+        {
+            "text": "natural language processing",
+            "priority": 8,
+            "description": "NLP term"
+        },
+        {
+            "text": "computer vision",
+            "priority": 8,
+            "description": "AI/ML term"
+        },
+        {
+            "text": "trí tuệ nhân tạo",
+            "priority": 9,
+            "description": "Artificial Intelligence in Vietnamese"
+        },
+        {
+            "text": "học máy",
+            "priority": 9,
+            "description": "Machine Learning in Vietnamese"
+        },
+        {
+            "text": "học sâu",
+            "priority": 8,
+            "description": "Deep Learning in Vietnamese"
+        },
+        {
+            "text": "xử lý ngôn ngữ tự nhiên",
+            "priority": 8,
+            "description": "Natural Language Processing in Vietnamese"
+        },
+        {
+            "text": "thị giác máy tính",
+            "priority": 8,
+            "description": "Computer Vision in Vietnamese"
+        }
+    ],
+    "metadata": {
+        "version": "1.0",
+        "language": "vi",
+        "description": "Example custom vocabulary for Vietnamese STT with technical terms and proper nouns",
+        "created": "2024-11-26",
+        "notes": [
+            "Priority ranges from 1-10, with 10 being highest priority",
+            "Higher priority words will be preferred when there are multiple matches",
+            "Vietnamese diacritics must be preserved exactly as shown",
+            "Phrases are matched as complete units before individual words"
+        ]
+    }
+}

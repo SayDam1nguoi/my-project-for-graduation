@@ -1,0 +1,144 @@
+# CPU-Optimized Speech Analysis Configuration for Laptop Microphones
+# This configuration is optimized for:
+# - Laptop built-in microphones (lower quality)
+# - CPU-only processing (no GPU)
+# - Balance between accuracy and performance
+# Target: ~85% accuracy with <70% CPU usage
+
+# Audio Capture Settings
+audio:
+  sample_rate: 16000          # Hz - optimal for speech recognition
+  channels: 1                 # Mono
+  format: "paInt16"           # 16-bit PCM
+  chunk_size: 2048            # Larger chunks for better quality (vs 1024 default)
+  buffer_duration: 30         # Seconds - maximum buffer size
+  device_index: null          # null = default microphone, or specify device index
+  
+  # Laptop microphone optimization settings
+  noise_reduction: true       # Enable noise reduction
+  auto_gain_control: true     # Enable automatic gain control
+  echo_cancellation: true     # Enable echo cancellation
+  input_volume_boost: 1.3     # Volume boost for quiet laptop mics (max 1.3x)
+  
+  # Audio enhancement parameters (used by LaptopAudioEnhancer)
+  noise_gate_threshold: 0.015 # Suppress audio below this level (0.01-0.02 range)
+  high_pass_filter: 85        # Hz - remove low-frequency noise (fan, vibration)
+  target_rms: 0.12            # Target RMS level for normalization (0.1-0.15 range)
+  max_gain: 3.0               # Maximum gain for volume boost
+  noise_reduction_strength: 0.5  # Spectral noise reduction strength (0-1)
+
+# Speech-to-Text Settings
+speech_to_text:
+  vosk_model_path: "models/vosk-model-vn-0.4"  # Path to Vosk Vietnamese model
+  language: "vi"              # Vietnamese
+  
+  # Vietnamese optimization settings
+  use_vietnamese_optimizer: true  # Enable Vietnamese-specific optimizations
+  post_process_text: true     # Enable post-processing for error correction
+  add_punctuation: true       # Automatically add punctuation
+  fix_common_errors: true     # Fix common Vietnamese transcription errors
+  
+  # CPU-optimized timing settings
+  chunk_duration: 4.5         # Seconds - increased for better context (vs 3.0)
+  overlap_duration: 1.0       # Seconds - increased for continuity (vs 0.5)
+  max_latency: 6.0            # Seconds - increased acceptable latency (vs 3.0)
+  
+  # Performance settings
+  enable_audio_enhancement: true  # Enable LaptopAudioEnhancer
+  use_faster_inference: true  # Use optimized inference settings
+  batch_size: 1               # Process one chunk at a time
+
+# Quality Analysis Settings
+quality:
+  # Adjusted thresholds for laptop microphone quality
+  clarity_threshold: 50.0     # Lower threshold for laptop mics (vs 60.0)
+  snr_weight: 0.4             # Weight for Signal-to-Noise Ratio
+  spectral_weight: 0.4        # Weight for Spectral Clarity
+  zcr_weight: 0.2             # Weight for Zero Crossing Rate
+  
+  # Fluency score settings
+  fluency_threshold: 55.0     # Lower threshold for laptop mics (vs 60.0)
+  speech_rate_weight: 0.3     # Weight for speech rate
+  pause_weight: 0.4           # Weight for pause analysis
+  rhythm_weight: 0.3          # Weight for rhythm consistency
+  
+  # Speech rate settings (Vietnamese)
+  optimal_speech_rate_min: 3.0  # Syllables per second
+  optimal_speech_rate_max: 5.0  # Syllables per second
+  
+  # Pause detection settings
+  pause_threshold: 0.3        # Seconds - minimum duration to be considered a pause
+  long_pause_threshold: 1.0   # Seconds - threshold for "long" pauses
+  
+  # Audio quality thresholds (adjusted for laptop mics)
+  min_confidence: 0.3         # Lower confidence threshold (vs 0.5)
+  min_audio_level: 0.005      # Lower audio level threshold (vs 0.01)
+  max_silence_duration: 2.0   # Seconds - maximum silence before stopping
+  
+  # Update frequency
+  update_interval: 2.0        # Seconds - how often to update quality scores
+
+# Text Storage Settings
+storage:
+  output_dir: "transcripts"   # Directory for saving transcripts
+  filename_format: "transcript_%Y%m%d_%H%M%S.txt"  # strftime format
+  encoding: "utf-8"           # File encoding
+  auto_save_interval: 30      # Seconds - auto-save frequency
+  create_backup: true         # Create backup files
+  
+  # Metadata settings
+  include_metadata: true      # Include metadata header in files
+  include_statistics: true    # Include detailed statistics in files
+  include_recommendations: true  # Include quality recommendations
+
+# Performance Settings
+performance:
+  max_memory_mb: 150          # Increased for audio enhancement (vs 100)
+  audio_thread_priority: "high"  # Thread priority for audio capture
+  processing_thread_priority: "normal"  # Thread priority for processing
+  gui_update_rate: 10         # Updates per second for GUI
+  
+  # CPU optimization
+  max_cpu_percent: 70         # Target maximum CPU usage
+  enable_cpu_monitoring: true # Monitor CPU usage during processing
+
+# Logging Settings
+logging:
+  enabled: true
+  log_file: "logs/speech_analysis.log"
+  log_level: "INFO"           # Options: DEBUG, INFO, WARNING, ERROR
+  max_log_size_mb: 10         # Maximum log file size before rotation
+  backup_count: 3             # Number of backup log files to keep
+  
+  # Enhanced logging for debugging
+  log_audio_quality: true     # Log RMS and peak levels periodically
+  log_performance_metrics: true  # Log CPU usage and processing time
+  log_enhancement_stats: false   # Log audio enhancement statistics (verbose)
+
+# Hardware Recommendations (informational - not used by code)
+# These are guidelines for optimal performance:
+#
+# Minimum Requirements:
+#   - CPU: 2 cores, 2.0 GHz
+#   - RAM: 2 GB available
+#   - Model: tiny
+#   - Beam size: 3
+#
+# Recommended (this config):
+#   - CPU: 4 cores, 2.5 GHz
+#   - RAM: 4 GB available
+#   - Model: base
+#   - Beam size: 6
+#
+# High Performance:
+#   - CPU: 8+ cores, 3.0 GHz
+#   - RAM: 8 GB available
+#   - Model: small
+#   - Beam size: 8
+#
+# Usage Tips:
+#   - Position microphone 15-30cm from mouth
+#   - Minimize background noise (close windows, turn off fans)
+#   - Speak clearly at normal volume
+#   - Avoid covering the microphone
+#   - Use in a quiet environment for best results

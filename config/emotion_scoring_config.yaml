@@ -1,0 +1,65 @@
+# Emotion Scoring Configuration - New 4-Criterion System
+# D. Cảm xúc - 5% (0-10 → x0.5 điểm)
+# Chú ý: Không dùng để đánh giá năng lực, chỉ đánh giá hành vi thể hiện
+
+# Criterion weights (must sum to 1.0)
+# Each criterion is scored 0-10, then multiplied by 0.5 for final score
+criterion_weights:
+  emotion_stability: 0.40        # 40% - Ổn định cảm xúc (Emotion Stability)
+  emotion_content_alignment: 0.35 # 35% - Khớp cảm xúc & nội dung (Emotion-Content Alignment)
+  positive_ratio: 0.15           # 15% - Tích cực (Positive Ratio)
+  negative_overload: 0.10        # 10% - Mức tiêu cực vượt ngưỡng (Negative Overload)
+
+# Score thresholds for each criterion
+# Format: [low_threshold, high_threshold]
+# Interpretation: 0-low=Low, low-high=Medium, high-10=High
+score_thresholds:
+  emotion_stability: [4.0, 7.0]
+  emotion_content_alignment: [4.0, 7.0]
+  positive_ratio: [4.0, 7.0]
+  negative_overload: [4.0, 7.0]
+
+# Final score multiplier (1.0 to keep 0-10 scale)
+final_score_multiplier: 1.0
+
+# Face detection settings
+face_detection:
+  confidence_threshold: 0.5  # Lower threshold for better detection (0.0-1.0)
+  max_faces: 1              # Maximum number of faces to detect per frame
+  device: 'auto'            # 'auto', 'cpu', or 'cuda'
+
+# Diagnostics settings
+diagnostics:
+  enable_frame_logging: true    # Log face detection progress
+  log_interval: 100             # Log every N frames
+  min_detection_rate: 0.3       # Warn if detection rate below 30%
+  verbose_errors: true          # Include detailed error messages
+
+# Feature toggles
+enable_micro_expression_analysis: true
+enable_gaze_tracking: true
+
+# Frame sampling rate (process every Nth frame)
+# 1 = process all frames, 2 = every other frame, etc.
+# Higher values = faster processing but less accuracy
+frame_sampling_rate: 1
+
+# Video processing settings
+video_settings:
+  min_video_duration_seconds: 30
+  max_video_duration_seconds: 3600  # 1 hour
+  target_fps: 30
+  min_face_detection_rate: 0.5  # Minimum 50% of frames must have faces
+
+# Quality thresholds
+quality_thresholds:
+  min_confidence: 0.3  # Minimum confidence for valid analysis
+  low_confidence_warning: 0.5  # Warn if confidence below this
+  min_face_size_pixels: 80  # Minimum face size for analysis
+
+# Report settings
+report_settings:
+  include_visualizations: true
+  include_key_moments: true
+  max_key_moments: 20
+  key_moment_clip_duration_seconds: 5

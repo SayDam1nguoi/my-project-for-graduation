@@ -1,0 +1,82 @@
+
+======================================================================
+           BAO CAO THONG KE NHAN DIEN CAM XUC
+======================================================================
+
+Thoi gian tao bao cao: 16/12/2025 09:59:02
+
+======================================================================
+                 THONG TIN PHIEN LAM VIEC
+======================================================================
+
+Thoi gian lam viec:     66.9 giay (1.1 phut)
+Tong so khung hinh:     624
+Tong so khuon mat:      104
+Nguon video:            Camera
+
+======================================================================
+                    PHAN BO CAM XUC
+======================================================================
+
+Cam xuc pho bien nhat: NEUTRAL (160 lan, 74.4%)
+
+Chi tiet phan bo:
+  Angry       :     0 (  0.0%)  
+  Disgust     :     0 (  0.0%)  
+  Fear        :     0 (  0.0%)  
+  Happy       :    55 ( 25.6%)  ████████████
+  Neutral     :   160 ( 74.4%)  █████████████████████████████████████
+  Sad         :     0 (  0.0%)  
+  Surprise    :     0 (  0.0%)  
+
+
+======================================================================
+                   THONG KE TAP TRUNG
+======================================================================
+
+Diem tap trung trung binh:  83/100
+
+Ti le tap trung:            99.4%
+Ti le mat tap trung:        0.6%
+
+
+--- CONG THUC TINH DIEM (4 THANH PHAN) ---
+
+FocusScore = (
+    FacePresence * 0.40 +
+    GazeFocus    * 0.30 +
+    HeadFocus    * 0.20 +
+    DriftScore   * 0.10
+) * 10
+
+Chi tiet:
+  Face Presence:  100.0% (40%)
+  Gaze Focus:     100.0% (30%)
+    → Status: center
+  Head Focus:     100.0% (20%)
+    → Status: straight
+  Drift Score:    66.7% (10%)
+    → Events: 1
+
+Tong diem:        9.67/10
+
+Ti le mat nham:             0.0%
+Ti le nhin ra ngoai:        0.0%
+So lan chop mat:            0
+
+
+======================================================================
+                    HIEU SUAT XU LY
+======================================================================
+
+Thoi gian xu ly trung binh:    51.50ms
+Thoi gian xu ly toi thieu:     29.00ms
+Thoi gian xu ly toi da:        87.72ms
+Dat yeu cau (<30ms):           NO
+
+
+======================================================================
+                      KET THUC BAO CAO
+======================================================================
+
+File duoc luu tai: C:\Users\admin\Desktop\ProjectSekai\Emotion Scanner 2\reports\phan tich cam xuc cua Nguyen Duy Thai.txt

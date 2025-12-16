@@ -1,0 +1,279 @@
+# Dual Person Comparison System Configuration
+# Cấu hình cho hệ thống so sánh cảm xúc và sự tập trung hai người
+
+dual_person_comparison:
+  # Enable/disable feature
+  enabled: true
+  
+  # Primary source settings (camera)
+  primary_source:
+    type: "camera"  # "camera" or "video_file"
+    device_id: 0
+    resolution: [1280, 720]  # Camera resolution
+    fps: 30
+  
+  # Secondary source settings (screen capture)
+  secondary_source:
+    type: "screen"  # "screen" or "video_file"
+    monitor_number: 1  # Which monitor to capture (1 = primary, 2 = secondary, etc.)
+    resolution: [640, 480]  # Resize for performance optimization
+    capture_fps: 15  # Lower FPS for screen capture to save resources
+  
+  # Score calculator settings
+  score_calculator:
+    # Rolling window size in seconds
+    window_seconds: 60
+    
+    # Update interval for score calculation (seconds)
+    update_interval: 5.0
+    
+    # Emotion weights for score calculation
+    # Higher weight = more positive contribution to emotion score
+    emotion_weights:
+      happy: 1.0
+      surprise: 0.8
+      neutral: 0.5
+      sad: 0.2
+      fear: 0.1
+      disgust: 0.1
+      angry: 0.0
+    
+    # Minimum confidence threshold for including emotion in score
+    min_confidence: 0.6
+  
+  # Comparison engine settings
+  comparison_engine:
+    # Update interval for comparison (seconds)
+    update_interval: 10.0
+    
+    # Threshold for significant difference (points)
+    significant_difference_threshold: 20.0
+    
+    # Minimum score difference to declare a winner (avoid ties for small differences)
+    min_winner_difference: 5.0
+  
+  # Performance settings
+  performance:
+    # Target FPS for overall system
+    target_fps: 15
+    
+    # Maximum acceptable latency (milliseconds)
+    max_latency_ms: 100
+    
+    # Frame skip for secondary source (process every N frames)
+    # 1 = process every frame, 2 = process every other frame, etc.
+    secondary_frame_skip: 1
+    max_secondary_frame_skip: 3
+    min_secondary_frame_skip: 1
+    
+    # Enable automatic performance optimization
+    enable_optimization: true
+    
+    # Auto-adjust frame skip if FPS drops below threshold
+    auto_adjust_frame_skip: true
+    fps_threshold_for_adjustment: 12
+    
+    # Resolution scaling for screen capture
+    enable_resolution_scaling: true
+    screen_capture_scale_factor: 0.5  # Scale to 50% if performance issues
+    
+    # Face detection caching
+    enable_face_detection_caching: true
+    cache_ttl: 0.1  # Cache time-to-live in seconds
+    
+    # Low FPS warning
+    low_fps_warning_threshold: 10
+    low_fps_warning_duration: 5.0  # seconds
+    
+    # Maximum memory usage (MB)
+    max_memory_mb: 500
+  
+  # GUI settings
+  gui:
+    # Split view layout
+    split_view:
+      layout: "horizontal"  # "horizontal" or "vertical"
+      primary_position: "left"  # "left" or "right" (for horizontal), "top" or "bottom" (for vertical)
+      show_labels: true
+      primary_label: "Bạn"
+      secondary_label: "Người Khác"
+    
+    # Comparison panel settings
+    comparison_panel:
+      position: "center"  # "center", "bottom", "top"
+      show_percentage: true
+      highlight_winner: true
+      significant_gap_color: "#FFD700"  # Gold color for significant gaps
+      winner_color: "#00FF00"  # Green color for winner
+      tie_color: "#FFFF00"  # Yellow color for tie
+    
+    # Statistics panel settings
+    statistics_panel:
+      update_interval: 1.0  # Update every second
+      show_confidence: true
+      show_emotion_probabilities: false
+      decimal_places: 1
+    
+    # Visual settings
+    visual:
+      show_bounding_boxes: true
+      bounding_box_color: "#00FF00"  # Green
+      bounding_box_thickness: 2
+      show_landmarks: false
+      show_warnings: true
+      warning_color: "#FF0000"  # Red
+      low_confidence_indicator: "?"
+      low_confidence_opacity: 0.5
+    
+    # Colors for different elements
+    colors:
+      primary_accent: "#1E90FF"  # Dodger Blue
+      secondary_accent: "#FF6347"  # Tomato
+      background: "#2B2B2B"  # Dark gray
+      text: "#FFFFFF"  # White
+      panel_background: "#3C3C3C"  # Lighter gray
+  
+  # Export settings
+  export:
+    # Export format
+    format: "json"  # "json" or "csv"
+    
+    # Include timeline data in export
+    include_timeline: true
+    
+    # Include frame snapshots
+    include_frames: false
+    
+    # Export directory
+    export_directory: "data/reports"
+    
+    # Filename pattern (supports strftime format)
+    filename_pattern: "dual_comparison_%Y%m%d_%H%M%S"
+    
+    # Include detailed statistics
+    include_detailed_stats: true
+    
+    # Include comparison history
+    include_comparison_history: true
+  
+  # Error handling settings
+  error_handling:
+    # Face detection warning threshold (seconds)
+    no_face_warning_threshold: 5.0
+    
+    # Screen capture retry settings
+    screen_capture_retry_attempts: 3
+    screen_capture_retry_delay: 0.5  # seconds
+    
+    # Fallback to single mode on screen capture failure
+    fallback_to_single_mode: true
+    
+    # Low FPS warning threshold
+    low_fps_warning_threshold: 10
+    low_fps_warning_duration: 5.0  # seconds
+  
+  # Debug settings
+  debug:
+    enabled: false
+    log_level: "INFO"  # "DEBUG", "INFO", "WARNING", "ERROR"
+    show_performance_metrics: false
+    performance_metrics_interval: 5.0  # Print metrics every N seconds
+    show_cache_stats: false
+    show_optimization_changes: true
+    save_debug_frames: false
+    debug_output_directory: "logs/dual_person_debug"
+
+# Appearance Assessment Configuration
+# Optional feature to evaluate lighting quality and clothing professionalism
+# Can be enabled/disabled independently for different job requirements
+appearance_assessment:
+  # Enable/disable appearance assessment features
+  # Set to false to completely disable appearance evaluation
+  lighting_enabled: false
+  clothing_enabled: false
+  
+  # Real-time warnings for candidates
+  # Provides immediate feedback during video capture
+  real_time_warnings_enabled: true
+  
+  # Warning update interval in seconds
+  # How often to check and update appearance warnings
+  # Lower values = more responsive but higher CPU usage
+  # Recommended: 5.0 seconds for good balance
+  warning_update_interval: 5.0
+  
+  # Warning threshold score (0-100)
+  # Warnings are displayed when score drops below this value
+  # Lower values = more lenient, higher values = stricter
+  # Recommended: 60.0 (below 60% triggers warning)
+  warning_threshold: 60.0
+  
+  # Lighting Quality Thresholds
+  # These values determine what constitutes good lighting
+  
+  # Minimum acceptable brightness (0-255 scale)
+  # Values below this are considered too dark
+  # Recommended: 80.0 for adequate visibility
+  min_brightness: 80.0
+  
+  # Maximum acceptable brightness (0-255 scale)
+  # Values above this are considered too bright/overexposed
+  # Recommended: 200.0 to avoid washout
+  max_brightness: 200.0
+  
+  # Minimum contrast ratio (0-100 scale)
+  # Measures variation in lighting across face
+  # Higher values = better definition and clarity
+  # Recommended: 30.0 for acceptable contrast
+  min_contrast: 30.0
+  
+  # Minimum uniformity percentage (0-100 scale)
+  # Measures how evenly lit the face is
+  # Higher values = more even lighting
+  # Recommended: 60.0 to avoid harsh shadows
+  min_uniformity: 60.0
+  
+  # Professional Clothing Colors (HSV color space)
+  # Define color ranges considered professional for workplace
+  # Format: color_name: {min: [H, S, V], max: [H, S, V]}
+  # H (Hue): 0-180, S (Saturation): 0-255, V (Value/Brightness): 0-255
+  professional_colors:
+    white:
+      min: [0, 0, 200]      # Low saturation, high brightness
+      max: [180, 30, 255]
+    black:
+      min: [0, 0, 0]        # Low brightness
+      max: [180, 255, 50]
+    blue:
+      min: [100, 50, 50]    # Blue hue range
+      max: [130, 255, 255]
+    gray:
+      min: [0, 0, 50]       # Low saturation, medium brightness
+      max: [180, 50, 200]
+    navy:
+      min: [100, 50, 30]    # Dark blue
+      max: [130, 255, 100]
+  
+  # Unprofessional Clothing Colors (HSV color space)
+  # Define color ranges considered less professional
+  # These colors may be too bright or casual for formal settings
+  unprofessional_colors:
+    bright_red:
+      min: [0, 150, 150]    # High saturation red
+      max: [10, 255, 255]
+    bright_yellow:
+      min: [20, 150, 150]   # High saturation yellow
+      max: [30, 255, 255]
+    bright_green:
+      min: [40, 150, 150]   # High saturation green
+      max: [80, 255, 255]
+    pink:
+      min: [140, 50, 150]   # Pink hue range
+      max: [170, 255, 255]
+  
+  # Performance Settings
+  # Maximum acceptable FPS degradation when appearance assessment is enabled
+  # System will auto-disable if performance impact exceeds this threshold
+  # Value: 0.0-1.0 (0.10 = 10% max degradation)
+  # Recommended: 0.10 to maintain smooth video processing
+  max_performance_impact: 0.10

@@ -1,0 +1,48 @@
+# Emotion Scoring Configuration - Big Tech Format
+# Simplified 4-criterion scoring system for professional interviews
+
+# Criterion weights (must sum to 1.0)
+# Each criterion is scored 0-10, and the total score is a weighted average
+criterion_weights:
+  confidence: 0.35      # 35% - Tự tin
+  positivity: 0.30      # 30% - Tích cực
+  professionalism: 0.25 # 25% - Chuyên nghiệp
+  engagement: 0.10      # 10% - Tương tác
+
+# Score thresholds for each criterion
+# Format: [low_threshold, high_threshold]
+# Interpretation: 0-low=Low, low-high=Medium, high-10=High
+score_thresholds:
+  confidence: [4.0, 7.0]
+  positivity: [4.0, 7.0]
+  professionalism: [4.0, 7.0]
+  engagement: [4.0, 7.0]
+
+# Feature toggles
+enable_micro_expression_analysis: true
+enable_gaze_tracking: true
+
+# Frame sampling rate (process every Nth frame)
+# 1 = process all frames, 2 = every other frame, etc.
+# Higher values = faster processing but less accuracy
+frame_sampling_rate: 1
+
+# Video processing settings
+video_settings:
+  min_video_duration_seconds: 30
+  max_video_duration_seconds: 3600  # 1 hour
+  target_fps: 30
+  min_face_detection_rate: 0.5  # Minimum 50% of frames must have faces
+
+# Quality thresholds
+quality_thresholds:
+  min_confidence: 0.3  # Minimum confidence for valid analysis
+  low_confidence_warning: 0.5  # Warn if confidence below this
+  min_face_size_pixels: 80  # Minimum face size for analysis
+
+# Report settings
+report_settings:
+  include_visualizations: true
+  include_key_moments: true
+  max_key_moments: 20
+  key_moment_clip_duration_seconds: 5

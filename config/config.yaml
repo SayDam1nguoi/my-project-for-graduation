@@ -1,0 +1,388 @@
+# Facial Emotion Recognition System - Configuration File
+
+# Video Input Settings
+video:
+  # Camera device ID (0 for default camera, 1 for second camera, etc.)
+  camera_id: 0
+  # Target FPS for processing (set to 0 for maximum speed)
+  target_fps: 30
+  # Frame buffer size for threaded reading
+  buffer_size: 10
+  # Frame resize for processing (width, height) - smaller = faster
+  processing_size: [640, 480]
+
+# Face Detection Settings
+face_detection:
+  # Model type: "retinaface" or "mtcnn"
+  model_type: "mtcnn"
+  # Minimum confidence threshold (0.0 - 1.0)
+  confidence_threshold: 0.9
+  # Maximum number of faces to detect per frame
+  max_faces: 10
+  # Minimum face size in pixels (width, height)
+  min_face_size: [80, 80]
+
+# Face Preprocessing Settings
+preprocessing:
+  # Target size for emotion classifier input (width, height)
+  target_size: [224, 224]
+  # Face crop margin percentage (0.0 - 1.0)
+  crop_margin: 0.2
+  # Apply histogram equalization for better contrast
+  histogram_equalization: true
+
+# Emotion Classification Settings
+emotion_classification:
+  # Model name or path
+  model_name: "efficientnet_b0"
+  # Confidence threshold for displaying predictions (0.0 - 1.0)
+  confidence_threshold: 0.6
+  # Batch size for processing multiple faces
+  batch_size: 8
+  # Emotion labels
+  emotions:
+    - "Happy"
+    - "Sad"
+    - "Angry"
+    - "Fear"
+    - "Surprise"
+    - "Disgust"
+    - "Neutral"
+  
+  # Ensemble Configuration (for production)
+  ensemble:
+    enabled: true
+    # Ensemble method: "voting", "stacking", "confidence"
+    method: "stacking"
+    # Base models
+    base_models:
+      - name: "model1_efficientnet_b2"
+        path: "models/efficientnet_b2_fer_affectnet.pth"
+        weight: 0.30
+        datasets: ["fer2013", "affectnet"]
+      - name: "model2_efficientnet_b3"
+        path: "models/efficientnet_b3_raf_expw.pth"
+        weight: 0.25
+        datasets: ["rafdb", "expw"]
+      - name: "model3_resnet101"
+        path: "models/resnet101_affectnet_sfew.pth"
+        weight: 0.25
+        datasets: ["affectnet", "sfew"]
+      - name: "model4_vit_b16"
+        path: "models/vit_b16_all.pth"
+        weight: 0.20
+        datasets: ["all"]
+    # Meta-model for stacking
+    meta_model:
+      type: "xgboost"
+      path: "models/meta_xgboost.pkl"
+    # Minimum ensemble agreement (0.0 - 1.0)
+    min_agreement: 0.5
+    # Show individual model predictions in debug mode
+    show_base_predictions: false
+
+# Result Aggregation Settings
+aggregation:
+  # Temporal smoothing window size (number of frames)
+  smoothing_window: 5
+  # Face tracking IoU threshold
+  tracking_iou_threshold: 0.5
+
+# Visualization Settings
+visualization:
+  # Show bounding boxes
+  show_bbox: true
+  # Show emotion labels
+  show_labels: true
+  # Show confidence scores
+  show_confidence: true
+  # Show FPS counter
+  show_fps: true
+  # Font scale for text
+  font_scale: 0.6
+  # Line thickness for bounding boxes
+  line_thickness: 2
+  # Emotion colors (BGR format)
+  emotion_colors:
+    Happy: [0, 255, 0]      # Green
+    Sad: [255, 0, 0]        # Blue
+    Angry: [0, 0, 255]      # Red
+    Fear: [128, 0, 128]     # Purple
+    Surprise: [0, 255, 255] # Yellow
+    Disgust: [0, 165, 255]  # Orange
+    Neutral: [128, 128, 128] # Gray
+
+# Performance Settings
+performance:
+  # Device: "auto", "cuda", or "cpu"
+  device: "auto"
+  # Use mixed precision (FP16) on GPU
+  use_fp16: true
+  # Number of threads for CPU processing
+  num_threads: 4
+  # Enable model caching
+  enable_caching: true
+
+# Logging Settings
+logging:
+  # Enable session logging
+  enable_logging: true
+  # Log directory
+  log_dir: "logs"
+  # Log level: "DEBUG", "INFO", "WARNING", "ERROR"
+  log_level: "INFO"
+  # Save processed frames (warning: large disk usage)
+  save_frames: false
+  # Export format: "json", "csv", or "both"
+  export_format: "json"
+
+# Model Paths
+models:
+  # Directory containing model files
+  models_dir: "models"
+  # Face detector model path (relative to models_dir)
+  face_detector: "face_detector.pth"
+  # Emotion classifier model path (relative to models_dir)
+  emotion_classifier: "emotion_classifier.pth"
+
+# Training Configuration (for model development)
+training:
+  # Enable training mode
+  enabled: false
+  
+  # Datasets configuration
+  datasets:
+    fer2013:
+      path: "data/fer2013"
+      enabled: true
+      weight: 0.30
+      split:
+        train: 0.8
+        val: 0.1
+        test: 0.1
+    
+    affectnet:
+      path: "data/affectnet"
+      enabled: true
+      weight: 0.40
+      split:
+        train: 0.8
+        val: 0.1
+        test: 0.1
+    
+    rafdb:
+      path: "data/rafdb"
+      enabled: true
+      weight: 0.15
+      split:
+        train: 0.8
+        val: 0.1
+        test: 0.1
+    
+    expw:
+      path: "data/expw"
+      enabled: true
+      weight: 0.10
+      split:
+        train: 0.8
+        val: 0.1
+        test: 0.1
+    
+    sfew:
+      path: "data/sfew"
+      enabled: true
+      weight: 0.05
+      split:
+        train: 0.8
+        val: 0.1
+        test: 0.1
+  
+  # Training strategy: "mixed", "progressive", "multi_task"
+  strategy: "multi_task"
+  
+  # Hyperparameters
+  hyperparameters:
+    # Learning rate
+    learning_rate: 0.001
+    # Batch size
+    batch_size: 64
+    # Number of epochs
+    epochs: 100
+    # Optimizer: "adam", "sgd", "adamw"
+    optimizer: "adamw"
+    # Weight decay
+    weight_decay: 0.0001
+    # Learning rate scheduler: "cosine", "step", "plateau"
+    lr_scheduler: "cosine"
+    # Early stopping patience
+    early_stopping_patience: 10
+    # Gradient clipping
+    gradient_clip: 1.0
+    # Mixed precision training
+    use_amp: true
+    # Gradient accumulation steps
+    gradient_accumulation: 2
+  
+  # Data augmentation
+  augmentation:
+    # Horizontal flip probability
+    horizontal_flip: 0.5
+    # Rotation range in degrees
+    rotation: 15
+    # Color jitter
+    color_jitter:
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.2
+      hue: 0.1
+    # Gaussian blur
+    gaussian_blur: 0.3
+    # Coarse dropout (cutout)
+    coarse_dropout:
+      max_holes: 8
+      max_height: 16
+      max_width: 16
+      probability: 0.3
+  
+  # Model checkpointing
+  checkpointing:
+    # Save directory
+    save_dir: "checkpoints"
+    # Save frequency (epochs)
+    save_frequency: 5
+    # Keep best N models
+    keep_best_n: 3
+    # Metric to monitor: "val_accuracy", "val_loss", "val_f1"
+    monitor: "val_accuracy"
+  
+  # Experiment tracking
+  tracking:
+    # Enable Weights & Biases
+    use_wandb: true
+    # W&B project name
+    wandb_project: "facial-emotion-recognition"
+    # W&B entity (username or team)
+    wandb_entity: ""
+    # Enable TensorBoard
+    use_tensorboard: true
+    # TensorBoard log directory
+    tensorboard_dir: "runs"
+
+# Evaluation Configuration
+evaluation:
+  # Test sets to evaluate on
+  test_sets:
+    - "fer2013"
+    - "affectnet"
+    - "rafdb"
+    - "expw"
+    - "sfew"
+    - "mixed"  # Combined test set
+  
+  # Metrics to compute
+  metrics:
+    - "accuracy"
+    - "f1_score"
+    - "precision"
+    - "recall"
+    - "confusion_matrix"
+    - "top2_accuracy"
+    - "calibration_error"
+  
+  # Generate evaluation report
+  generate_report: true
+  # Report output directory
+  report_dir: "evaluation_reports"
+  
+  # Robustness tests
+  robustness_tests:
+    # Test with occlusions
+    occlusion: true
+    # Test with different lighting
+    lighting: true
+    # Test with pose variations
+    pose_variation: true
+    # Test across age groups
+    age_groups: true
+    # Test across ethnicities
+    ethnicity: true
+
+# Video Preprocessing Pipeline Configuration
+video_preprocessing:
+  # Enable/disable entire pipeline
+  enabled: true
+  
+  # Step 1: Video Normalization
+  normalization:
+    enabled: true
+    target_fps: 30
+    target_resolution: [640, 480]
+    sharpening:
+      enabled: true
+      strength: 0.5
+    denoising:
+      enabled: true
+      strength: 10
+      method: "fast_nlmeans"  # fast_nlmeans, bilateral
+  
+  # Step 2: Face Stabilization
+  stabilization:
+    enabled: true
+    window_size: 5
+    method: "affine"  # affine, similarity
+    smoothing_factor: 0.7
+  
+  # Step 3: Lighting Correction
+  lighting:
+    enabled: true
+    clahe:
+      enabled: true
+      clip_limit: 2.0
+      tile_size: [8, 8]
+    white_balance:
+      enabled: true
+      method: "gray_world"  # gray_world, retinex
+    contrast:
+      enabled: true
+      factor: 1.2
+  
+  # Step 4: Frame Quality Filter
+  quality_filter:
+    enabled: true
+    blur_threshold: 100.0
+    confidence_threshold: 0.9
+    max_pose_angle: 30.0
+    check_occlusion: true
+    min_face_size: [80, 80]
+    min_fps_after_filter: 10.0
+  
+  # Step 5: Face Alignment
+  alignment:
+    enabled: true
+    method: "landmarks"  # landmarks, 3d_model
+    crop_margin: 0.2
+    target_size: [224, 224]
+    correct_rotation: true
+    correct_perspective: true
+  
+  # Step 6: Temporal Smoothing
+  temporal_smoothing:
+    enabled: true
+    method: "ema"  # ema, sliding_window, hybrid
+    window_size: 7
+    ema_alpha: 0.3
+    min_confidence_for_smoothing: 0.6
+  
+  # Performance Settings
+  performance:
+    device: "auto"  # auto, cuda, cpu
+    num_threads: 4
+    batch_size: 1
+    enable_caching: true
+  
+  # Logging
+  logging:
+    log_statistics: true
+    log_filtered_frames: true
+    save_debug_frames: false
+    debug_output_dir: "debug/preprocessing"

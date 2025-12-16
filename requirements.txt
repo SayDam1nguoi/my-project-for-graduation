@@ -1,0 +1,64 @@
+# Core dependencies
+numpy>=1.21.0
+opencv-python>=4.5.0
+pillow>=8.0.0
+pyyaml>=5.4.0
+
+# Speech Recognition
+vosk>=0.3.45
+# openai-whisper>=20230314  # Optional: uncomment if you want to keep Whisper as fallback
+# torch>=2.0.0  # Required for Whisper
+
+# Audio Processing
+pyaudio>=0.2.11
+sounddevice>=0.4.5
+librosa>=0.9.0
+noisereduce>=2.0.0
+scipy>=1.9.0
+
+# VAD (Voice Activity Detection)
+silero-vad>=4.0.0
+webrtcvad>=2.0.10
+
+# Enhanced STT
+faster-whisper>=0.9.0
+ctranslate2>=3.20.0
+
+# Video Processing
+mediapipe>=0.10.0
+moviepy>=1.0.3
+ffmpeg-python>=0.2.0
+pysrt>=1.1.2
+diskcache>=5.6.0
+pyannote.audio>=3.0.0
+
+# Deep Learning (for emotion detection)
+torch>=2.0.0
+torchvision>=0.15.0
+efficientnet-pytorch>=0.7.1
+onnxruntime>=1.15.0
+
+# GUI
+tkinter-tooltip>=2.1.0
+
+# Utilities
+psutil>=5.9.0
+tqdm>=4.65.0
+
+# Database
+pymongo>=4.6.0
+
+# Visualization
+matplotlib>=3.5.0
+
+# PDF Generation
+reportlab>=4.0.0
+
+# Semantic Similarity (for interview content evaluation)
+sentence-transformers>=2.2.0
+transformers>=4.30.0
+
+# Testing (optional)
+pytest>=7.0.0
+pytest-cov>=4.0.0
+hypothesis>=6.90.0

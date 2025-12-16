@@ -1,0 +1,27 @@
+# Custom Emotion Scoring Configuration - 4-Criteria System
+# This is a template for customizing the 4-criterion scoring system
+
+# Criterion weights (must sum to 1.0)
+# Adjust these weights based on your specific requirements
+criterion_weights:
+  confidence: 0.325      # 32.5% - Voice tone, posture, eye contact, facial expressions
+  positivity: 0.275      # 27.5% - Smiles, warm expressions, friendly demeanor
+  professionalism: 0.225 # 22.5% - Composure, emotional control, appropriate behavior
+  engagement: 0.175      # 17.5% - Eye contact, head movements, facial responsiveness, attention
+
+# Score thresholds for each criterion
+# Format: [low_threshold, high_threshold]
+# Interpretation: 0-low=Low, low-high=Medium, high-10=High
+score_thresholds:
+  confidence: [4.0, 7.0]
+  positivity: [4.0, 7.0]
+  professionalism: [4.0, 7.0]
+  engagement: [4.0, 7.0]
+
+# Feature toggles
+enable_micro_expression_analysis: true
+enable_gaze_tracking: true
+
+# Frame sampling rate (process every Nth frame)
+# 1 = process all frames, 2 = every other frame, etc.
+frame_sampling_rate: 2

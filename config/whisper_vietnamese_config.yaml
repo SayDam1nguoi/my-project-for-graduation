@@ -1,0 +1,149 @@
+# Whisper Vietnamese Speech-to-Text Configuration
+# Optimized for Vietnamese language with high accuracy
+# Uses faster-whisper with quantization for CPU efficiency
+
+# Audio Capture Settings
+audio:
+  sample_rate: 16000          # Hz - Whisper requires 16kHz
+  channels: 1                 # Mono
+  format: "paInt16"           # 16-bit PCM
+  chunk_size: 2048            # Larger chunks for better quality
+  buffer_duration: 30         # Seconds - maximum buffer size
+  device_index: null          # null = default microphone
+
+# Enhanced Speech-to-Text Settings with Whisper
+speech_to_text:
+  # Model selection
+  model_type: "whisper"       # Use Whisper instead of VOSK
+  model_size: "base"          # Options: tiny, base, small, medium, large
+                              # Recommended: base (good balance) or small (better accuracy)
+  model_path: null            # null = auto-download, or specify custom path
+  
+  # Quantization for CPU optimization
+  compute_type: "int8"        # Options: int8 (fastest), int16, float16, float32
+                              # int8 recommended for CPU
+  device: "cpu"               # Use CPU (no GPU required)
+  num_threads: 4              # Number of CPU threads (adjust based on your CPU)
+  
+  # Language settings
+  language: "vi"              # Vietnamese
+  task: "transcribe"          # transcribe (not translate)
+  
+  # Audio preprocessing
+  enable_audio_cleaning: true # Enable noise reduction and normalization
+  enable_vad: true            # Enable Voice Activity Detection
+  vad_method: "silero"        # Options: silero (best), webrtc, energy
+  
+  # Overlap handling for continuous transcription
+  overlap_duration: 0.5       # Seconds - overlap between chunks
+  max_buffer_size: 10         # Maximum number of buffered segments
+  
+  # Custom vocabulary (optional)
+  enable_vocabulary: false    # Enable custom vocabulary
+  vocabulary_file: null       # Path to custom vocabulary JSON file
+  
+  # Performance limits
+  max_memory_mb: 500          # Maximum memory usage in MB
+  cpu_limit_percent: 50.0     # Target CPU usage limit
+  min_real_time_factor: 1.0   # Minimum processing speed (1.0 = real-time)
+  
+  # Whisper-specific settings
+  beam_size: 5                # Beam search size (higher = more accurate but slower)
+  best_of: 5                  # Number of candidates to consider
+  temperature: 0.0            # Temperature for sampling (0.0 = deterministic)
+  word_timestamps: true       # Extract word-level timestamps
+  condition_on_previous_text: true  # Use context from previous segments
+  
+  # Fallback settings
+  fallback_to_vosk: true      # Fallback to VOSK if Whisper fails
+  vosk_model_path: "models/vosk-model-vn-0.4"  # VOSK model for fallback
+  
+  # Legacy settings (for compatibility)
+  chunk_duration: 2.0         # Seconds
+  max_latency: 2.0            # Seconds
+
+# Quality Analysis Settings
+quality:
+  clarity_threshold: 60.0     # Minimum clarity score
+  snr_weight: 0.4             # Weight for Signal-to-Noise Ratio
+  spectral_weight: 0.4        # Weight for Spectral Clarity
+  zcr_weight: 0.2             # Weight for Zero Crossing Rate
+  
+  fluency_threshold: 60.0     # Minimum fluency score
+  speech_rate_weight: 0.3     # Weight for speech rate
+  pause_weight: 0.4           # Weight for pause analysis
+  rhythm_weight: 0.3          # Weight for rhythm consistency
+  
+  optimal_speech_rate_min: 3.0  # Syllables per second (Vietnamese)
+  optimal_speech_rate_max: 5.0  # Syllables per second
+  
+  pause_threshold: 0.3        # Seconds
+  long_pause_threshold: 1.0   # Seconds
+  update_interval: 2.0        # Seconds
+
+# Text Storage Settings
+storage:
+  output_dir: "transcripts"
+  filename_format: "transcript_%Y%m%d_%H%M%S.txt"
+  encoding: "utf-8"
+  auto_save_interval: 30
+  create_backup: true
+  include_metadata: true
+  include_statistics: true
+  include_recommendations: true
+
+# Performance Settings
+performance:
+  max_memory_mb: 500          # Increased for Whisper
+  audio_thread_priority: "high"
+  processing_thread_priority: "normal"
+  gui_update_rate: 10
+
+# Logging Settings
+logging:
+  enabled: true
+  log_file: "logs/speech_analysis.log"
+  log_level: "INFO"
+  max_log_size_mb: 10
+  backup_count: 3
+
+# Model Size Recommendations:
+#
+# tiny (39M parameters):
+#   - Fastest, lowest accuracy (~70-75% for Vietnamese)
+#   - CPU: 2 cores, RAM: 1GB
+#   - Real-time factor: ~3-4x
+#   - Use for: Quick testing, very low-end hardware
+#
+# base (74M parameters) - RECOMMENDED:
+#   - Good balance of speed and accuracy (~85-90% for Vietnamese)
+#   - CPU: 4 cores, RAM: 2GB
+#   - Real-time factor: ~2-3x
+#   - Use for: Most applications, good default choice
+#
+# small (244M parameters):
+#   - Better accuracy (~90-93% for Vietnamese)
+#   - CPU: 4-6 cores, RAM: 3GB
+#   - Real-time factor: ~1.5-2x
+#   - Use for: When accuracy is more important than speed
+#
+# medium (769M parameters):
+#   - High accuracy (~93-95% for Vietnamese)
+#   - CPU: 6-8 cores, RAM: 5GB
+#   - Real-time factor: ~0.8-1.2x
+#   - Use for: Offline processing, high-end hardware
+#
+# large (1550M parameters):
+#   - Highest accuracy (~95-97% for Vietnamese)
+#   - CPU: 8+ cores, RAM: 10GB
+#   - Real-time factor: ~0.5-0.8x
+#   - Use for: Offline processing only, requires powerful hardware
+
+# Tips for Best Accuracy:
+# 1. Use 'small' or 'medium' model if your hardware allows
+# 2. Enable audio cleaning (enable_audio_cleaning: true)
+# 3. Enable VAD (enable_vad: true) to filter out silence
+# 4. Use good quality microphone in quiet environment
+# 5. Speak clearly at normal pace
+# 6. Increase beam_size to 8-10 for better accuracy (slower)
+# 7. Add custom vocabulary for domain-specific terms

@@ -1,0 +1,83 @@
+# Speech Analysis Configuration
+
+# Audio Capture Settings
+audio:
+  sample_rate: 16000          # Hz - optimal for speech recognition
+  channels: 1                 # Mono
+  format: "paInt16"           # 16-bit PCM
+  chunk_size: 1024            # Samples per buffer
+  buffer_duration: 30         # Seconds - maximum buffer size
+  device_index: null          # null = default microphone, or specify device index
+
+# Speech-to-Text Settings
+speech_to_text:
+  model_name: "base"          # Options: tiny, base, small, medium, large
+  language: "vi"              # Vietnamese
+  device: "auto"              # Options: auto, cuda, cpu
+  beam_size: 10               # Beam search size for decoding (increased for accuracy)
+  temperature: 0.0            # Temperature for sampling (0 = greedy)
+  fallback_engine: "vosk"     # Fallback STT engine if primary fails
+  
+  # Vietnamese optimization settings
+  use_vietnamese_optimizer: true  # Enable Vietnamese-specific optimizations
+  post_process_text: true     # Enable post-processing for error correction
+  add_punctuation: true       # Automatically add punctuation
+  fix_common_errors: true     # Fix common Vietnamese transcription errors
+  
+  # Real-time processing settings
+  chunk_duration: 3.0         # Seconds - audio chunk size for processing (increased for better context)
+  overlap_duration: 0.5       # Seconds - overlap between chunks
+  max_latency: 3.0            # Seconds - maximum acceptable latency (increased for accuracy)
+
+# Quality Analysis Settings
+quality:
+  # Clarity score settings
+  clarity_threshold: 60.0     # Minimum score for "clear" speech
+  snr_weight: 0.4             # Weight for Signal-to-Noise Ratio
+  spectral_weight: 0.4        # Weight for Spectral Clarity
+  zcr_weight: 0.2             # Weight for Zero Crossing Rate
+  
+  # Fluency score settings
+  fluency_threshold: 60.0     # Minimum score for "fluent" speech
+  speech_rate_weight: 0.3     # Weight for speech rate
+  pause_weight: 0.4           # Weight for pause analysis
+  rhythm_weight: 0.3          # Weight for rhythm consistency
+  
+  # Speech rate settings (Vietnamese)
+  optimal_speech_rate_min: 3.0  # Syllables per second
+  optimal_speech_rate_max: 5.0  # Syllables per second
+  
+  # Pause detection settings
+  pause_threshold: 0.3        # Seconds - minimum duration to be considered a pause
+  long_pause_threshold: 1.0   # Seconds - threshold for "long" pauses
+  
+  # Update frequency
+  update_interval: 2.0        # Seconds - how often to update quality scores
+
+# Text Storage Settings
+storage:
+  output_dir: "transcripts"   # Directory for saving transcripts
+  filename_format: "transcript_%Y%m%d_%H%M%S.txt"  # strftime format
+  encoding: "utf-8"           # File encoding
+  auto_save_interval: 30      # Seconds - auto-save frequency
+  create_backup: true         # Create backup files
+  
+  # Metadata settings
+  include_metadata: true      # Include metadata header in files
+  include_statistics: true    # Include detailed statistics in files
+  include_recommendations: true  # Include quality recommendations
+
+# Performance Settings
+performance:
+  max_memory_mb: 100          # Maximum RAM usage for speech analysis
+  audio_thread_priority: "high"  # Thread priority for audio capture
+  processing_thread_priority: "normal"  # Thread priority for processing
+  gui_update_rate: 10         # Updates per second for GUI
+
+# Logging Settings
+logging:
+  enabled: true
+  log_file: "logs/speech_analysis.log"
+  log_level: "INFO"           # Options: DEBUG, INFO, WARNING, ERROR
+  max_log_size_mb: 10         # Maximum log file size before rotation
+  backup_count: 3             # Number of backup log files to keep

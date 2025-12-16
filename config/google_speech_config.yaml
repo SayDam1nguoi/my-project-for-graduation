@@ -1,0 +1,80 @@
+# Google Speech-to-Text Configuration
+# Cấu hình cho hệ thống Speech Analysis sử dụng Google Cloud Speech-to-Text
+
+audio:
+  sample_rate: 16000  # Hz - Google STT yêu cầu 16000 hoặc 48000
+  channels: 1  # Mono audio
+  format: "paInt16"  # 16-bit PCM
+  chunk_size: 1024  # Samples per chunk
+  buffer_duration: 30  # seconds
+  device_index: null  # null = default microphone
+
+speech_to_text:
+  # Engine selection
+  engine: "google"  # "google", "vosk", or "whisper"
+  
+  # Basic settings
+  language: "vi"  # vi = Vietnamese, en = English
+  sample_rate: 16000
+  chunk_duration: 2.0  # seconds
+  overlap_duration: 0.5  # seconds
+  max_latency: 2.0  # seconds
+  
+  # Google STT specific settings
+  google_credentials_path: null  # Path to credentials.json (null = use env variable)
+  google_use_enhanced: true  # true = enhanced model (better quality, higher cost)
+  google_model: "default"  # "default", "phone_call", "video", "command_and_search"
+  enable_automatic_punctuation: true  # Tự động thêm dấu câu
+  enable_word_time_offsets: true  # Lấy timestamp cho từng từ
+  use_streaming: false  # true = streaming API (real-time), false = batch API
+  
+  # Fallback settings
+  fallback_to_vosk: true  # Fallback to Vosk if Google STT fails
+  vosk_model_path: "models/vosk-model-vn-0.4"
+
+quality:
+  # Clarity thresholds
+  clarity_threshold: 60.0  # 0-100
+  snr_weight: 0.4  # Signal-to-Noise Ratio weight
+  spectral_weight: 0.4  # Spectral clarity weight
+  zcr_weight: 0.2  # Zero-crossing rate weight
+  
+  # Fluency thresholds
+  fluency_threshold: 60.0  # 0-100
+  speech_rate_weight: 0.3  # Speech rate weight
+  pause_weight: 0.4  # Pause pattern weight
+  rhythm_weight: 0.3  # Speech rhythm weight
+  
+  # Speech rate (syllables per second)
+  optimal_speech_rate_min: 3.0
+  optimal_speech_rate_max: 5.0
+  
+  # Pause detection
+  pause_threshold: 0.3  # seconds
+  long_pause_threshold: 1.0  # seconds
+  
+  # Update frequency
+  update_interval: 2.0  # seconds
+
+storage:
+  output_dir: "transcripts"
+  filename_format: "transcript_%Y%m%d_%H%M%S.txt"
+  encoding: "utf-8"
+  auto_save_interval: 30  # seconds
+  create_backup: true
+  include_metadata: true
+  include_statistics: true
+  include_recommendations: true
+
+performance:
+  max_memory_mb: 100
+  audio_thread_priority: "high"  # "low", "normal", "high"
+  processing_thread_priority: "normal"
+  gui_update_rate: 10  # Hz
+
+logging:
+  enabled: true
+  log_file: "logs/speech_analysis.log"
+  log_level: "INFO"  # "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
+  max_log_size_mb: 10
+  backup_count: 3

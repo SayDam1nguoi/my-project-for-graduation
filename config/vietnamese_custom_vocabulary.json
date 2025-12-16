@@ -1,0 +1,49 @@
+{
+  "proper_nouns": [
+    "Nguyễn Văn A",
+    "Trần Thị B",
+    "Hà Nội",
+    "Thành phố Hồ Chí Minh",
+    "Đà Nẵng"
+  ],
+  "technical_terms": [
+    "machine learning",
+    "deep learning",
+    "artificial intelligence",
+    "trí tuệ nhân tạo",
+    "học máy",
+    "học sâu",
+    "xử lý ngôn ngữ tự nhiên",
+    "nhận dạng giọng nói",
+    "chuyển đổi giọng nói",
+    "phân tích cảm xúc"
+  ],
+  "common_phrases": [
+    "xin chào",
+    "cảm ơn bạn",
+    "rất vui được gặp bạn",
+    "tôi tên là",
+    "tôi đến từ",
+    "kinh nghiệm làm việc",
+    "kỹ năng chuyên môn",
+    "mục tiêu nghề nghiệp"
+  ],
+  "organizations": [
+    "Đại học Quốc gia",
+    "Công ty Cổ phần",
+    "Tập đoàn",
+    "Viện Nghiên cứu"
+  ],
+  "recruitment_terms": [
+    "phỏng vấn",
+    "ứng viên",
+    "nhà tuyển dụng",
+    "vị trí ứng tuyển",
+    "yêu cầu công việc",
+    "mức lương",
+    "thời gian làm việc",
+    "chế độ đãi ngộ",
+    "cơ hội thăng tiến",
+    "môi trường làm việc"
+  ]
+}

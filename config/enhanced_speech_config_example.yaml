@@ -1,0 +1,125 @@
+# Enhanced Vietnamese STT Configuration Example
+# This configuration demonstrates the enhanced STT features including:
+# - Whisper quantized models for improved accuracy
+# - Audio cleaning with noise reduction
+# - VAD (Voice Activity Detection) for efficient processing
+# - Custom vocabulary support
+# - Overlap handling for continuous audio
+
+# Audio Capture Settings
+audio:
+  sample_rate: 16000          # Hz - optimal for speech recognition
+  channels: 1                 # Mono
+  format: "paInt16"           # 16-bit PCM
+  chunk_size: 2048            # Larger chunks for better quality
+  buffer_duration: 30         # Seconds - maximum buffer size
+  device_index: null          # null = default microphone
+
+# Enhanced Speech-to-Text Settings
+speech_to_text:
+  # Enable enhanced STT mode
+  use_enhanced: true          # Set to false to use legacy VOSK-only mode
+  
+  # Model selection
+  model_type: "whisper"       # Options: "whisper" or "vosk"
+  model_size: "base"          # Options: "tiny", "base", "small", "medium"
+  model_path: null            # Optional: custom model path (null = auto-download)
+  
+  # Quantization settings (for CPU optimization)
+  compute_type: "int8"        # Options: "int8", "int16", "float16", "float32"
+  device: "cpu"               # Options: "cpu" or "cuda"
+  num_threads: 4              # Number of CPU threads to use
+  
+  # Audio processing features
+  enable_audio_cleaning: true # Enable noise reduction and normalization
+  enable_vad: true            # Enable Voice Activity Detection
+  vad_method: "silero"        # Options: "silero", "webrtc", "energy"
+  
+  # Overlap handling
+  overlap_buffer_duration: 0.5  # Seconds - buffer overlap duration
+  max_buffer_size: 10         # Maximum number of segments in buffer
+  
+  # Custom vocabulary
+  vocabulary_file: null       # Path to custom vocabulary JSON file
+  enable_vocabulary: false    # Enable custom vocabulary processing
+  
+  # Performance settings
+  max_memory_mb: 500          # Maximum memory usage in MB
+  
+  # Backward compatibility
+  fallback_to_vosk: true      # Fallback to VOSK on Whisper errors
+  vosk_model_path: "models/vosk-model-vn-0.4"
+  
+  # Legacy settings (still supported)
+  language: "vi"              # Vietnamese
+  chunk_duration: 2.0         # Seconds
+  overlap_duration: 0.5       # Seconds
+  max_latency: 2.0            # Seconds
+
+# Quality Analysis Settings
+quality:
+  clarity_threshold: 60.0
+  snr_weight: 0.4
+  spectral_weight: 0.4
+  zcr_weight: 0.2
+  fluency_threshold: 60.0
+  speech_rate_weight: 0.3
+  pause_weight: 0.4
+  rhythm_weight: 0.3
+  optimal_speech_rate_min: 3.0
+  optimal_speech_rate_max: 5.0
+  pause_threshold: 0.3
+  long_pause_threshold: 1.0
+  update_interval: 2.0
+
+# Text Storage Settings
+storage:
+  output_dir: "transcripts"
+  filename_format: "transcript_%Y%m%d_%H%M%S.txt"
+  encoding: "utf-8"
+  auto_save_interval: 30
+  create_backup: true
+  include_metadata: true
+  include_statistics: true
+  include_recommendations: true
+
+# Performance Settings
+performance:
+  max_memory_mb: 150
+  audio_thread_priority: "high"
+  processing_thread_priority: "normal"
+  gui_update_rate: 10
+
+# Logging Settings
+logging:
+  enabled: true
+  log_file: "logs/speech_analysis.log"
+  log_level: "INFO"
+  max_log_size_mb: 10
+  backup_count: 3
+
+# Configuration Notes:
+#
+# Model Selection:
+#   - "whisper" + "tiny": Fastest, ~85% accuracy, ~200MB memory
+#   - "whisper" + "base": Balanced, ~90% accuracy, ~300MB memory (recommended)
+#   - "whisper" + "small": Better, ~93% accuracy, ~500MB memory
+#   - "vosk": Fast, ~85% accuracy, ~50MB memory (fallback)
+#
+# VAD Methods:
+#   - "silero": Best accuracy, neural network-based (recommended)
+#   - "webrtc": Fast, rule-based, good for real-time
+#   - "energy": Simplest, energy-based detection
+#
+# Compute Types:
+#   - "int8": Fastest, smallest memory, minimal accuracy loss (recommended)
+#   - "int16": Balanced
+#   - "float16": Better accuracy, more memory
+#   - "float32": Best accuracy, most memory
+#
+# Performance Tips:
+#   - Use "int8" compute type for best CPU performance
+#   - Enable VAD to skip silence and save CPU
+#   - Use "base" model size for good balance
+#   - Increase num_threads on multi-core CPUs
+#   - Enable audio cleaning for noisy environments

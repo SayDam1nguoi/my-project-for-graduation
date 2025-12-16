@@ -1,0 +1,25 @@
+# Custom Class Weights for Emotion Recognition
+# Target: Happy ~47%, reduce Sad and Neutral
+# Based on weighted loss formula: weight = 1.0 / sqrt(class_count)
+
+# Emotion order: Angry, Disgust, Fear, Happy, Sad, Surprise, Neutral
+
+class_weights:
+  Angry: 1.0      # Keep balanced
+  Disgust: 1.2    # Slightly boost (rare emotion)
+  Fear: 1.1       # Slightly boost
+  Happy: 3.5      # BOOST SIGNIFICANTLY (target ~47%)
+  Sad: 0.6        # REDUCE (too common, negative)
+  Surprise: 1.0   # Keep balanced
+  Neutral: 0.5    # REDUCE SIGNIFICANTLY (too common, boring)
+
+# Explanation:
+# - Happy gets 3.5x weight to make model more sensitive to happy faces
+# - Sad gets 0.6x weight to reduce over-detection of sadness
+# - Neutral gets 0.5x weight to avoid classifying everything as neutral
+# - Other emotions stay balanced
+
+# Expected outcome after training:
+# - Model will be more likely to predict Happy when uncertain
+# - Model will be less likely to predict Sad or Neutral
+# - Overall accuracy may decrease slightly but user satisfaction increases

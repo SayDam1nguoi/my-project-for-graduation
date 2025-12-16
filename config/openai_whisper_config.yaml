@@ -1,0 +1,270 @@
+# OpenAI Whisper Speech-to-Text Configuration
+# Sử dụng OpenAI Whisper (bản gốc) cho độ chính xác cao nhất
+# Yêu cầu: pip install openai-whisper
+
+# Audio Capture Settings - OPTIMIZED FOR ACCURACY
+audio:
+  sample_rate: 16000          # Hz - Whisper requires 16kHz
+  channels: 1                 # Mono
+  format: "paInt16"           # 16-bit PCM
+  chunk_size: 4096            # TĂNG: Larger chunks = better quality
+  buffer_duration: 45         # TĂNG: Longer buffer = more context
+  device_index: null          # null = default microphone
+  
+  # Audio enhancement - MAXIMUM BOOST
+  noise_reduction: false      # TẮT: Noise reduction có thể làm mất giọng nói
+  auto_gain_control: true
+  echo_cancellation: false    # TẮT: Có thể làm méo giọng
+  input_volume_boost: 3.0     # TĂNG CỰC ĐẠI: x3 volume
+  noise_gate_threshold: 0.001 # CỰC THẤP: Bắt mọi âm thanh
+  high_pass_filter: 50        # GIẢM: Chỉ lọc noise rất thấp
+  target_rms: 0.25            # TĂNG CỰC ĐẠI: Volume rất cao
+  max_gain: 10.0              # TĂNG CỰC ĐẠI: Gain x10
+  noise_reduction_strength: 0.0  # TẮT: Không giảm noise
+  
+  # Advanced audio processing - MINIMAL
+  enable_spectral_subtraction: false  # TẮT
+  enable_wiener_filter: false         # TẮT
+  enable_normalization: true          # BẬT: Chuẩn hóa volume
+  enable_pre_emphasis: true           # BẬT: Tăng cường tần số cao (giọng nói)
+
+# Speech-to-Text Settings với OpenAI Whisper
+speech_to_text:
+  # ============================================================================
+  # OPENAI WHISPER SETTINGS
+  # ============================================================================
+  
+  # Model selection
+  model_type: "whisper"              # Sử dụng Whisper
+  whisper_implementation: "openai"   # "openai" hoặc "faster-whisper"
+  
+  # Model size - OpenAI Whisper
+  # Options: tiny, base, small, medium, large, large-v2, large-v3
+  model_size: "large-v3"             # NÂNG CẤP TỐI ĐA: large-v3 (95-98% accuracy)
+  
+  # Device settings
+  device: "cpu"                      # "cpu" hoặc "cuda" (nếu có GPU)
+  download_root: null                # null = auto, hoặc chỉ định thư mục
+  in_memory: false                   # true = load model vào RAM (nhanh hơn)
+  
+  # Language settings
+  language: "vi"                     # Vietnamese
+  task: "transcribe"                 # transcribe (không phải translate)
+  
+  # ============================================================================
+  # AUDIO PREPROCESSING - OPTIMIZED FOR ACCURACY
+  # ============================================================================
+  
+  enable_audio_cleaning: false       # TẮT: Không làm sạch (có thể mất giọng)
+  enable_vad: false                  # TẮT: Không dùng VAD (xử lý toàn bộ audio)
+  vad_method: "silero"               # Không dùng
+  vad_threshold: 0.3                 
+  vad_min_speech_duration: 0.1       
+  vad_min_silence_duration: 1.0
+  
+  # ============================================================================
+  # OVERLAP HANDLING - MAXIMUM CONTEXT
+  # ============================================================================
+  
+  overlap_duration: 3.0              # TĂNG TỐI ĐA: 3s overlap để không mất từ
+  max_buffer_size: 30                # TĂNG: Buffer nhiều hơn
+  min_chunk_size: 10.0               # THÊM: Chunk tối thiểu 10s
+  
+  # ============================================================================
+  # CUSTOM VOCABULARY & POST-PROCESSING
+  # ============================================================================
+  
+  enable_vocabulary: true
+  vocabulary_file: "config/vietnamese_custom_vocabulary.json"
+  
+  # Vietnamese-specific optimizations - ADVANCED
+  enable_vietnamese_postprocessing: true  # Sửa lỗi tiếng Việt
+  fix_common_errors: true                 # Sửa lỗi phổ biến
+  normalize_punctuation: true             # Chuẩn hóa dấu câu
+  capitalize_sentences: true              # Viết hoa đầu câu
+  
+  # Advanced Vietnamese corrections
+  fix_tone_marks: true                    # Sửa dấu thanh
+  fix_word_boundaries: true               # Sửa ranh giới từ
+  use_language_model: true                # Dùng LM để sửa lỗi
+  enable_spell_check: true                # Kiểm tra chính tả
+  
+  # Prompt engineering for Vietnamese
+  use_vietnamese_prompt: true
+  prompt_style: "formal"                  # formal, casual, interview
+  
+  # ============================================================================
+  # PERFORMANCE SETTINGS - OPTIMIZED FOR ACCURACY (NOT SPEED)
+  # ============================================================================
+  
+  max_memory_mb: 3000                # TĂNG: large-v3 cần nhiều RAM (1000→3000)
+  cpu_limit_percent: 90.0            # TĂNG: Cho phép dùng nhiều CPU hơn
+  min_real_time_factor: 0.5          # GIẢM: Ưu tiên accuracy hơn speed
+  
+  # Processing priorities
+  prioritize_accuracy: true          # Accuracy > Speed
+  use_fp16: false                    # Dùng FP32 cho accuracy (FP16 nhanh hơn nhưng kém chính xác)
+  enable_cache: true                 # Cache để tăng tốc
+  
+  # ============================================================================
+  # FALLBACK SETTINGS - VOSK ĐÃ XÓA
+  # ============================================================================
+  
+  # VOSK đã bị xóa - chỉ dùng Whisper
+  
+  # ============================================================================
+  # PROCESSING SETTINGS - OPTIMIZED FOR ACCURACY
+  # ============================================================================
+  
+  sample_rate: 16000
+  chunk_duration: 60.0               # TĂNG TỐI ĐA: 60s - xử lý cả đoạn dài
+  max_latency: 70.0                  # TĂNG: Cho phép xử lý rất lâu
+  disable_chunking: false            # Giữ chunking nhưng chunk rất lớn
+  
+  # Whisper-specific optimizations - MAXIMUM ACCURACY
+  beam_size: 10                      # TĂNG TỐI ĐA: Beam search (5→10 = chính xác hơn)
+  best_of: 10                        # TĂNG TỐI ĐA: More candidates (5→10)
+  temperature: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]  # Multiple temperatures for fallback
+  compression_ratio_threshold: 2.4   # Detect repetitions
+  logprob_threshold: -1.0            # Filter low-confidence
+  no_speech_threshold: 0.6           # Detect silence
+  condition_on_previous_text: true   # Use context from previous segments
+  initial_prompt: "Xin chào, tôi đang nói tiếng Việt. Đây là một cuộc phỏng vấn."  # Vietnamese prompt
+
+# Quality Analysis Settings
+quality:
+  clarity_threshold: 65.0
+  snr_weight: 0.4
+  spectral_weight: 0.4
+  zcr_weight: 0.2
+  
+  fluency_threshold: 65.0
+  speech_rate_weight: 0.3
+  pause_weight: 0.4
+  rhythm_weight: 0.3
+  
+  optimal_speech_rate_min: 2.5
+  optimal_speech_rate_max: 5.5
+  
+  pause_threshold: 0.25
+  long_pause_threshold: 0.8
+  update_interval: 1.5
+  
+  min_confidence: 0.4
+  min_audio_level: 0.008
+  max_silence_duration: 1.5
+
+# Text Storage Settings
+storage:
+  output_dir: "transcripts"
+  filename_format: "transcript_openai_whisper_%Y%m%d_%H%M%S.txt"
+  encoding: "utf-8"
+  auto_save_interval: 20
+  create_backup: true
+  include_metadata: true
+  include_statistics: true
+  include_recommendations: true
+
+# Performance Settings
+performance:
+  max_memory_mb: 1000                # OpenAI Whisper cần nhiều RAM hơn
+  audio_thread_priority: "high"
+  processing_thread_priority: "high"
+  gui_update_rate: 8
+  max_cpu_percent: 80
+  enable_cpu_monitoring: true
+
+# Logging Settings
+logging:
+  enabled: true
+  log_file: "logs/speech_analysis_openai_whisper.log"
+  log_level: "INFO"
+  max_log_size_mb: 20
+  backup_count: 5
+  log_audio_quality: true
+  log_performance_metrics: true
+  log_enhancement_stats: false
+
+# ============================================================================
+# HƯỚNG DẪN SỬ DỤNG
+# ============================================================================
+#
+# 1. CÀI ĐẶT:
+#    pip install openai-whisper torch
+#
+# 2. CHẠY:
+#    python launcher.py --config config/openai_whisper_config.yaml
+#
+# 3. SO SÁNH OPENAI WHISPER VS FASTER-WHISPER:
+#
+#    OpenAI Whisper (bản gốc):
+#    ✅ Độ chính xác: Cao nhất (95-97% với large)
+#    ✅ Dấu câu: Tự động và chính xác
+#    ✅ Hỗ trợ: 99 ngôn ngữ
+#    ⚠️  Tốc độ: Chậm hơn faster-whisper (2-3x)
+#    ⚠️  RAM: Dùng nhiều hơn (2-3x)
+#    ⚠️  GPU: Cần GPU để nhanh (hoặc rất chậm trên CPU)
+#
+#    faster-whisper:
+#    ✅ Tốc độ: Nhanh hơn (1.5-2x real-time)
+#    ✅ RAM: Ít hơn nhờ quantization
+#    ✅ CPU: Tối ưu cho CPU
+#    ⚠️  Độ chính xác: Thấp hơn một chút (90-93%)
+#
+# 4. KHUYẾN NGHỊ:
+#    - Có GPU: Dùng OpenAI Whisper với model large
+#    - Không GPU: Dùng faster-whisper với model small
+#    - Cần độ chính xác cao nhất: OpenAI Whisper large-v3
+#    - Cần tốc độ: faster-whisper base/small
+#
+# 5. MODEL SIZE RECOMMENDATIONS:
+#
+#    tiny (39M):
+#      - Độ chính xác: 70-75%
+#      - RAM: 1 GB
+#      - Tốc độ: Nhanh nhất
+#
+#    base (74M):
+#      - Độ chính xác: 85-90%
+#      - RAM: 1-2 GB
+#      - Tốc độ: Nhanh
+#
+#    small (244M): ⭐ KHUYẾN NGHỊ CHO CPU
+#      - Độ chính xác: 90-93%
+#      - RAM: 2-3 GB
+#      - Tốc độ: Trung bình
+#
+#    medium (769M):
+#      - Độ chính xác: 93-95%
+#      - RAM: 5-6 GB
+#      - Tốc độ: Chậm
+#
+#    large (1550M):
+#      - Độ chính xác: 95-97%
+#      - RAM: 10+ GB
+#      - Tốc độ: Rất chậm
+#      - Khuyến nghị: Chỉ dùng với GPU
+#
+#    large-v2 (1550M):
+#      - Cải thiện so với large
+#      - Tốt hơn cho tiếng Việt
+#
+#    large-v3 (1550M): ⭐ TỐT NHẤT
+#      - Độ chính xác cao nhất
+#      - Tốt nhất cho tiếng Việt
+#      - Yêu cầu: GPU hoặc CPU rất mạnh
+#
+# 6. GPU ACCELERATION:
+#    Nếu có GPU NVIDIA:
+#    - Cài CUDA: https://developer.nvidia.com/cuda-downloads
+#    - Cài PyTorch với CUDA: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#    - Đổi device: "cuda"
+#    - Tốc độ tăng 10-20x!
+#
+# 7. TROUBLESHOOTING:
+#    - Lỗi "out of memory": Giảm model_size hoặc tăng RAM
+#    - Quá chậm: Dùng faster-whisper thay vì OpenAI Whisper
+#    - Độ chính xác thấp: Tăng model_size lên medium/large
+#
+# ============================================================================
+

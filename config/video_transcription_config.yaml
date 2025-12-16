@@ -1,0 +1,208 @@
+# ============================================================================
+# Video Transcription Configuration
+# ============================================================================
+# Configuration for video-to-text transcription with Vietnamese optimization
+#
+# This configuration file controls all aspects of video transcription including:
+# - Whisper model selection and performance settings
+# - Audio processing and chunking strategy
+# - Language detection and speaker diarization
+# - Subtitle generation formatting
+# - Caching and Vietnamese-specific optimizations
+#
+# For detailed documentation, see: src/video_analysis/VIDEO_TRANSCRIPTION_README.md
+# ============================================================================
+
+# ============================================================================
+# Whisper Model Settings
+# ============================================================================
+# Controls the Whisper STT model used for transcription
+#
+# whisper_model_size: Model size affects accuracy and speed
+#   - tiny: Fastest, lowest accuracy (~1GB RAM)
+#   - base: Good balance for testing (~1GB RAM)
+#   - small: Better accuracy (~2GB RAM)
+#   - medium: High accuracy (~5GB RAM)
+#   - large: Highest accuracy (~10GB RAM)
+#   - large-v3: Latest model with best Vietnamese support (~10GB RAM)
+#   Recommendation: Use "large-v3" for Vietnamese, "base" for quick testing
+#
+# whisper_device: Hardware to run model on
+#   - cpu: Works on all systems, slower
+#   - cuda: Requires NVIDIA GPU, much faster
+#
+# whisper_compute_type: Precision/quantization level
+#   - int8: Fastest, lowest memory, slight accuracy loss (recommended for CPU)
+#   - int16: Good balance
+#   - float16: Better accuracy, requires more memory
+#   - float32: Highest accuracy, highest memory usage
+whisper_model_size: "large-v3"
+whisper_device: "cpu"
+whisper_compute_type: "int8"
+
+# ============================================================================
+# Processing Settings
+# ============================================================================
+# Controls how long videos are split and processed
+#
+# chunk_duration: Length of each audio chunk in seconds
+#   - Longer chunks: Better context, more memory usage
+#   - Shorter chunks: Less memory, may lose context
+#   Recommendation: 30 seconds for most videos
+#
+# overlap_duration: Overlap between consecutive chunks in seconds
+#   - Prevents words from being cut at chunk boundaries
+#   - Should be 1-2 seconds for natural speech
+#
+# max_parallel_chunks: Number of chunks to process simultaneously
+#   - Higher values: Faster processing, more memory usage
+#   - Lower values: Slower processing, less memory usage
+#   Recommendation: 2 for CPU, 4+ for GPU
+chunk_duration: 30.0
+overlap_duration: 1.0
+max_parallel_chunks: 2
+
+# ============================================================================
+# Language Detection
+# ============================================================================
+# Automatic language detection from audio content
+#
+# auto_detect_language: Enable automatic language detection
+#   - true: Analyze audio to detect language (recommended)
+#   - false: Use default_language for all videos
+#
+# default_language: Fallback language if detection fails or is disabled
+#   - "vi": Vietnamese
+#   - "en": English
+#   - "zh": Chinese
+#   - See Whisper documentation for full language list
+#
+# language_detection_duration: Seconds of audio to analyze for detection
+#   - Longer duration: More accurate detection, slower startup
+#   - Recommendation: 30 seconds is usually sufficient
+auto_detect_language: true
+default_language: "vi"
+language_detection_duration: 30.0
+
+# ============================================================================
+# Speaker Diarization (Optional Feature)
+# ============================================================================
+# Identifies and labels different speakers in the video
+# Note: Requires pyannote.audio models to be downloaded
+#
+# enable_diarization: Enable speaker identification
+#   - true: Identify speakers and label transcription segments
+#   - false: No speaker identification (faster)
+#   Note: Diarization adds significant processing time
+#
+# min_speakers: Minimum number of speakers to detect
+# max_speakers: Maximum number of speakers to detect
+#   - Set based on expected content (e.g., interview = 2, panel = 5)
+enable_diarization: false
+min_speakers: 1
+max_speakers: 10
+
+# ============================================================================
+# Subtitle Generation
+# ============================================================================
+# Controls formatting of generated subtitle files (SRT/VTT)
+#
+# subtitle_max_chars_per_line: Maximum characters per line
+#   - Standard: 42 characters (recommended for readability)
+#   - Range: 30-50 characters
+#
+# subtitle_max_lines: Maximum lines per subtitle segment
+#   - Standard: 2 lines (recommended)
+#   - Single line: 1 (for simple content)
+#
+# subtitle_min_duration: Minimum display time per subtitle (seconds)
+#   - Ensures subtitles are readable
+#   - Standard: 1.0 second minimum
+#
+# subtitle_max_duration: Maximum display time per subtitle (seconds)
+#   - Prevents subtitles from staying too long
+#   - Standard: 7.0 seconds maximum
+subtitle_max_chars_per_line: 42
+subtitle_max_lines: 2
+subtitle_min_duration: 1.0
+subtitle_max_duration: 7.0
+
+# ============================================================================
+# Cache Settings
+# ============================================================================
+# Caching prevents re-processing the same video multiple times
+#
+# enable_cache: Enable transcription result caching
+#   - true: Cache results for faster repeated access (recommended)
+#   - false: Always re-process videos
+#
+# cache_dir: Directory to store cached transcriptions
+#   - Relative or absolute path
+#   - Will be created if it doesn't exist
+#
+# cache_max_size_mb: Maximum cache size in megabytes
+#   - Older entries are removed when limit is reached (LRU eviction)
+#   - Recommendation: 1000 MB (1 GB) for typical usage
+enable_cache: true
+cache_dir: ".cache/transcriptions"
+cache_max_size_mb: 1000
+
+# ============================================================================
+# Vietnamese Optimization
+# ============================================================================
+# Special optimizations for Vietnamese language transcription
+#
+# enable_vietnamese_optimization: Enable Vietnamese-specific features
+#   - true: Apply Vietnamese post-processing (recommended for Vietnamese)
+#   - false: Standard transcription only
+#
+# vietnamese_vocabulary_file: Path to custom Vietnamese vocabulary JSON
+#   - Contains proper nouns, technical terms, place names
+#   - Used for post-correction of low-confidence words
+#   - Set to null to disable custom vocabulary
+#
+# vietnamese_diacritic_validation: Validate Vietnamese diacritical marks
+#   - true: Ensure proper tone marks (recommended)
+#   - false: No validation
+enable_vietnamese_optimization: true
+vietnamese_vocabulary_file: "config/vietnamese_video_vocabulary.json"
+vietnamese_diacritic_validation: true
+
+# ============================================================================
+# Performance Settings
+# ============================================================================
+# Additional performance optimizations
+#
+# use_audio_enhancement: Apply audio cleaning before transcription
+#   - true: Reduce noise, improve quality (recommended)
+#   - false: Use raw audio (faster but may reduce accuracy)
+#
+# use_vad: Use Voice Activity Detection to skip silence
+#   - true: Skip silent portions, faster processing (recommended)
+#   - false: Process entire audio including silence
+use_audio_enhancement: true
+use_vad: true
+
+# ============================================================================
+# Configuration Notes
+# ============================================================================
+# 
+# Performance Tips:
+# - For fastest processing: Use "base" model with int8 quantization
+# - For best accuracy: Use "large-v3" model with float16 precision
+# - For Vietnamese: Always use "large-v3" model for best diacritic handling
+# 
+# Memory Usage:
+# - tiny/base models: ~1-2 GB RAM
+# - small/medium models: ~2-5 GB RAM
+# - large/large-v3 models: ~10 GB RAM
+# - Add 2-4 GB for processing overhead
+# 
+# Supported Video Formats:
+# - MP4, AVI, MKV, MOV, and other formats supported by ffmpeg
+# 
+# Subtitle Formats:
+# - SRT: SubRip format (widely supported)
+# - VTT: WebVTT format (web-friendly)
+# 
+# ============================================================================

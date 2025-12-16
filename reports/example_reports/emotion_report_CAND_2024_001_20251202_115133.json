@@ -1,0 +1,495 @@
+{
+  "candidate_id": "CAND_2024_001",
+  "video_path": "sample_interview.mp4",
+  "timestamp": "2025-12-02T11:51:32.328451",
+  "criterion_scores": {
+    "calmness": {
+      "criterion_name": "calmness",
+      "score": 7.5,
+      "confidence": 0.95,
+      "explanation": "The candidate demonstrated high calmness with a score of 7.5/10. This excellent result indicates that the candidate maintained composure well throughout the interview. Calm expressions were observed in 75.0% of analyzed frames.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "expression_control": {
+      "criterion_name": "expression_control",
+      "score": 8.2,
+      "confidence": 0.95,
+      "explanation": "Expression control was high with a score of 8.2/10. The candidate's ability to maintain appropriate facial expressions was excellent. Emotional changes occurred at a rate of 15.0%, indicating good emotional regulation.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "confidence": {
+      "criterion_name": "confidence",
+      "score": 6.8,
+      "confidence": 0.95,
+      "explanation": "The candidate showed moderate confidence with a score of 6.8/10. This satisfactory assessment is based on posture, eye contact, and facial expressions. Eye contact was maintained 68.5% of the time, showing adequate presence.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "friendliness": {
+      "criterion_name": "friendliness",
+      "score": 9.1,
+      "confidence": 0.95,
+      "explanation": "Friendliness was high with a score of 9.1/10. The candidate's warmth and approachability were excellent. Genuine smiles were detected in 12 frames, creating a positive impression.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "enthusiasm": {
+      "criterion_name": "enthusiasm",
+      "score": 7.3,
+      "confidence": 0.95,
+      "explanation": "The candidate displayed high enthusiasm with a score of 7.3/10. Energy levels and engagement were excellent. Average energy level was 0.72, indicating strong interest.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "professionalism": {
+      "criterion_name": "professionalism",
+      "score": 8.5,
+      "confidence": 0.95,
+      "explanation": "Professionalism was high with a score of 8.5/10. The candidate's professional demeanor was excellent. Appropriate emotions were displayed 82.0% of the time, reflecting strong professional standards.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "authenticity": {
+      "criterion_name": "authenticity",
+      "score": 7.8,
+      "confidence": 0.95,
+      "explanation": "Authenticity was high with a score of 7.8/10. The genuineness of emotional expressions was excellent. Micro-expression consistency was 0.85, suggesting genuine emotions.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "eye_contact": {
+      "criterion_name": "eye_contact",
+      "score": 6.5,
+      "confidence": 0.95,
+      "explanation": "Eye contact was moderate with a score of 6.5/10. The candidate's gaze patterns were satisfactory. Eye contact was maintained 68.5% of the time, showing adequate attention.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "facial_interaction": {
+      "criterion_name": "facial_interaction",
+      "score": 8.0,
+      "confidence": 0.95,
+      "explanation": "Facial interaction was high with a score of 8.0/10. The candidate's facial responsiveness was excellent. Responsiveness rate was 78.0%, showing strong engagement.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "contextual_appropriateness": {
+      "criterion_name": "contextual_appropriateness",
+      "score": 7.6,
+      "confidence": 0.95,
+      "explanation": "Contextual appropriateness was high with a score of 7.6/10. The alignment of expressions with conversation context was excellent. Appropriate expressions were shown 82.0% of the time, demonstrating excellent emotional intelligence.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "emotion_consistency": {
+      "criterion_name": "emotion_consistency",
+      "score": 8.3,
+      "confidence": 0.95,
+      "explanation": "Emotion consistency was high with a score of 8.3/10. The stability of emotional states was excellent. Emotional changes occurred at a rate of 12.0%, indicating strong emotional stability.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    },
+    "sentiment_alignment": {
+      "criterion_name": "sentiment_alignment",
+      "score": 7.9,
+      "confidence": 0.95,
+      "explanation": "Sentiment alignment was high with a score of 7.9/10. The candidate's emotional alignment with the interviewer was excellent. Alignment frequency was 81.0%, demonstrating excellent empathy.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3,
+        38.7,
+        52.1
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "calm_frequency": 0.75,
+        "emotion_change_rate": 0.15,
+        "eye_contact_percentage": 68.5,
+        "genuine_smile_count": 12,
+        "avg_energy": 0.72,
+        "appropriate_frequency": 0.82,
+        "micro_expr_consistency": 0.85,
+        "responsiveness_rate": 0.78,
+        "change_rate": 0.12,
+        "alignment_frequency": 0.81,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3,
+          38.7,
+          52.1
+        ]
+      }
+    }
+  },
+  "total_score": 7.791666666666667,
+  "key_moments": [
+    {
+      "timestamp": 0.0,
+      "frame_number": 0,
+      "description": "Genuine smile detected",
+      "criterion": "friendliness",
+      "emotion": "happy",
+      "intensity": 0.49089036407854914,
+      "video_clip_path": null
+    },
+    {
+      "timestamp": 6.0,
+      "frame_number": 60,
+      "description": "Strong confidence indicators",
+      "criterion": "confidence",
+      "emotion": "neutral",
+      "intensity": 0.9150078575375344,
+      "video_clip_path": null
+    },
+    {
+      "timestamp": 15.0,
+      "frame_number": 150,
+      "description": "Strong confidence indicators",
+      "criterion": "confidence",
+      "emotion": "neutral",
+      "intensity": 0.9544807139625698,
+      "video_clip_path": null
+    },
+    {
+      "timestamp": 18.0,
+      "frame_number": 180,
+      "description": "Genuine smile detected",
+      "criterion": "friendliness",
+      "emotion": "happy",
+      "intensity": 0.33802054976775375,
+      "video_clip_path": null
+    },
+    {
+      "timestamp": 27.0,
+      "frame_number": 270,
+      "description": "Strong confidence indicators",
+      "criterion": "confidence",
+      "emotion": "neutral",
+      "intensity": 0.943292274016568,
+      "video_clip_path": null
+    },
+    {
+      "timestamp": 36.0,
+      "frame_number": 360,
+      "description": "Genuine smile detected",
+      "criterion": "friendliness",
+      "emotion": "happy",
+      "intensity": 0.4802079061990401,
+      "video_clip_path": null
+    },
+    {
+      "timestamp": 39.0,
+      "frame_number": 390,
+      "description": "High enthusiasm detected",
+      "criterion": "enthusiasm",
+      "emotion": "happy",
+      "intensity": 0.7806357431685949,
+      "video_clip_path": null
+    },
+    {
+      "timestamp": 42.0,
+      "frame_number": 420,
+      "description": "High enthusiasm detected",
+      "criterion": "enthusiasm",
+      "emotion": "happy",
+      "intensity": 0.7359046426143723,
+      "video_clip_path": null
+    },
+    {
+      "timestamp": 48.0,
+      "frame_number": 480,
+      "description": "High enthusiasm detected",
+      "criterion": "enthusiasm",
+      "emotion": "happy",
+      "intensity": 0.7877196133181608,
+      "video_clip_path": null
+    }
+  ],
+  "metadata": {
+    "report_generated_at": "2025-12-02T11:51:32.328451",
+    "video_path": "sample_interview.mp4",
+    "total_criteria": 12,
+    "average_confidence": 0.9499999999999997,
+    "total_frames_analyzed": 20,
+    "video_duration_seconds": 57.0
+  }
+}

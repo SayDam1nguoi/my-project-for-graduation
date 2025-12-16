@@ -1,0 +1,465 @@
+# Dual Attention Detection System - Configuration File
+# This configuration file controls the dual attention detection feature
+# which combines camera and screen monitoring for comprehensive attention tracking
+
+# Main Feature Toggle
+dual_attention:
+  # Enable/disable dual attention detection system
+  enabled: true
+  
+  # Screen Monitoring Settings
+  screen_monitor:
+    # Enable/disable screen monitoring component
+    enabled: true
+    
+    # Screen capture interval in seconds (how often to capture screen)
+    # Lower values = more frequent captures = higher CPU usage
+    # Recommended: 0.5 seconds (2 captures per second)
+    capture_interval: 0.5
+    
+    # Face detection confidence threshold for screen captures (0.0 - 1.0)
+    # Higher values = more strict detection = fewer false positives
+    # Recommended: 0.85 for screen monitoring
+    confidence_threshold: 0.85
+    
+    # Monitor number to capture (1 = primary monitor, 2 = secondary, etc.)
+    # Set to 1 for single monitor setups
+    monitor_number: 1
+    
+    # Resize screen capture for face detection (width, height)
+    # Smaller resolution = faster processing but less accurate
+    # Recommended: [640, 480] for good balance
+    resize_for_detection: [640, 480]
+    
+    # Maximum retry attempts when screen capture fails
+    max_retry_attempts: 3
+    
+    # Delay between retry attempts in seconds
+    retry_delay: 0.5
+  
+  # Score Fusion Settings
+  score_fusion:
+    # Weight for camera attention score (0.0 - 1.0)
+    # Higher weight = camera has more influence on combined score
+    # Recommended: 0.6 (60% camera, 40% screen)
+    camera_weight: 0.6
+    
+    # Weight for screen attention score (0.0 - 1.0)
+    # Should sum to 1.0 with camera_weight
+    # Recommended: 0.4 (40% screen)
+    screen_weight: 0.4
+    
+    # Penalty multiplier when only camera detects face (no screen presence)
+    # Applied as: camera_score * camera_only_penalty
+    # Lower values = stricter penalty for not looking at screen
+    # Recommended: 0.3 (reduce to 30% of camera score)
+    camera_only_penalty: 0.3
+    
+    # Fixed score when only screen detects face (no camera presence)
+    # This represents minimal attention when face is on screen but not in camera
+    # Recommended: 20 (low score indicating poor attention)
+    screen_only_score: 20
+    
+    # Minimum combined score threshold (scores below this are clamped to 0)
+    min_score_threshold: 0
+    
+    # Maximum combined score threshold (scores above this are clamped to 100)
+    max_score_threshold: 100
+  
+  # Distraction Tracking Settings
+  distraction_tracker:
+    # Attention score threshold below which user is considered distracted (0-100)
+    # Scores below this value trigger distraction tracking
+    # Recommended: 60 (below 60% attention = distracted)
+    distraction_threshold: 60.0
+    
+    # Duration in seconds before triggering an alert
+    # User must be distracted continuously for this duration
+    # Recommended: 3.0 seconds (lowered for faster response)
+    alert_threshold: 3.0
+    
+    # Cooldown period in seconds between consecutive alerts
+    # Prevents alert spam when user repeatedly loses focus
+    # Recommended: 5.0 seconds (lowered for better responsiveness)
+    alert_cooldown: 5.0
+    
+    # Update frequency for distraction duration tracking (seconds)
+    # How often to update the distraction timer
+    # Recommended: 0.1 seconds for smooth tracking
+    update_interval: 0.1
+    
+    # Timing accuracy tolerance in seconds (±)
+    # Acceptable deviation from exact timing
+    # Recommended: 0.05 seconds (±50ms)
+    timing_accuracy: 0.05
+    
+    # Enable cumulative statistics tracking
+    # Tracks total distraction time and count across session
+    track_cumulative_stats: true
+  
+  # Alert Manager Settings
+  alert_manager:
+    # Alert banner dimensions
+    banner:
+      # Banner width in pixels
+      # Recommended: 400 pixels for readability
+      width: 400
+      
+      # Banner height in pixels
+      # Recommended: 80 pixels for two lines of text
+      height: 80
+      
+      # Banner position: "center", "top", "bottom"
+      # Recommended: "center" for maximum visibility
+      position: "center"
+      
+      # Offset from position in pixels (x, y)
+      # Used to fine-tune banner placement
+      offset: [0, 0]
+    
+    # Alert colors (RGB format: [R, G, B])
+    colors:
+      # Background color (red for alert)
+      background: [255, 0, 0]
+      
+      # Text color (white for contrast)
+      text: [255, 255, 255]
+      
+      # Border color (white)
+      border: [255, 255, 255]
+      
+      # Background opacity (0.0 - 1.0)
+      # 0.0 = fully transparent, 1.0 = fully opaque
+      # Recommended: 0.9 for slight transparency
+      background_alpha: 0.9
+    
+    # Alert text settings
+    text:
+      # Main alert message
+      # Use {duration} placeholder for distraction duration
+      message: "⚠️  BẠN ĐANG MẤT TẬP TRUNG!  ⚠️"
+      
+      # Duration display format
+      # Use {duration} placeholder for actual duration value
+      duration_format: "Đã mất tập trung: {duration:.1f} giây"
+      
+      # Font size for main message
+      font_size: 24
+      
+      # Font size for duration text
+      duration_font_size: 18
+      
+      # Font thickness (1-3)
+      # 1 = thin, 2 = normal, 3 = bold
+      font_thickness: 2
+      
+      # Line spacing between text lines
+      line_spacing: 10
+    
+    # Alert border settings
+    border:
+      # Enable border around alert banner
+      enabled: true
+      
+      # Border thickness in pixels
+      thickness: 2
+      
+      # Border style: "solid", "dashed"
+      style: "solid"
+    
+    # Alert animation settings
+    animation:
+      # Enable fade in/out animations
+      enabled: true
+      
+      # Fade in duration in seconds
+      fade_in_duration: 0.3
+      
+      # Fade out duration in seconds
+      fade_out_duration: 0.5
+      
+      # Animation easing: "linear", "ease_in", "ease_out", "ease_in_out"
+      easing: "ease_in_out"
+    
+    # Alert timing settings
+    timing:
+      # Auto-dismiss delay after user refocuses (seconds)
+      # Alert will disappear this many seconds after attention score rises
+      # Recommended: 0.0 second for immediate dismissal
+      dismiss_delay: 0.0
+      
+      # Minimum display duration (seconds)
+      # Alert will show for at least this long even if user refocuses
+      # Recommended: 0.0 seconds for immediate dismissal
+      min_display_duration: 0.0
+      
+      # Maximum display duration (seconds)
+      # Alert will auto-dismiss after this duration regardless of attention
+      # Set to 0 to disable auto-dismiss
+      # Recommended: 0 (no auto-dismiss, only dismiss on refocus)
+      max_display_duration: 0
+    
+    # Alert sound settings (optional)
+    sound:
+      # Enable alert sound
+      enabled: false
+      
+      # Sound file path (relative to project root)
+      sound_file: "assets/alert_sound.wav"
+      
+      # Sound volume (0.0 - 1.0)
+      volume: 0.5
+  
+  # Performance Settings
+  performance:
+    # Enable performance monitoring
+    # Tracks FPS, memory usage, and processing time
+    # Recommended: true
+    monitor_performance: true
+    
+    # Minimum FPS threshold
+    # System will auto-disable if FPS drops below this value
+    # Recommended: 20 FPS
+    fps_threshold: 20.0
+    
+    # Duration to check FPS before auto-disable (seconds)
+    # FPS must be below threshold for this duration before disabling
+    # Recommended: 5.0 seconds
+    fps_check_duration: 5.0
+    
+    # Maximum additional memory usage in MB
+    # System will auto-disable if memory exceeds this threshold
+    # Recommended: 150 MB
+    memory_threshold_mb: 150.0
+    
+    # Duration to check memory before auto-disable (seconds)
+    # Memory must exceed threshold for this duration before disabling
+    # Recommended: 10.0 seconds
+    memory_check_duration: 10.0
+    
+    # Enable performance profiling mode
+    # Logs detailed performance metrics every 30 frames
+    # Recommended: false (enable only for debugging)
+    enable_profiling: false
+    
+    # Auto-disable dual attention on performance issues
+    # Automatically disables system when thresholds are exceeded
+    # Recommended: true
+    auto_disable_on_performance_issues: true
+    
+    # FPS tracking window size
+    # Number of frames to use for moving average FPS calculation
+    # Recommended: 30 frames (1 second at 30 FPS)
+    fps_window_size: 30
+    
+    # Memory tracking window size
+    # Number of snapshots to keep for memory statistics
+    # Recommended: 100 snapshots
+    memory_window_size: 100
+    
+    # Processing time tracking window size
+    # Number of frames to track for average processing time
+    # Recommended: 100 frames
+    processing_time_window_size: 100
+    
+    # Thread priority for screen monitor thread
+    # "normal", "high", "low"
+    # Recommended: "normal" to avoid interfering with main processing
+    thread_priority: "normal"
+  
+  # Error Handling and Recovery Settings
+  error_handling:
+    # Maximum consecutive failures before disabling component
+    # Recommended: 30 failures
+    max_consecutive_failures: 30
+    
+    # Enable automatic retry on component failure
+    enable_auto_retry: true
+    
+    # Maximum retry attempts for failed components
+    # Recommended: 3 attempts
+    max_retry_attempts: 3
+    
+    # Delay between retry attempts in seconds
+    retry_delay: 1.0
+    
+    # Fallback behavior when components fail
+    # "camera_only": Use only camera detection
+    # "screen_only": Use only screen monitoring
+    # "disable": Disable dual attention completely
+    # Recommended: "camera_only" for graceful degradation
+    fallback_mode: "camera_only"
+    
+    # Enable error logging
+    log_errors: true
+    
+    # Enable user notifications for component failures
+    notify_user_on_failure: true
+  
+  # Video Source Handling
+  video_source:
+    # Automatically disable screen monitor for video file sources
+    # Video files don't need screen monitoring
+    disable_screen_for_video_files: true
+    
+    # Video source types that support dual attention
+    # Options: "camera", "screen", "video_file"
+    supported_sources:
+      - "camera"
+      - "screen"
+    
+    # Default mode for each source type
+    # "full": Both camera and screen
+    # "camera_only": Only camera detection
+    # "screen_only": Only screen monitoring
+    source_modes:
+      camera: "full"
+      screen: "full"
+      video_file: "camera_only"
+  
+  # Statistics and Logging
+  statistics:
+    # Enable statistics collection
+    enabled: true
+    
+    # Statistics update interval in seconds
+    update_interval: 0.5
+    
+    # Track attention score history
+    track_score_history: true
+    
+    # Maximum history length (number of samples)
+    max_history_length: 300  # 10 seconds at 30 FPS
+    
+    # Calculate rolling averages
+    calculate_rolling_averages: true
+    
+    # Rolling average window size (number of samples)
+    rolling_average_window: 30  # 1 second at 30 FPS
+    
+    # Export statistics to file
+    export_statistics: false
+    
+    # Statistics export format: "json", "csv"
+    export_format: "json"
+    
+    # Statistics export directory
+    export_directory: "logs/dual_attention_stats"
+  
+  # Debug Settings
+  debug:
+    # Enable debug mode
+    enabled: false
+    
+    # Show fusion details in console
+    show_fusion_details: false
+    
+    # Show distraction state transitions
+    show_state_transitions: false
+    
+    # Save debug frames with annotations
+    save_debug_frames: false
+    
+    # Debug frames output directory
+    debug_frames_directory: "debug/dual_attention"
+    
+    # Log component performance metrics
+    log_performance_metrics: false
+    
+    # Verbose logging
+    verbose: false
+
+# Appearance Assessment Configuration
+# Optional feature to evaluate lighting quality and clothing professionalism
+# Can be enabled/disabled independently for different job requirements
+appearance_assessment:
+  # Enable/disable appearance assessment features
+  # Set to false to completely disable appearance evaluation
+  lighting_enabled: false
+  clothing_enabled: false
+  
+  # Real-time warnings for candidates
+  # Provides immediate feedback during video capture
+  real_time_warnings_enabled: true
+  
+  # Warning update interval in seconds
+  # How often to check and update appearance warnings
+  # Lower values = more responsive but higher CPU usage
+  # Recommended: 5.0 seconds for good balance
+  warning_update_interval: 5.0
+  
+  # Warning threshold score (0-100)
+  # Warnings are displayed when score drops below this value
+  # Lower values = more lenient, higher values = stricter
+  # Recommended: 60.0 (below 60% triggers warning)
+  warning_threshold: 60.0
+  
+  # Lighting Quality Thresholds
+  # These values determine what constitutes good lighting
+  
+  # Minimum acceptable brightness (0-255 scale)
+  # Values below this are considered too dark
+  # Recommended: 80.0 for adequate visibility
+  min_brightness: 80.0
+  
+  # Maximum acceptable brightness (0-255 scale)
+  # Values above this are considered too bright/overexposed
+  # Recommended: 200.0 to avoid washout
+  max_brightness: 200.0
+  
+  # Minimum contrast ratio (0-100 scale)
+  # Measures variation in lighting across face
+  # Higher values = better definition and clarity
+  # Recommended: 30.0 for acceptable contrast
+  min_contrast: 30.0
+  
+  # Minimum uniformity percentage (0-100 scale)
+  # Measures how evenly lit the face is
+  # Higher values = more even lighting
+  # Recommended: 60.0 to avoid harsh shadows
+  min_uniformity: 60.0
+  
+  # Professional Clothing Colors (HSV color space)
+  # Define color ranges considered professional for workplace
+  # Format: color_name: {min: [H, S, V], max: [H, S, V]}
+  # H (Hue): 0-180, S (Saturation): 0-255, V (Value/Brightness): 0-255
+  professional_colors:
+    white:
+      min: [0, 0, 200]      # Low saturation, high brightness
+      max: [180, 30, 255]
+    black:
+      min: [0, 0, 0]        # Low brightness
+      max: [180, 255, 50]
+    blue:
+      min: [100, 50, 50]    # Blue hue range
+      max: [130, 255, 255]
+    gray:
+      min: [0, 0, 50]       # Low saturation, medium brightness
+      max: [180, 50, 200]
+    navy:
+      min: [100, 50, 30]    # Dark blue
+      max: [130, 255, 100]
+  
+  # Unprofessional Clothing Colors (HSV color space)
+  # Define color ranges considered less professional
+  # These colors may be too bright or casual for formal settings
+  unprofessional_colors:
+    bright_red:
+      min: [0, 150, 150]    # High saturation red
+      max: [10, 255, 255]
+    bright_yellow:
+      min: [20, 150, 150]   # High saturation yellow
+      max: [30, 255, 255]
+    bright_green:
+      min: [40, 150, 150]   # High saturation green
+      max: [80, 255, 255]
+    pink:
+      min: [140, 50, 150]   # Pink hue range
+      max: [170, 255, 255]
+  
+  # Performance Settings
+  # Maximum acceptable FPS degradation when appearance assessment is enabled
+  # System will auto-disable if performance impact exceeds this threshold
+  # Value: 0.0-1.0 (0.10 = 10% max degradation)
+  # Recommended: 0.10 to maintain smooth video processing
+  max_performance_impact: 0.10

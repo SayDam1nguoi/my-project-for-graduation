@@ -1,0 +1,72 @@
+
+======================================================================
+           BAO CAO THONG KE NHAN DIEN CAM XUC
+======================================================================
+
+Thoi gian tao bao cao: 22/11/2025 20:24:43
+
+======================================================================
+                 THONG TIN PHIEN LAM VIEC
+======================================================================
+
+Thoi gian lam viec:     110.3 giay (1.8 phut)
+Tong so khung hinh:     697
+Tong so khuon mat:      690
+Nguon video:            Camera
+
+======================================================================
+                    PHAN BO CAM XUC
+======================================================================
+
+Cam xuc pho bien nhat: NEUTRAL (237 lan, 73.8%)
+
+Chi tiet phan bo:
+  Angry       :     1 (  0.3%)  
+  Disgust     :    14 (  4.4%)  ██
+  Fear        :     0 (  0.0%)  
+  Happy       :    69 ( 21.5%)  ██████████
+  Neutral     :   237 ( 73.8%)  ████████████████████████████████████
+  Sad         :     0 (  0.0%)  
+  Surprise    :     0 (  0.0%)  
+
+
+======================================================================
+              THONG KE TAP TRUNG (DUAL ATTENTION)
+======================================================================
+
+--- Diem So Tap Trung ---
+
+Camera Score:           100/100
+Screen Score:           68/100
+Combined Score:         87/100
+
+Face Presence (Camera): Co
+Face Presence (Screen): Co
+
+Fusion Mode:            full
+
+--- Thong Ke Mat Tap Trung ---
+
+So lan mat tap trung:   1 lan
+Tong thoi gian mat TT:  0.8 giay
+So lan canh bao:        0 lan
+
+Ti le tap trung:        99.3%
+Ti le mat tap trung:    0.7%
+
+
+======================================================================
+                    HIEU SUAT XU LY
+======================================================================
+
+Thoi gian xu ly trung binh:    46.58ms
+Thoi gian xu ly toi thieu:     36.58ms
+Thoi gian xu ly toi da:        59.24ms
+Dat yeu cau (<30ms):           NO
+
+
+======================================================================
+                      KET THUC BAO CAO
+======================================================================
+
+File duoc luu tai: reports\statistics_20251122_202443.txt

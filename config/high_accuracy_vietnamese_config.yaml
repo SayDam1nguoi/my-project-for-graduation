@@ -1,0 +1,186 @@
+# High Accuracy Vietnamese Speech-to-Text Configuration
+# Tối ưu cho độ chính xác cao nhất (90-95%)
+# Yêu cầu: CPU 4+ cores, RAM 4GB+
+
+# Audio Capture Settings - Tối ưu cho chất lượng
+audio:
+  sample_rate: 16000
+  channels: 1
+  format: "paInt16"
+  chunk_size: 3072            # Tăng chunk size cho chất lượng tốt hơn
+  buffer_duration: 30
+  device_index: null
+  
+  # Audio enhancement - BẬT TẤT CẢ
+  noise_reduction: true
+  auto_gain_control: true
+  echo_cancellation: true
+  input_volume_boost: 1.2
+  noise_gate_threshold: 0.012
+  high_pass_filter: 80
+  target_rms: 0.13
+  max_gain: 3.5
+  noise_reduction_strength: 0.6
+
+# Enhanced Speech-to-Text với Whisper - CẤU HÌNH TỐI ƯU
+speech_to_text:
+  # Model selection - ĐỘ CHÍNH XÁC TỐI ĐA
+  model_type: "whisper"
+  model_size: "medium"        # TỐI ĐA: medium cho độ chính xác 93-95%
+                              # Yêu cầu: CPU 6+ cores, RAM 6GB+
+                              # Nếu quá chậm: "small" (90-93%) hoặc "base" (85-90%)
+  model_path: null
+  
+  # Quantization - CÂN BẰNG CHẤT LƯỢNG/TỐC ĐỘ
+  compute_type: "int8"        # int8 cho CPU (nếu có GPU, dùng "float16")
+  device: "cpu"               # Đổi "cuda" nếu có GPU
+  num_threads: 6              # TĂNG: 6 threads cho model lớn (8 nếu CPU 8+ cores)
+  
+  # Language settings
+  language: "vi"
+  task: "transcribe"
+  
+  # Audio preprocessing - BẬT TẤT CẢ
+  enable_audio_cleaning: true
+  enable_vad: true
+  vad_method: "silero"        # Silero VAD tốt nhất
+  
+  # Overlap handling - TỐI ĐA ĐỘ CHỒNG LẤP
+  overlap_duration: 1.0       # TỐI ĐA: 1.0 giây cho context tốt nhất
+  max_buffer_size: 20         # TỐI ĐA: 20 cho buffer lớn hơn
+  
+  # Custom vocabulary - BẬT VÀ SỬ DỤNG
+  enable_vocabulary: true
+  vocabulary_file: "config/vietnamese_custom_vocabulary.json"
+  
+  # Performance limits - TỐI ĐA CHO CHẤT LƯỢNG
+  max_memory_mb: 1500         # TỐI ĐA: 1.5GB cho model medium
+  cpu_limit_percent: 85.0     # TỐI ĐA: Cho phép dùng nhiều CPU
+  min_real_time_factor: 0.5   # TỐI THIỂU: Chấp nhận chậm 2x để chính xác tối đa
+  
+  # Whisper-specific settings - TỐI ĐA ĐỘ CHÍNH XÁC
+  beam_size: 10               # TỐI ĐA: 10 cho độ chính xác tối đa (rất chậm)
+  best_of: 10                 # TỐI ĐA: 10 cho nhiều lựa chọn nhất
+  temperature: [0.0, 0.2, 0.4, 0.6, 0.8]  # TỐI ĐA: Thử tất cả temperature
+  word_timestamps: true
+  condition_on_previous_text: false  # TẮT: Tránh hallucination từ context cũ
+  no_speech_threshold: 0.6    # TĂNG: 0.6 để bỏ qua đoạn im lặng/nhiễu (tránh hallucination)
+  compression_ratio_threshold: 2.4  # Lọc đoạn lặp lại (hallucination)
+  logprob_threshold: -1.0     # Lọc đoạn confidence thấp
+  
+  # Vietnamese optimization - BẬT TẤT CẢ
+  use_vietnamese_optimizer: true
+  post_process_text: true
+  add_punctuation: true
+  fix_common_errors: true
+  enable_diacritic_validation: true
+  
+  # Fallback settings
+  fallback_to_vosk: true
+  vosk_model_path: "models/vosk-model-vn-0.4"
+  
+  # Timing settings - TỐI ĐA CONTEXT CHO CHẤT LƯỢNG
+  chunk_duration: 8.0         # TỐI ĐA: 8.0 giây cho context dài nhất
+  max_latency: 12.0           # TỐI ĐA: 12.0 giây (chấp nhận độ trễ cao)
+
+# Quality Analysis Settings - NÂNG CAO NGƯỠNG
+quality:
+  clarity_threshold: 65.0     # TĂNG: Từ 60.0 lên 65.0
+  snr_weight: 0.4
+  spectral_weight: 0.4
+  zcr_weight: 0.2
+  
+  fluency_threshold: 65.0     # TĂNG: Từ 60.0 lên 65.0
+  speech_rate_weight: 0.3
+  pause_weight: 0.4
+  rhythm_weight: 0.3
+  
+  optimal_speech_rate_min: 2.5  # GIẢM: Chấp nhận nói chậm hơn
+  optimal_speech_rate_max: 5.5  # TĂNG: Chấp nhận nói nhanh hơn
+  
+  pause_threshold: 0.25       # GIẢM: Nhạy hơn với pause
+  long_pause_threshold: 0.8   # GIẢM: Phát hiện pause dài sớm hơn
+  update_interval: 1.5        # GIẢM: Cập nhật thường xuyên hơn
+  
+  # Audio quality thresholds
+  min_confidence: 0.4         # TĂNG: Từ 0.3 lên 0.4
+  min_audio_level: 0.008      # TĂNG: Từ 0.005 lên 0.008
+  max_silence_duration: 1.5   # GIẢM: Từ 2.0 xuống 1.5
+
+# Text Storage Settings
+storage:
+  output_dir: "transcripts"
+  filename_format: "transcript_high_accuracy_%Y%m%d_%H%M%S.txt"
+  encoding: "utf-8"
+  auto_save_interval: 20      # GIẢM: Lưu thường xuyên hơn
+  create_backup: true
+  include_metadata: true
+  include_statistics: true
+  include_recommendations: true
+
+# Performance Settings - TỐI ƯU CHO CHẤT LƯỢNG
+performance:
+  max_memory_mb: 800          # TĂNG: Từ 500 lên 800 MB
+  audio_thread_priority: "high"
+  processing_thread_priority: "high"  # TĂNG: Từ normal lên high
+  gui_update_rate: 8          # GIẢM: Từ 10 xuống 8 (ít cập nhật GUI hơn)
+  max_cpu_percent: 80         # TĂNG: Cho phép dùng nhiều CPU hơn
+  enable_cpu_monitoring: true
+
+# Logging Settings - CHI TIẾT HƠN
+logging:
+  enabled: true
+  log_file: "logs/speech_analysis_high_accuracy.log"
+  log_level: "DEBUG"          # TĂNG: Từ INFO lên DEBUG
+  max_log_size_mb: 20         # TĂNG: Từ 10 lên 20 MB
+  backup_count: 5             # TĂNG: Từ 3 lên 5
+  log_audio_quality: true
+  log_performance_metrics: true
+  log_enhancement_stats: true # BẬT: Để debug
+
+# ============================================================================
+# HƯỚNG DẪN SỬ DỤNG
+# ============================================================================
+#
+# 1. CÀI ĐẶT DEPENDENCIES:
+#    pip install faster-whisper torch noisereduce scipy
+#
+# 2. TẢI MODEL WHISPER:
+#    Model sẽ tự động tải lần đầu chạy
+#    Hoặc tải trước: python -c "from faster_whisper import WhisperModel; WhisperModel('small')"
+#
+# 3. CHẠY VỚI CONFIG NÀY:
+#    python launcher.py --config config/high_accuracy_vietnamese_config.yaml
+#
+# 4. TỐI ƯU HÓA THÊM:
+#    - Sử dụng microphone chất lượng tốt
+#    - Nói trong môi trường yên tĩnh
+#    - Giữ khoảng cách 15-25cm từ mic
+#    - Nói rõ ràng với tốc độ vừa phải
+#    - Thêm từ vựng chuyên ngành vào vocabulary file
+#
+# 5. NÂNG CẤP MODEL (nếu máy đủ mạnh):
+#    model_size: "medium"  # Độ chính xác 93-95%
+#    max_memory_mb: 1200
+#    num_threads: 8
+#
+# ============================================================================
+# KẾT QUẢ KỲ VỌNG
+# ============================================================================
+#
+# Với config này, độ chính xác kỳ vọng:
+# - Model "small": 90-93% (khuyến nghị)
+# - Model "medium": 93-95% (nếu máy mạnh)
+# - Model "base": 85-90% (fallback)
+#
+# Thời gian xử lý:
+# - Real-time factor: 1.5-2.5x (chậm hơn real-time)
+# - Latency: 3-8 giây
+#
+# Yêu cầu phần cứng:
+# - CPU: 4+ cores, 2.5+ GHz
+# - RAM: 4+ GB available
+# - Disk: 1+ GB cho model
+#
+# ============================================================================
+

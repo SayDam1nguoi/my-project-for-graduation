@@ -1,0 +1,93 @@
+# Whisper Speech-to-Text Configuration for Vietnamese
+# This configuration uses Whisper model for high-accuracy Vietnamese transcription
+
+audio:
+  sample_rate: 16000
+  channels: 1
+  format: paInt16
+  chunk_size: 1024
+  buffer_duration: 30
+  device_index: null  # null = default device
+
+speech_to_text:
+  # Enable Whisper mode
+  use_whisper: true
+  
+  # Whisper model settings
+  model_size: base  # Options: tiny, base, small, medium, large
+  model_path: null  # null = auto-download from Hugging Face
+  
+  # Quantization for CPU optimization
+  compute_type: int8  # Options: int8, int16, float16, float32
+  device: cpu  # Options: cpu, cuda
+  num_threads: 4  # Number of CPU threads to use
+  
+  # Language settings
+  language: vi  # Vietnamese
+  task: transcribe  # Options: transcribe, translate
+  
+  # Audio preprocessing
+  enable_audio_cleaning: true  # Enable noise reduction and normalization
+  enable_vad: true  # Enable Voice Activity Detection
+  vad_method: silero  # Options: silero, webrtc, energy
+  
+  # Buffer management
+  chunk_duration: 2.0  # Duration of each audio chunk in seconds
+  overlap_duration: 0.5  # Overlap between chunks in seconds
+  overlap_buffer_duration: 0.5  # Overlap handler buffer duration
+  max_buffer_size: 10  # Maximum number of segments in buffer
+  max_latency: 2.0  # Maximum acceptable latency in seconds
+  
+  # Custom vocabulary (optional)
+  vocabulary_file: null  # Path to custom vocabulary JSON file
+  enable_vocabulary: false  # Enable custom vocabulary post-processing
+  
+  # Performance settings
+  max_memory_mb: 500  # Maximum memory usage in MB
+  beam_size: 5  # Beam search size for decoding (higher = more accurate but slower)
+  best_of: 5  # Number of candidates to consider
+  
+  # Output options
+  word_timestamps: true  # Extract word-level timestamps
+  condition_on_previous_text: true  # Use context from previous segments
+  
+  # Legacy VOSK settings (for backward compatibility)
+  vosk_model_path: models/vosk-model-vn-0.4
+
+quality:
+  clarity_threshold: 60.0
+  snr_weight: 0.4
+  spectral_weight: 0.4
+  zcr_weight: 0.2
+  fluency_threshold: 60.0
+  speech_rate_weight: 0.3
+  pause_weight: 0.4
+  rhythm_weight: 0.3
+  optimal_speech_rate_min: 3.0
+  optimal_speech_rate_max: 5.0
+  pause_threshold: 0.3
+  long_pause_threshold: 1.0
+  update_interval: 2.0
+
+storage:
+  output_dir: transcripts
+  filename_format: transcript_%Y%m%d_%H%M%S.txt
+  encoding: utf-8
+  auto_save_interval: 30
+  create_backup: true
+  include_metadata: true
+  include_statistics: true
+  include_recommendations: true
+
+performance:
+  max_memory_mb: 100
+  audio_thread_priority: high
+  processing_thread_priority: normal
+  gui_update_rate: 10
+
+logging:
+  enabled: true
+  log_file: logs/speech_analysis.log
+  log_level: INFO
+  max_log_size_mb: 10
+  backup_count: 3

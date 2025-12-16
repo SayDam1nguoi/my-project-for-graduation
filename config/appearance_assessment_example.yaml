@@ -1,0 +1,55 @@
+# Example Appearance Assessment Configuration
+# This file demonstrates the configuration options for the appearance assessment system
+
+appearance_assessment:
+  # Enable/disable individual assessments
+  lighting_enabled: true
+  clothing_enabled: true
+  
+  # Real-time warning settings
+  real_time_warnings_enabled: true
+  warning_update_interval: 5.0  # seconds between warning updates
+  warning_threshold: 60.0  # score below which warnings are shown
+  
+  # Lighting quality thresholds
+  min_brightness: 80.0  # minimum acceptable brightness (0-255 scale)
+  max_brightness: 200.0  # maximum acceptable brightness (0-255 scale)
+  min_contrast: 30.0  # minimum acceptable contrast (0-100 scale)
+  min_uniformity: 60.0  # minimum acceptable uniformity (0-100 scale)
+  
+  # Professional colors (HSV ranges)
+  # Format: color_name: {min: [h_min, s_min, v_min], max: [h_max, s_max, v_max]}
+  professional_colors:
+    white:
+      min: [0, 0, 200]
+      max: [180, 30, 255]
+    black:
+      min: [0, 0, 0]
+      max: [180, 255, 50]
+    blue:
+      min: [100, 50, 50]
+      max: [130, 255, 255]
+    gray:
+      min: [0, 0, 50]
+      max: [180, 50, 200]
+    navy:
+      min: [100, 50, 30]
+      max: [130, 255, 100]
+  
+  # Unprofessional colors (HSV ranges)
+  unprofessional_colors:
+    bright_red:
+      min: [0, 150, 150]
+      max: [10, 255, 255]
+    bright_yellow:
+      min: [20, 150, 150]
+      max: [30, 255, 255]
+    bright_green:
+      min: [40, 150, 150]
+      max: [80, 255, 255]
+    pink:
+      min: [140, 50, 150]
+      max: [170, 255, 255]
+  
+  # Performance settings
+  max_performance_impact: 0.1  # Maximum acceptable FPS degradation (10%)

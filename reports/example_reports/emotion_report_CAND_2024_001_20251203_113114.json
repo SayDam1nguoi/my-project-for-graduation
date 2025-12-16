@@ -1,0 +1,110 @@
+{
+  "candidate_id": "CAND_2024_001",
+  "video_path": "interview_video.mp4",
+  "timestamp": "2025-12-03T11:31:13.129913",
+  "criterion_scores": {
+    "confidence": {
+      "criterion_name": "confidence",
+      "score": 7.5,
+      "confidence": 0.95,
+      "explanation": "The candidate showed high confidence with a score of 7.5/10. This excellent assessment is based on voice tone, posture, eye contact, and facial expressions. Eye contact was maintained 75.0% of the time, and posture indicators showed 0.85 alignment. The candidate demonstrated strong self-assurance and clear communication.",
+      "evidence_timestamps": [
+        5.2,
+        12.8,
+        25.3
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "eye_contact_percentage": 75.0,
+        "posture_score": 0.85,
+        "timestamps": [
+          5.2,
+          12.8,
+          25.3
+        ]
+      },
+      "weight": 0.325
+    },
+    "positivity": {
+      "criterion_name": "positivity",
+      "score": 8.2,
+      "confidence": 0.95,
+      "explanation": "Positivity was high with a score of 8.2/10. The candidate's warmth and friendly demeanor were excellent. Genuine smiles were detected in 12 frames, with 85.0% being authentic. The candidate created a warm, approachable impression with natural positive expressions.",
+      "evidence_timestamps": [
+        8.5,
+        15.2,
+        28.7
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "genuine_smile_count": 12,
+        "smile_authenticity": 85.0,
+        "timestamps": [
+          8.5,
+          15.2,
+          28.7
+        ]
+      },
+      "weight": 0.275
+    },
+    "professionalism": {
+      "criterion_name": "professionalism",
+      "score": 6.8,
+      "confidence": 0.95,
+      "explanation": "Professionalism was moderate with a score of 6.8/10. The candidate's professional demeanor and emotional control were satisfactory. Appropriate emotions were displayed 82.0% of the time, with composure maintained at 0.78. The candidate showed adequate professionalism with generally appropriate behavior.",
+      "evidence_timestamps": [
+        10.3,
+        20.1,
+        35.6
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "appropriate_frequency": 0.82,
+        "composure_score": 0.78,
+        "timestamps": [
+          10.3,
+          20.1,
+          35.6
+        ]
+      },
+      "weight": 0.225
+    },
+    "engagement": {
+      "criterion_name": "engagement",
+      "score": 7.3,
+      "confidence": 0.95,
+      "explanation": "Engagement was high with a score of 7.3/10. The candidate's attention and interaction level were excellent. Eye contact was maintained 70.0% of the time, with facial responsiveness at 75.0%. Head movements indicated 0.80 active listening. The candidate was highly engaged with strong attention and active participation.",
+      "evidence_timestamps": [
+        7.8,
+        18.4,
+        30.2
+      ],
+      "supporting_data": {
+        "total_frames": 150,
+        "eye_contact_percentage": 70.0,
+        "responsiveness_rate": 0.75,
+        "head_movement_score": 0.8,
+        "timestamps": [
+          7.8,
+          18.4,
+          30.2
+        ]
+      },
+      "weight": 0.175
+    }
+  },
+  "total_score": 7.5,
+  "key_moments": [],
+  "metadata": {
+    "report_generated_at": "2025-12-03T11:31:13.129913",
+    "video_path": "interview_video.mp4",
+    "total_criteria": 4,
+    "average_confidence": 0.95,
+    "criterion_weights": {
+      "confidence": 0.325,
+      "positivity": 0.275,
+      "professionalism": 0.225,
+      "engagement": 0.175
+    }
+  }
+}

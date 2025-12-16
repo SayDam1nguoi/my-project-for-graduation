@@ -1,0 +1,220 @@
+# Maximum Accuracy Configuration for CPU
+# Tối ưu cho độ chính xác cao nhất trên CPU (không có GPU)
+# Độ chính xác kỳ vọng: 93-95%
+# Lưu ý: Sẽ chậm hơn (3-5x real-time) nhưng chính xác nhất
+
+# Audio Capture Settings - Tối ưu cho chất lượng
+audio:
+  sample_rate: 16000
+  channels: 1
+  format: "paInt16"
+  chunk_size: 3072            # Tăng chunk size cho chất lượng tốt hơn
+  buffer_duration: 30
+  device_index: null
+  
+  # Audio enhancement - BẬT TẤT CẢ
+  noise_reduction: true
+  auto_gain_control: true
+  echo_cancellation: true
+  input_volume_boost: 1.3
+  noise_gate_threshold: 0.010
+  high_pass_filter: 75
+  target_rms: 0.14
+  max_gain: 4.0
+  noise_reduction_strength: 0.7  # Tăng lên 0.7
+
+# Speech-to-Text Settings - CHÍNH XÁC NHẤT CHO CPU
+speech_to_text:
+  # ============================================================================
+  # STRATEGY: OpenAI Whisper Medium (Tốt nhất cho CPU)
+  # ============================================================================
+  
+  model_type: "whisper"
+  whisper_implementation: "openai"   # OpenAI Whisper cho độ chính xác cao
+  
+  # Model size - MEDIUM là tốt nhất cho CPU
+  # Large quá chậm, Small không đủ chính xác
+  model_size: "medium"               # ⭐ Độ chính xác 93-95%
+  
+  # Device settings
+  device: "cpu"                      # CPU only
+  in_memory: true                    # Load model vào RAM (nhanh hơn)
+  download_root: null                # Auto download
+  
+  # Language settings
+  language: "vi"
+  task: "transcribe"
+  
+  # ============================================================================
+  # AUDIO PREPROCESSING - TỐI ĐA
+  # ============================================================================
+  
+  enable_audio_cleaning: true
+  enable_vad: true
+  vad_method: "silero"               # Silero VAD tốt nhất
+  
+  # ============================================================================
+  # OVERLAP HANDLING - TĂNG ĐỘ CHỒNG LẤP
+  # ============================================================================
+  
+  overlap_duration: 1.0              # Tăng lên 1.0 giây (từ 0.8)
+  max_buffer_size: 20                # Tăng buffer
+  
+  # ============================================================================
+  # CUSTOM VOCABULARY
+  # ============================================================================
+  
+  enable_vocabulary: true
+  vocabulary_file: "config/vietnamese_custom_vocabulary.json"
+  
+  # ============================================================================
+  # PERFORMANCE SETTINGS - CHO PHÉP DÙNG NHIỀU TÀI NGUYÊN HƠN
+  # ============================================================================
+  
+  max_memory_mb: 1500                # Tăng lên 1.5GB
+  cpu_limit_percent: 90.0            # Cho phép dùng 90% CPU
+  min_real_time_factor: 0.3          # Chấp nhận chậm hơn (3-5x real-time)
+  
+  # ============================================================================
+  # FALLBACK
+  # ============================================================================
+  
+  fallback_to_vosk: true
+  vosk_model_path: "models/vosk-model-vn-0.4"
+  
+  # ============================================================================
+  # LEGACY SETTINGS
+  # ============================================================================
+  
+  sample_rate: 16000
+  chunk_duration: 8.0                # Tăng lên 8 giây (context dài hơn)
+  max_latency: 15.0                  # Chấp nhận latency cao hơn
+
+# Quality Analysis Settings - NÂNG CAO NGƯỠNG
+quality:
+  clarity_threshold: 70.0            # Tăng từ 65.0
+  snr_weight: 0.4
+  spectral_weight: 0.4
+  zcr_weight: 0.2
+  
+  fluency_threshold: 70.0            # Tăng từ 65.0
+  speech_rate_weight: 0.3
+  pause_weight: 0.4
+  rhythm_weight: 0.3
+  
+  optimal_speech_rate_min: 2.0      # Chấp nhận nói chậm hơn
+  optimal_speech_rate_max: 6.0      # Chấp nhận nói nhanh hơn
+  
+  pause_threshold: 0.20              # Nhạy hơn với pause
+  long_pause_threshold: 0.7
+  update_interval: 1.0               # Cập nhật thường xuyên hơn
+  
+  min_confidence: 0.5                # Tăng ngưỡng confidence
+  min_audio_level: 0.010
+  max_silence_duration: 1.2
+
+# Text Storage Settings
+storage:
+  output_dir: "transcripts"
+  filename_format: "transcript_max_accuracy_%Y%m%d_%H%M%S.txt"
+  encoding: "utf-8"
+  auto_save_interval: 15             # Lưu thường xuyên hơn
+  create_backup: true
+  include_metadata: true
+  include_statistics: true
+  include_recommendations: true
+
+# Performance Settings - CHO PHÉP DÙNG NHIỀU TÀI NGUYÊN
+performance:
+  max_memory_mb: 1500                # Tăng lên 1.5GB
+  audio_thread_priority: "high"
+  processing_thread_priority: "high"
+  gui_update_rate: 6                 # Giảm xuống 6 (ít cập nhật GUI hơn)
+  max_cpu_percent: 90                # Cho phép dùng 90% CPU
+  enable_cpu_monitoring: true
+
+# Logging Settings
+logging:
+  enabled: true
+  log_file: "logs/speech_analysis_max_accuracy.log"
+  log_level: "INFO"
+  max_log_size_mb: 30
+  backup_count: 7
+  log_audio_quality: true
+  log_performance_metrics: true
+  log_enhancement_stats: true
+
+# ============================================================================
+# HƯỚNG DẪN SỬ DỤNG
+# ============================================================================
+#
+# 1. CÀI ĐẶT:
+#    pip install openai-whisper torch noisereduce scipy
+#
+# 2. CHẠY:
+#    python launcher.py --config config/max_accuracy_cpu_config.yaml
+#
+# 3. KẾT QUẢ KỲ VỌNG:
+#    - Độ chính xác: 93-95% ⭐ Cao nhất cho CPU
+#    - Thời gian xử lý: 3-5x real-time (chậm nhưng chính xác)
+#    - CPU usage: 80-90%
+#    - RAM usage: 6-8 GB
+#
+# 4. YÊU CẦU PHẦN CỨNG TỐI THIỂU:
+#    - CPU: 4+ cores, 2.5+ GHz
+#    - RAM: 8+ GB
+#    - Disk: 2+ GB cho model
+#
+# 5. YÊU CẦU PHẦN CỨNG KHUYẾN NGHỊ:
+#    - CPU: 6+ cores, 3.0+ GHz (Intel i5/i7 hoặc AMD Ryzen 5/7)
+#    - RAM: 16 GB
+#    - Disk: SSD
+#
+# 6. TẠI SAO CHỌN OPENAI WHISPER MEDIUM?
+#    - Small: 90-93% accuracy (không đủ chính xác)
+#    - Medium: 93-95% accuracy ⭐ TỐT NHẤT cho CPU
+#    - Large: 95-97% accuracy (quá chậm trên CPU - 8-10x real-time)
+#
+# 7. SO SÁNH VỚI CÁC LỰA CHỌN KHÁC:
+#
+#    faster-whisper small (CPU):
+#    - Độ chính xác: 90-93%
+#    - Tốc độ: 1.5-2x real-time ⚡ Nhanh
+#    - RAM: 2-3 GB
+#
+#    OpenAI Whisper medium (CPU): ⭐ CONFIG NÀY
+#    - Độ chính xác: 93-95% ⭐ Chính xác nhất
+#    - Tốc độ: 3-5x real-time
+#    - RAM: 6-8 GB
+#
+#    OpenAI Whisper large (CPU):
+#    - Độ chính xác: 95-97%
+#    - Tốc độ: 8-10x real-time ❌ Quá chậm
+#    - RAM: 10+ GB
+#
+# 8. TIPS ĐỂ TĂNG TỐC (nếu quá chậm):
+#    - Giảm chunk_duration xuống 6.0
+#    - Giảm overlap_duration xuống 0.8
+#    - Tắt một số audio enhancement
+#    - Hoặc chuyển sang faster-whisper small
+#
+# 9. TIPS ĐỂ TĂNG ĐỘ CHÍNH XÁC THÊM:
+#    - Sử dụng microphone tốt hơn
+#    - Ghi âm trong môi trường yên tĩnh
+#    - Nói rõ ràng, không nhanh quá
+#    - Thêm từ vựng chuyên ngành vào vocabulary file
+#    - Tăng chunk_duration lên 10.0 (context dài hơn)
+#
+# 10. NẾU VẪN QUÁ CHẬM:
+#     Chuyển sang faster-whisper medium:
+#     
+#     speech_to_text:
+#       whisper_implementation: "faster-whisper"
+#       model_size: "medium"
+#       compute_type: "int8"
+#     
+#     Độ chính xác: 92-94% (chỉ thấp hơn 1-2%)
+#     Tốc độ: 2-3x real-time (nhanh hơn 2x)
+#
+# ============================================================================
+

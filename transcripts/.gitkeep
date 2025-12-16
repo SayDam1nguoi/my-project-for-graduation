@@ -1,0 +1,2 @@
+# This file ensures the transcripts directory is tracked by git
+# Transcript files will be saved here during speech analysis sessions

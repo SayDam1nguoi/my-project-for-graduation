@@ -170,7 +170,7 @@ class IntegratedSpeechEvaluator:
             Evaluation result
         """
         try:
-            score, similarity, best_match = self.content_evaluator.evaluate_answer(
+            score, similarity, best_match, details = self.content_evaluator.evaluate_answer(
                 question_id, transcription
             )
             

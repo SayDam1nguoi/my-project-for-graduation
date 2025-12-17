@@ -20,6 +20,11 @@ wheels/
 .installed.cfg
 *.egg
 
+# PyInstaller
+*.spec.bak
+*.manifest
+*.spec~
+
 # Virtual Environment
 venv/
 env/

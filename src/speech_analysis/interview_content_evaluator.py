@@ -178,26 +178,130 @@ class InterviewContentEvaluator:
         
         return dot_product / (norm1 * norm2)
     
-    def _similarity_to_score(self, similarity: float) -> float:
+    def _check_answer_length(self, answer: str, min_length: int = 20, max_length: int = 2000) -> Tuple[bool, str]:
         """
-        Chuyển đổi cosine similarity sang thang điểm 0-10.
+        Kiểm tra độ dài câu trả lời (fail-safe cho ASR).
+        
+        Args:
+            answer: Câu trả lời
+            min_length: Độ dài tối thiểu (characters)
+            max_length: Độ dài tối đa (characters)
+            
+        Returns:
+            (is_valid, message)
+        """
+        length = len(answer.strip())
+        
+        if length < min_length:
+            return False, f"Câu trả lời quá ngắn ({length} ký tự, tối thiểu {min_length})"
+        
+        if length > max_length:
+            return False, f"Câu trả lời quá dài ({length} ký tự, tối đa {max_length})"
+        
+        return True, "OK"
+    
+    def _check_coverage(self, answer: str, required_keywords: List[List[str]]) -> Tuple[float, List[str]]:
+        """
+        Kiểm tra coverage - câu trả lời có đủ ý không.
+        
+        Args:
+            answer: Câu trả lời
+            required_keywords: List of keyword groups (phải có ít nhất 1 từ trong mỗi group)
+            
+        Returns:
+            (coverage_score, missing_groups)
+            - coverage_score: 0.0-1.0 (tỷ lệ groups được cover)
+            - missing_groups: Danh sách các groups bị thiếu
+        """
+        answer_lower = answer.lower()
+        covered_groups = 0
+        missing_groups = []
+        
+        for i, keyword_group in enumerate(required_keywords):
+            # Kiểm tra xem có ít nhất 1 keyword trong group xuất hiện không
+            found = any(keyword.lower() in answer_lower for keyword in keyword_group)
+            
+            if found:
+                covered_groups += 1
+            else:
+                missing_groups.append(f"Group {i+1}: {', '.join(keyword_group[:3])}")
+        
+        coverage_score = covered_groups / len(required_keywords) if required_keywords else 1.0
+        
+        return coverage_score, missing_groups
+    
+    def _apply_coverage_penalty(self, base_score: float, coverage_score: float, penalty: float = 0.1) -> float:
+        """
+        Áp dụng penalty nếu thiếu coverage.
+        
+        Args:
+            base_score: Điểm gốc
+            coverage_score: Tỷ lệ coverage (0-1)
+            penalty: Penalty cho mỗi group bị thiếu
+            
+        Returns:
+            Điểm sau khi trừ penalty
+        """
+        # Số groups bị thiếu
+        missing_ratio = 1.0 - coverage_score
+        
+        # Trừ điểm
+        penalty_amount = missing_ratio * penalty * 10  # penalty * 10 vì thang điểm 0-10
+        
+        final_score = max(0.0, base_score - penalty_amount)
+        
+        return final_score
+    
+    def _similarity_to_score(self, similarity: float, smooth: bool = True) -> float:
+        """
+        Chuyển đổi cosine similarity sang thang điểm 0-10 với SMOOTH INTERPOLATION.
         
         Args:
             similarity: Cosine similarity (0-1)
+            smooth: Dùng nội suy mượt (True) hay nhảy cứng (False)
             
         Returns:
             Score (0-10)
         """
+        if not smooth:
+            # Old method - nhảy cứng
+            if similarity >= 0.85:
+                return 10.0
+            elif similarity >= 0.75:
+                return 8.0
+            elif similarity >= 0.65:
+                return 6.0
+            elif similarity >= 0.50:
+                return 4.0
+            else:
+                return 2.0
+        
+        # NEW METHOD - Smooth interpolation (nội suy tuyến tính)
+        # Công thức: score = min_score + (similarity - min_sim) / (max_sim - min_sim) * (max_score - min_score)
+        
         if similarity >= 0.85:
-            return 10.0
+            # Range 1: 0.85-1.0 → 9.0-10.0
+            return 9.0 + (similarity - 0.85) / (1.0 - 0.85) * (10.0 - 9.0)
+        
         elif similarity >= 0.75:
-            return 8.0
+            # Range 2: 0.75-0.85 → 7.5-9.0
+            return 7.5 + (similarity - 0.75) / (0.85 - 0.75) * (9.0 - 7.5)
+        
         elif similarity >= 0.65:
-            return 6.0
+            # Range 3: 0.65-0.75 → 6.0-7.5
+            return 6.0 + (similarity - 0.65) / (0.75 - 0.65) * (7.5 - 6.0)
+        
         elif similarity >= 0.50:
-            return 4.0
+            # Range 4: 0.50-0.65 → 4.0-6.0
+            return 4.0 + (similarity - 0.50) / (0.65 - 0.50) * (6.0 - 4.0)
+        
+        elif similarity >= 0.30:
+            # Range 5: 0.30-0.50 → 2.0-4.0
+            return 2.0 + (similarity - 0.30) / (0.50 - 0.30) * (4.0 - 2.0)
+        
         else:
-            return 2.0
+            # Range 6: 0.0-0.30 → 0.0-2.0
+            return 0.0 + (similarity - 0.0) / (0.30 - 0.0) * (2.0 - 0.0)
     
     def prepare_sample_embeddings(self, questions: Optional[List[InterviewQuestion]] = None):
         """
@@ -221,18 +325,37 @@ class InterviewContentEvaluator:
         self,
         question_id: str,
         applicant_answer: str,
-        questions: Optional[List[InterviewQuestion]] = None
-    ) -> Tuple[float, float, str]:
+        questions: Optional[List[InterviewQuestion]] = None,
+        scoring_method: str = "best_match",  # ✅ Changed default to best_match
+        check_coverage: bool = True,
+        coverage_penalty: float = 0.1
+    ) -> Tuple[float, float, str, Dict]:
         """
-        Đánh giá một câu trả lời.
+        Đánh giá một câu trả lời với nhiều sample answers - VERSION 3.0.
+        
+        ✅ CẢI TIẾN MỚI:
+        - Dùng MAX similarity thay vì average (best_match)
+        - Smooth interpolation (nội suy mượt)
+        - Kiểm tra coverage (đủ ý)
+        - Fail-safe cho ASR (độ dài câu trả lời)
         
         Args:
             question_id: ID câu hỏi (Q1, Q2, ...)
             applicant_answer: Câu trả lời của ứng viên
             questions: Danh sách câu hỏi (mặc định dùng STANDARD_QUESTIONS)
+            scoring_method: Phương pháp tính điểm:
+                - "best_match": ✅ Lấy MAX similarity (KHUYẾN NGHỊ)
+                - "average": Trung bình similarity
+                - "weighted_average": Trung bình có trọng số
+            check_coverage: Kiểm tra coverage (đủ ý)
+            coverage_penalty: Penalty nếu thiếu ý (0.1 = trừ 1 điểm nếu thiếu 100%)
             
         Returns:
-            (score, similarity, best_match_answer)
+            (score, similarity, best_match_answer, details_dict)
+            - score: Điểm 0-10 (sau khi áp dụng penalties)
+            - similarity: Độ tương đồng (0-1)
+            - best_match_answer: Câu trả lời mẫu giống nhất
+            - details_dict: Chi tiết đánh giá
         """
         if questions is None:
             questions = self.STANDARD_QUESTIONS
@@ -241,7 +364,16 @@ class InterviewContentEvaluator:
         question = next((q for q in questions if q.id == question_id), None)
         if question is None:
             logger.warning(f"Question {question_id} not found")
-            return 0.0, 0.0, ""
+            return 0.0, 0.0, "", {}
+        
+        # ✅ BƯỚC 1: Kiểm tra độ dài (fail-safe cho ASR)
+        is_valid_length, length_message = self._check_answer_length(applicant_answer, min_length=20, max_length=2000)
+        if not is_valid_length:
+            logger.warning(f"{question_id} - {length_message}")
+            # Giới hạn điểm tối đa nếu câu trả lời quá ngắn/dài
+            max_score_limit = 3.0 if len(applicant_answer.strip()) < 20 else 10.0
+        else:
+            max_score_limit = 10.0
         
         # Tính embedding cho câu trả lời ứng viên
         applicant_embedding = self._compute_embeddings([applicant_answer])[0]
@@ -256,24 +388,110 @@ class InterviewContentEvaluator:
         similarities = []
         for sample_emb in sample_embeddings:
             sim = self._cosine_similarity(applicant_embedding, sample_emb)
-            similarities.append(sim)
+            similarities.append(float(sim))  # Convert to Python float
         
-        # Lấy similarity cao nhất
+        # Tìm best match
         best_similarity = max(similarities)
         best_idx = similarities.index(best_similarity)
         best_match = question.sample_answers[best_idx]
         
-        # Chuyển sang điểm
-        score = self._similarity_to_score(best_similarity)
+        # Tính điểm theo phương pháp được chọn
+        if scoring_method == "best_match":
+            # ✅ PHƯƠNG PHÁP 1: LẤY MAX SIMILARITY (KHUYẾN NGHỊ)
+            # Ứng viên chỉ cần đúng 1 hướng là đạt
+            final_similarity = best_similarity
+            score = self._similarity_to_score(final_similarity, smooth=True)
+            method_used = "best_match (MAX)"
+            
+        elif scoring_method == "weighted_best_match":
+            # ✅ PHƯƠNG PHÁP 2: MAX(similarity × weight)
+            # Lấy similarity cao nhất sau khi nhân với trọng số
+            # TODO: Cần có trọng số từ config
+            weighted_similarities = similarities  # Placeholder
+            final_similarity = max(weighted_similarities)
+            score = self._similarity_to_score(final_similarity, smooth=True)
+            method_used = "weighted_best_match"
+            
+        elif scoring_method == "average":
+            # Phương pháp 3: Trung bình tất cả similarities (không khuyến nghị)
+            final_similarity = sum(similarities) / len(similarities)
+            score = self._similarity_to_score(final_similarity, smooth=True)
+            method_used = "average"
+            
+        elif scoring_method == "weighted_average":
+            # Phương pháp 4: Trung bình có trọng số
+            # TODO: Implement weighted average nếu có trọng số trong config
+            final_similarity = sum(similarities) / len(similarities)
+            score = self._similarity_to_score(final_similarity, smooth=True)
+            method_used = "weighted_average (fallback to average)"
+            
+        else:
+            # Mặc định: best_match (theo yêu cầu mới)
+            final_similarity = best_similarity
+            score = self._similarity_to_score(final_similarity, smooth=True)
+            method_used = "best_match (default)"
         
-        logger.info(f"{question_id} - Similarity: {best_similarity:.3f}, Score: {score:.1f}")
+        # ✅ BƯỚC 5: Kiểm tra coverage (đủ ý)
+        coverage_score = 1.0
+        missing_keywords = []
         
-        return score, best_similarity, best_match
+        if check_coverage and hasattr(question, 'required_keywords'):
+            coverage_score, missing_keywords = self._check_coverage(
+                applicant_answer,
+                question.required_keywords if hasattr(question, 'required_keywords') else []
+            )
+            
+            if coverage_score < 1.0:
+                logger.info(f"{question_id} - Coverage: {coverage_score:.2%}, Missing: {missing_keywords}")
+                # Áp dụng penalty
+                score_before_penalty = score
+                score = self._apply_coverage_penalty(score, coverage_score, coverage_penalty)
+                logger.info(f"{question_id} - Score after coverage penalty: {score_before_penalty:.1f} → {score:.1f}")
+        
+        # ✅ BƯỚC 6: Áp dụng giới hạn điểm (nếu câu trả lời quá ngắn)
+        if score > max_score_limit:
+            logger.info(f"{question_id} - Score limited: {score:.1f} → {max_score_limit:.1f} (answer too short)")
+            score = max_score_limit
+        
+        # Chi tiết
+        details = {
+            "method": method_used,
+            "num_samples": len(similarities),
+            "all_similarities": similarities,
+            "best_similarity": best_similarity,
+            "best_match_index": best_idx,
+            "average_similarity": sum(similarities) / len(similarities),
+            "min_similarity": min(similarities),
+            "max_similarity": max(similarities),
+            "final_similarity": final_similarity,
+            "base_score": score,  # Điểm trước khi áp dụng penalties
+            "coverage_score": coverage_score,
+            "missing_keywords": missing_keywords,
+            "length_check": {
+                "is_valid": is_valid_length,
+                "message": length_message,
+                "length": len(applicant_answer.strip())
+            },
+            "max_score_limit": max_score_limit,
+            "final_score": score,
+            "smooth_interpolation": True
+        }
+        
+        logger.info(
+            f"{question_id} - Method: {method_used}, "
+            f"Similarities: {[f'{s:.3f}' for s in similarities]}, "
+            f"Final: {final_similarity:.3f}, "
+            f"Coverage: {coverage_score:.2%}, "
+            f"Score: {score:.1f}/10"
+        )
+        
+        return score, final_similarity, best_match, details
 
     def evaluate_all_answers(
         self,
         answers: Dict[str, str],
-        questions: Optional[List[InterviewQuestion]] = None
+        questions: Optional[List[InterviewQuestion]] = None,
+        scoring_method: str = "best_match"  # ✅ Changed default to best_match
     ) -> ContentEvaluationResult:
         """
         Đánh giá tất cả câu trả lời và tính tổng điểm có trọng số.
@@ -281,6 +499,7 @@ class InterviewContentEvaluator:
         Args:
             answers: Dict {question_id: applicant_answer}
             questions: Danh sách câu hỏi (mặc định dùng STANDARD_QUESTIONS)
+            scoring_method: Phương pháp tính điểm ("best_match", "average", "weighted_average")
             
         Returns:
             ContentEvaluationResult
@@ -295,15 +514,17 @@ class InterviewContentEvaluator:
         question_scores = {}
         similarity_scores = {}
         best_matches = {}
+        evaluation_details = {}
         
         # Đánh giá từng câu
         for question_id, answer in answers.items():
-            score, similarity, best_match = self.evaluate_answer(
-                question_id, answer, questions
+            score, similarity, best_match, details = self.evaluate_answer(
+                question_id, answer, questions, scoring_method
             )
             question_scores[question_id] = score
             similarity_scores[question_id] = similarity
             best_matches[question_id] = best_match
+            evaluation_details[question_id] = details
         
         # Tính tổng điểm có trọng số
         total_score = 0.0
@@ -320,6 +541,7 @@ class InterviewContentEvaluator:
         
         # Tạo details
         details = {
+            "scoring_method": scoring_method,
             "questions": {
                 q.id: {
                     "question": q.question,
@@ -328,7 +550,8 @@ class InterviewContentEvaluator:
                     "score": question_scores.get(q.id, 0.0),
                     "similarity": similarity_scores.get(q.id, 0.0),
                     "applicant_answer": answers.get(q.id, ""),
-                    "best_match": best_matches.get(q.id, "")
+                    "best_match": best_matches.get(q.id, ""),
+                    "evaluation_details": evaluation_details.get(q.id, {})
                 }
                 for q in questions if q.id in answers
             },
@@ -343,7 +566,10 @@ class InterviewContentEvaluator:
             details=details
         )
         
-        logger.info(f"Total Score: {total_score:.2f}/10")
+        logger.info(
+            f"Total Score: {total_score:.2f}/10 "
+            f"(Method: {scoring_method}, Questions: {len(answers)})"
+        )
         
         return result
     

@@ -107,7 +107,8 @@ from gui.constants import COLORS, BUTTON_STYLE, WINDOW_SIZE, PERFORMANCE
 from gui.video_handler import VideoHandler, VideoSourceManager
 from gui import ui_builder
 from gui.file_save_dialog import ask_save_file
-from gui.score_manager import get_score_manager
+# Import với path đầy đủ để đảm bảo singleton
+from apps.gui.score_manager import get_score_manager
 
 # Video Transcription Tab
 try:
@@ -834,17 +835,7 @@ class EmotionRecognitionGUI:
         print(f"✓ Hide UI button created: {self.hide_ui_button}")
         print(f"  Command: {self.hide_ui_button['command']}")
         
-        # Performance Settings button
-        self.perf_button = tk.Button(
-            button_frame,
-            text="⚡ HIỆU SUẤT",
-            bg='#546e7a',
-            fg='#ffffff',
-            activebackground='#455a64',
-            command=self.show_performance_settings,
-            **button_style
-        )
-        self.perf_button.pack(side=tk.LEFT, padx=10)
+        # Performance Settings button - REMOVED
         
         # Audio Recording button (NEW)
         self.audio_record_button = tk.Button(
@@ -3118,8 +3109,12 @@ File duoc luu tai: {filename}
         if not self.attention_scores:
             return 0.0
         
-        # Attention score đã là 0-10
+        # Attention score đã là 0-10, nhưng clamp để chắc chắn
         avg_attention = np.mean(self.attention_scores)
+        
+        # QUAN TRỌNG: Clamp về 0-10
+        avg_attention = max(0.0, min(10.0, avg_attention))
+        
         return round(avg_attention, 2)
     
     def send_scores_to_summary(self):
@@ -3151,9 +3146,23 @@ File duoc luu tai: {filename}
             return
         
         # Gửi vào ScoreManager
+        print(f"\n[EmotionRecognitionGUI] Sending scores to ScoreManager...")
+        print(f"  Emotion: {emotion_score:.1f}/10")
+        print(f"  Focus: {focus_score:.1f}/10")
+        
         score_manager = get_score_manager()
+        print(f"  ScoreManager ID: {id(score_manager)}")
+        
         score_manager.set_emotion_score(emotion_score, source="emotion_recognition")
         score_manager.set_focus_score(focus_score, source="emotion_recognition")
+        
+        print(f"  ✓ Scores sent successfully!")
+        
+        # Verify scores were saved
+        all_scores = score_manager.get_all_scores()
+        print(f"  Verification:")
+        print(f"    Emotion in manager: {all_scores['emotion']['score']:.1f}")
+        print(f"    Focus in manager: {all_scores['focus']['score']:.1f}")
         
         # Thông báo thành công
         message = "✅ ĐÃ GỬI ĐIỂM THÀNH CÔNG!\n\n"
@@ -3834,198 +3843,7 @@ Dat yeu cau <30ms:     {'YES' if perf['meets_requirement'] else 'NO'}
         canvas.config(image=photo)
         canvas.image = photo
     
-    def show_performance_settings(self):
-        """Show performance settings dialog."""
-        # Create settings window
-        perf_window = tk.Toplevel(self.root)
-        perf_window.title("Cài Đặt Hiệu Suất")
-        perf_window.geometry("450x350")
-        perf_window.configure(bg='#2b2b2b')
-        
-        # Make window modal
-        perf_window.transient(self.root)
-        perf_window.grab_set()
-        
-        # Center window
-        perf_window.update_idletasks()
-        x = (perf_window.winfo_screenwidth() // 2) - (450 // 2)
-        y = (perf_window.winfo_screenheight() // 2) - (350 // 2)
-        perf_window.geometry(f"450x350+{x}+{y}")
-        
-        # Header
-        header_frame = tk.Frame(perf_window, bg='#1e1e1e', height=60)
-        header_frame.pack(fill=tk.X, padx=10, pady=10)
-        header_frame.pack_propagate(False)
-        
-        title_label = tk.Label(
-            header_frame,
-            text="⚡ CÀI ĐẶT HIỆU SUẤT",
-            font=("Arial", 16, "bold"),
-            bg='#1e1e1e',
-            fg='#FFD700'
-        )
-        title_label.pack(pady=15)
-        
-        # Content frame
-        content_frame = tk.Frame(perf_window, bg='#2b2b2b')
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
-        
-        # Skip Frames setting
-        skip_frame = tk.Frame(content_frame, bg='#2b2b2b')
-        skip_frame.pack(fill=tk.X, pady=15)
-        
-        skip_label = tk.Label(
-            skip_frame,
-            text="Bỏ qua frames (giảm lag):",
-            font=("Arial", 11, "bold"),
-            bg='#2b2b2b',
-            fg='#ffffff'
-        )
-        skip_label.pack(anchor=tk.W)
-        
-        skip_desc = tk.Label(
-            skip_frame,
-            text="1 = Xử lý mọi frame, 2 = Bỏ 1 frame, 3 = Bỏ 2 frames",
-            font=("Arial", 9),
-            bg='#2b2b2b',
-            fg='#9E9E9E'
-        )
-        skip_desc.pack(anchor=tk.W, pady=(0, 5))
-        
-        skip_slider_frame = tk.Frame(skip_frame, bg='#2b2b2b')
-        skip_slider_frame.pack(fill=tk.X, pady=5)
-        
-        skip_value_label = tk.Label(
-            skip_slider_frame,
-            text=f"{self.skip_frames}",
-            font=("Arial", 11, "bold"),
-            bg='#2b2b2b',
-            fg='#4CAF50'
-        )
-        skip_value_label.pack(side=tk.RIGHT, padx=10)
-        
-        def update_skip_label(val):
-            skip_value_label.config(text=f"{int(float(val))}")
-        
-        skip_slider = tk.Scale(
-            skip_slider_frame,
-            from_=1,
-            to=5,
-            orient=tk.HORIZONTAL,
-            command=update_skip_label,
-            bg='#2b2b2b',
-            fg='#ffffff',
-            highlightthickness=0,
-            troughcolor='#1e1e1e',
-            activebackground='#4CAF50',
-            length=300
-        )
-        skip_slider.set(self.skip_frames)
-        skip_slider.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        
-        # Resize Factor setting
-        resize_frame = tk.Frame(content_frame, bg='#2b2b2b')
-        resize_frame.pack(fill=tk.X, pady=15)
-        
-        resize_label = tk.Label(
-            resize_frame,
-            text="Kích thước xử lý:",
-            font=("Arial", 11, "bold"),
-            bg='#2b2b2b',
-            fg='#ffffff'
-        )
-        resize_label.pack(anchor=tk.W)
-        
-        resize_desc = tk.Label(
-            resize_frame,
-            text="1.0 = Full size, 0.75 = 75%, 0.5 = 50% (nhanh hơn)",
-            font=("Arial", 9),
-            bg='#2b2b2b',
-            fg='#9E9E9E'
-        )
-        resize_desc.pack(anchor=tk.W, pady=(0, 5))
-        
-        resize_slider_frame = tk.Frame(resize_frame, bg='#2b2b2b')
-        resize_slider_frame.pack(fill=tk.X, pady=5)
-        
-        resize_value_label = tk.Label(
-            resize_slider_frame,
-            text=f"{self.resize_factor:.2f}",
-            font=("Arial", 11, "bold"),
-            bg='#2b2b2b',
-            fg='#4CAF50'
-        )
-        resize_value_label.pack(side=tk.RIGHT, padx=10)
-        
-        def update_resize_label(val):
-            resize_value_label.config(text=f"{float(val):.2f}")
-        
-        resize_slider = tk.Scale(
-            resize_slider_frame,
-            from_=0.5,
-            to=1.0,
-            resolution=0.05,
-            orient=tk.HORIZONTAL,
-            command=update_resize_label,
-            bg='#2b2b2b',
-            fg='#ffffff',
-            highlightthickness=0,
-            troughcolor='#1e1e1e',
-            activebackground='#4CAF50',
-            length=300
-        )
-        resize_slider.set(self.resize_factor)
-        resize_slider.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        
-        # Button frame
-        button_frame = tk.Frame(perf_window, bg='#2b2b2b')
-        button_frame.pack(fill=tk.X, padx=20, pady=20)
-        
-        def apply_settings():
-            """Apply settings."""
-            self.skip_frames = int(skip_slider.get())
-            self.resize_factor = float(resize_slider.get())
-            perf_window.destroy()
-            messagebox.showinfo(
-                "Thành công",
-                f"Đã áp dụng cài đặt:\n\n"
-                f"Bỏ qua frames: {self.skip_frames}\n"
-                f"Kích thước: {self.resize_factor:.0%}"
-            )
-        
-        def cancel_settings():
-            """Cancel."""
-            perf_window.destroy()
-        
-        # Apply button
-        apply_btn = tk.Button(
-            button_frame,
-            text="✓ ÁP DỤNG",
-            font=("Arial", 11, "bold"),
-            bg='#4CAF50',
-            fg='#ffffff',
-            activebackground='#45a049',
-            command=apply_settings,
-            cursor='hand2',
-            width=15,
-            height=2
-        )
-        apply_btn.pack(side=tk.LEFT, padx=5)
-        
-        # Cancel button
-        cancel_btn = tk.Button(
-            button_frame,
-            text="✗ HỦY",
-            font=("Arial", 11, "bold"),
-            bg='#f44336',
-            fg='#ffffff',
-            activebackground='#da190b',
-            command=cancel_settings,
-            cursor='hand2',
-            width=15,
-            height=2
-        )
-        cancel_btn.pack(side=tk.LEFT, padx=5)
+    # show_performance_settings() - REMOVED
     
     def show_audio_recording_dialog(self):
         """Show simple audio recording dialog."""
@@ -5503,11 +5321,13 @@ def main():
     score_summary_tab = None
     try:
         from gui.score_summary_tab import ScoreSummaryTab
-        score_summary_frame = tk.Frame(notebook, bg='#1a1a1a')
-        notebook.add(score_summary_frame, text='📊 Tổng Hợp Điểm')
+        # Không cần tạo frame, ScoreSummaryTab tự tạo frame của nó
+        score_summary_tab = ScoreSummaryTab(notebook)
+        notebook.add(score_summary_tab.get_frame(), text='📊 Tổng Hợp Điểm')
         
         try:
-            score_summary_tab = ScoreSummaryTab(score_summary_frame)
+            # Kết nối với app
+            pass
             
             # Kết nối với emotion recognition tab để tự động cập nhật điểm
             if hasattr(app, 'score_summary_tab'):

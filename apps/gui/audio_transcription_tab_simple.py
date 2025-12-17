@@ -568,7 +568,7 @@ class AudioTranscriptionTab:
                 try:
                     progress_callback("🎯 Đang đánh giá nội dung câu trả lời...")
                     
-                    score, similarity, best_match = self.content_evaluator.evaluate_answer(
+                    score, similarity, best_match, details = self.content_evaluator.evaluate_answer(
                         self.selected_question.id,
                         result
                     )
@@ -1100,9 +1100,19 @@ Chi tiết các yếu tố:
             )
             return
         
-        # Lấy điểm
-        clarity_score = self.clarity_result.get('clarity_score', 0.0)
-        content_score = self.content_evaluation_result.get('score', 0.0)
+        # Lấy điểm - clarity_result là SpeechClarityResult object
+        if isinstance(self.clarity_result, dict):
+            clarity_score = self.clarity_result.get('clarity_score', 0.0)
+        else:
+            # SpeechClarityResult object
+            clarity_score = self.clarity_result.clarity_score
+        
+        # content_evaluation_result có thể là dict hoặc ContentEvaluationResult
+        if isinstance(self.content_evaluation_result, dict):
+            content_score = self.content_evaluation_result.get('score', 0.0)
+        else:
+            # ContentEvaluationResult object
+            content_score = self.content_evaluation_result.total_score
         
         # Gửi vào ScoreManager
         score_manager = get_score_manager()

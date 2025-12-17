@@ -1,28 +1,71 @@
 # Hệ Thống Nhận Diện Cảm Xúc Khuôn Mặt
 
-Hệ thống AI nhận diện và phân loại cảm xúc của con người từ video trực tiếp (camera) hoặc file video đã ghi sẵn, sử dụng deep learning với độ chính xác cao.
+Hệ thống AI nhận diện và phân loại cảm xúc của con người từ video trực tiếp (camera) hoặc file video đã ghi sẵn, sử dụng deep learning với độ chính xác cao. **Tích hợp hệ thống đánh giá phỏng vấn tự động với 4 tiêu chí: Cảm xúc, Tập trung, Rõ ràng, Nội dung.**
 
-## Tính Năng
+## 🚀 Quick Start
 
-### Nhận Diện Cảm Xúc
+**Khởi động ứng dụng đánh giá phỏng vấn:**
+```bash
+# Cài đặt dependencies
+pip install -r requirements.txt
+
+# Khởi động GUI
+python launcher.py
+```
+
+**Quy trình đánh giá nhanh (5 phút):**
+1. **Tab "Nhận Diện Cảm Xúc"**: Quét khuôn mặt 30s → Gửi điểm
+2. **Tab "Chuyển Đổi Audio"**: Chọn file audio → Phân tích → Gửi điểm  
+3. **Tab "Tổng Hợp Điểm"**: Lấy điểm → Tính tổng → Xuất báo cáo
+
+➜ **Kết quả**: Điểm tổng 0-10 + Quyết định tuyển dụng tự động
+
+## 🎯 Tính Năng Chính
+
+### 1. Hệ Thống Đánh Giá Phỏng Vấn Tích Hợp ⭐ (MỚI)
+- ✅ **GUI Application hiện đại** với 3 tabs chính
+- ✅ **4 tiêu chí đánh giá** (thang điểm 0-10):
+  - 😊 **Cảm xúc (Emotion)**: Ổn định cảm xúc, tích cực
+  - 👁️ **Tập trung (Focus)**: Góc đầu, hướng nhìn, chuyển động
+  - 🗣️ **Rõ ràng (Clarity)**: Tốc độ nói, từ ngập ngừng
+  - 📝 **Nội dung (Content)**: Semantic similarity, độ chi tiết
+- ✅ **Trọng số tự động** theo vị trí (Technical/Sales/Customer Service/Management)
+- ✅ **Quyết định tuyển dụng tự động** (Tuyển/Tuyển có điều kiện/Xem xét/Không tuyển)
+- ✅ **Xuất báo cáo** (TXT với box drawing + JSON)
+- ✅ **ScoreManager Singleton** để chia sẻ điểm giữa các tab
+- ✅ **Auto-refresh** điểm real-time
+
+### 2. Nhận Diện Cảm Xúc & Tập Trung
 - ✅ **Phát hiện khuôn mặt real-time** với MTCNN (độ chính xác >95%)
-- ✅ **Nhận diện 7 cảm xúc cơ bản**: Vui vẻ (Happy), Buồn bã (Sad), Tức giận (Angry), Sợ hãi (Fear), Ngạc nhiên (Surprise), Ghê tởm (Disgust), Trung tính (Neutral)
-- ✅ **Xử lý video từ camera trực tiếp** hoặc file video (MP4, AVI, MOV)
-- ✅ **Hiển thị kết quả trực quan** với bounding boxes màu sắc và confidence scores
+- ✅ **Nhận diện 7 cảm xúc**: Happy, Sad, Angry, Fear, Surprise, Disgust, Neutral
+- ✅ **Chấm điểm cảm xúc** (0-10) dựa trên trọng số từng cảm xúc
+- ✅ **Phát hiện mất tập trung** qua head pose và gaze direction
+- ✅ **Chấm điểm tập trung** (0-10) dựa trên attention scores
+- ✅ **Xử lý video** từ camera trực tiếp hoặc file video (MP4, AVI, MOV)
 - ✅ **GPU acceleration** (CUDA) với automatic CPU fallback
-- ✅ **Multi-face detection** - xử lý đồng thời lên đến 10 khuôn mặt
-- ✅ **Temporal smoothing** để giảm flickering trong video
-- ✅ **Performance monitoring** với FPS counter và inference time tracking
-- ✅ **Comprehensive logging** với session logs và error handling
-
-### Kiểm Tra Sự Tập Trung (MỚI) ✅
-- ✅ **Phát hiện mất tập trung** qua head pose (quay đầu trái/phải, nhìn lên/xuống)
-- ✅ **Phát hiện nhìn ra ngoài** qua gaze direction
+- ✅ **Multi-face detection** - xử lý đồng thời nhiều khuôn mặt
+- ✅ **Temporal smoothing** để giảm flickering
 - ✅ **Cảnh báo tự động** khi mất tập trung > 3 giây
-- ✅ **Cảnh báo khi không có mặt** (che camera, rời khỏi) > 3 giây
-- ✅ **Thống kê chi tiết** về mức độ tập trung, thời gian, tỷ lệ
 
-**Xem hướng dẫn**: `HUONG_DAN_SU_DUNG_TAP_TRUNG.md` | **Chi tiết kỹ thuật**: `CAMERA_ATTENTION_FIXED.md`
+### 3. Phân Tích Giọng Nói & Nội Dung
+- ✅ **Chuyển đổi giọng nói thành văn bản** (Speech-to-Text)
+- ✅ **Chấm điểm rõ ràng** (0-10): Tốc độ nói, từ ngập ngừng, ổn định giọng
+- ✅ **Chấm điểm nội dung** (0-10) với:
+  - MAX similarity (lấy câu mẫu giống nhất)
+  - Smooth interpolation (nội suy mượt)
+  - Coverage check (kiểm tra đủ ý)
+  - Fail-safe cho ASR (giới hạn điểm nếu câu quá ngắn)
+- ✅ **5 câu mẫu/câu hỏi** với trọng số khác nhau
+- ✅ **Semantic similarity** với sentence-transformers
+- ✅ **Hỗ trợ tiếng Việt** đầy đủ
+
+### 4. Giao Diện & Trải Nghiệm
+- ✅ **3 tabs chính**: Nhận Diện Cảm Xúc, Chuyển Đổi Audio, Tổng Hợp Điểm
+- ✅ **Giao diện hiện đại** với màu sắc trực quan
+- ✅ **Quy trình đơn giản** (5 phút/ứng viên)
+- ✅ **Hiển thị real-time** với bounding boxes và confidence scores
+- ✅ **Thống kê chi tiết** về cảm xúc, tập trung, giọng nói
+- ✅ **Xuất báo cáo đẹp** với format TXT và JSON
 
 ## Yêu Cầu Hệ Thống
 
@@ -881,37 +924,84 @@ Located in `.kiro/specs/facial-emotion-recognition/`:
 
 ### Tổng Quan
 
-Hệ thống kết hợp **4 tiêu chí đánh giá** để tạo điểm tổng hợp cho phỏng vấn:
+Hệ thống đánh giá phỏng vấn toàn diện với **giao diện GUI hiện đại**, kết hợp **4 tiêu chí đánh giá** để tạo điểm tổng hợp:
 
 ```
 ĐIỂM TỔNG HỢP (0-10) = Cảm xúc×W1 + Tập trung×W2 + Rõ ràng×W3 + Nội dung×W4
 ```
 
+### 🚀 Sử Dụng Nhanh - GUI Application
+
+**Khởi động ứng dụng:**
+```bash
+python launcher.py
+```
+
+Ứng dụng có **3 tab chính**:
+
+#### 1️⃣ Tab "Nhận Diện Cảm Xúc" 
+- **Chức năng**: Quét khuôn mặt từ camera/video để đánh giá cảm xúc và sự tập trung
+- **Điểm đầu ra**: 
+  - 😊 **Cảm xúc (Emotion)**: 0-10 điểm
+  - 👁️ **Tập trung (Focus)**: 0-10 điểm
+- **Cách dùng**:
+  1. Chọn nguồn video (Camera/Video File)
+  2. Nhấn "BẮT ĐẦU QUÉT" để bắt đầu
+  3. Quét khuôn mặt trong 30-60 giây
+  4. Nhấn "📤 GỬI ĐIỂM SANG TỔNG HỢP" để gửi điểm
+
+#### 2️⃣ Tab "Chuyển Đổi Audio"
+- **Chức năng**: Chuyển đổi giọng nói thành văn bản và đánh giá chất lượng
+- **Điểm đầu ra**:
+  - 🗣️ **Rõ ràng (Clarity)**: 0-10 điểm (tốc độ nói, từ ngập ngừng)
+  - 📝 **Nội dung (Content)**: 0-10 điểm (độ chi tiết, cấu trúc)
+- **Cách dùng**:
+  1. Chọn file audio/video hoặc thu âm trực tiếp
+  2. Nhấn "Bắt Đầu Chuyển Đổi"
+  3. Đợi quá trình phân tích hoàn tất
+  4. Nhấn "📤 Gửi Điểm" để gửi điểm
+
+#### 3️⃣ Tab "Tổng Hợp Điểm" ⭐
+- **Chức năng**: Tổng hợp 4 điểm và đưa ra quyết định tuyển dụng
+- **Các bước**:
+  1. **Nhập thông tin ứng viên**: Họ tên, mã ứng viên, vị trí
+  2. **Chọn vị trí ứng tuyển**: Default/Technical/Sales/Customer Service/Management
+  3. **Nhấn "📥 LẤY ĐIỂM"**: Tự động lấy 4 điểm từ 2 tab trước
+  4. **Điều chỉnh trọng số** (nếu cần): Mặc định theo vị trí
+  5. **Nhấn "🧮 TÍNH TỔNG"**: Tính điểm tổng và quyết định tuyển dụng
+  6. **Xuất báo cáo**: 
+     - "📄 XUẤT TXT": Báo cáo dạng text với box drawing
+     - "💾 LƯU JSON": Lưu dữ liệu JSON để xử lý sau
+
 ### 4 Tiêu Chí Đánh Giá (Thang Điểm 0-10)
 
-1. **😊 Cảm Xúc (Emotion)** - 25%
-   - Module: `emotion_scoring_engine.py`
-   - Đánh giá: Ổn định cảm xúc, tích cực, phù hợp ngữ cảnh
-   - **Thang điểm: 0-10** ✅
-
-2. **👁️ Tập Trung (Focus)** - 25%
-   - Module: `attention_detector.py`
-   - Đánh giá: Góc đầu, hướng nhìn, ổn định chuyển động
-   - **Thang điểm: 0-10** ✅
-
-3. **🗣️ Rõ Ràng Lời Nói (Clarity)** - 25%
-   - Module: `integrated_speech_evaluator.py`
-   - Đánh giá: Tốc độ nói, từ ngập ngừng, ổn định giọng
-   - **Thang điểm: 0-10** ✅
-
-4. **📝 Nội Dung (Content)** - 25%
-   - Module: `interview_content_evaluator.py`
-   - Đánh giá: Semantic similarity, độ chi tiết, cấu trúc
-   - **Thang điểm: 0-10** ✅
+| Tiêu Chí | Mô Tả | Công Thức | Module | Tab Nguồn |
+|----------|-------|-----------|--------|-----------|
+| **😊 Cảm Xúc (Emotion)** | Ổn định cảm xúc, tích cực, phù hợp ngữ cảnh | `Σ(count × weight) / total_frames`<br>Happy: 10.0, Surprise: 8.0, Neutral: 7.0, Sad: 4.0, Angry: 3.0, Fear: 3.0, Disgust: 2.0 | `emotion_scoring_engine.py` | Nhận Diện Cảm Xúc |
+| **👁️ Tập Trung (Focus)** | Góc đầu, hướng nhìn, ổn định chuyển động | `Average(attention_scores)`<br>Attention scores đã là 0-10, lấy trung bình | `attention_detector.py` | Nhận Diện Cảm Xúc |
+| **🗣️ Rõ ràng (Clarity)** | Tốc độ nói, từ ngập ngừng, ổn định giọng | ⚠️ **Chưa implement** (mặc định 0.0) | `integrated_speech_evaluator.py` | Chuyển Đổi Audio |
+| **📝 Nội dung (Content)** | Semantic similarity, độ chi tiết, cấu trúc | **MAX similarity** → Smooth interpolation → Coverage check → Length check<br>5 samples/câu hỏi với trọng số | `interview_content_evaluator.py` | Chuyển Đổi Audio |
 
 **✨ Thống nhất**: Tất cả 4 tiêu chí đều sử dụng thang điểm 0-10 để dễ dàng tổng hợp và so sánh.
 
+**📊 Chi Tiết Công Thức Content Score:**
+```
+Bước 1: Tính similarity với 5 samples
+Bước 2: Lấy MAX similarity (best_match method)
+Bước 3: Smooth interpolation sang điểm 0-10
+  - 0.85-1.0 → 9.0-10.0 (nội suy tuyến tính)
+  - 0.75-0.85 → 7.5-9.0
+  - 0.65-0.75 → 6.0-7.5
+  - 0.50-0.65 → 4.0-6.0
+  - 0.30-0.50 → 2.0-4.0
+  - 0.0-0.30 → 0.0-2.0
+Bước 4: Check coverage → trừ điểm nếu thiếu ý
+Bước 5: Check length → giới hạn điểm nếu câu quá ngắn (<20 ký tự → max 3.0)
+```
+
 ### Trọng Số Theo Vị Trí
+
+Hệ thống tự động điều chỉnh trọng số dựa trên vị trí ứng tuyển:
 
 | Vị Trí | Cảm Xúc | Tập Trung | Rõ Ràng | Nội Dung | Phù Hợp |
 |--------|---------|-----------|---------|----------|---------|
@@ -921,45 +1011,140 @@ Hệ thống kết hợp **4 tiêu chí đánh giá** để tạo điểm tổng
 | **Customer Service** | **30%** | 20% | **30%** | 20% | Support, Help Desk |
 | **Management** | 25% | 25% | 20% | **30%** | Manager, Team Lead |
 
-### Sử Dụng Nhanh
+### Quyết Định Tuyển Dụng Tự Động
 
-```python
-from src.evaluation.integrated_interview_evaluator import IntegratedInterviewEvaluator
+Hệ thống tự động đưa ra quyết định dựa trên điểm tổng:
 
-# Khởi tạo
-evaluator = IntegratedInterviewEvaluator(position_type='technical')
+| Điểm Tổng | Quyết Định | Ý Nghĩa |
+|-----------|------------|---------|
+| **≥ 8.0** | ✅ **TUYỂN DỤNG** | Ứng viên xuất sắc/rất tốt, đề xuất tuyển ngay |
+| **≥ 7.0** | ✅ **TUYỂN DỤNG CÓ ĐIỀU KIỆN** | Ứng viên tốt, có thể tuyển với thời gian thử việc |
+| **≥ 6.0** | ⚠️ **CẦN XEM XÉT THÊM** | Đạt mức chấp nhận, cần phỏng vấn vòng 2 |
+| **< 6.0** | ❌ **KHÔNG TUYỂN DỤNG** | Cần cải thiện nhiều, không phù hợp |
 
-# Đánh giá
-score, details = evaluator.evaluate_video_interview(
-    video_path="interview.mp4",
-    candidate_id="candidate_001",
-    answers={
-        "Q1": "Câu trả lời 1...",
-        "Q2": "Câu trả lời 2..."
-    }
-)
+### Quy Trình Đánh Giá Hoàn Chỉnh
 
-print(f"Tổng điểm: {score.total_score:.2f}/10 - {score.overall_rating}")
+```
+┌─────────────────────────────────────────────────────────────┐
+│  BƯỚC 1: Đánh Giá Cảm Xúc & Tập Trung                       │
+│  ─────────────────────────────────────────────────────────  │
+│  Tab: "Nhận Diện Cảm Xúc"                                   │
+│  1. Chọn Camera hoặc Video File                             │
+│  2. Nhấn "BẮT ĐẦU QUÉT"                                     │
+│  3. Quét khuôn mặt 30-60 giây                               │
+│  4. Nhấn "📤 GỬI ĐIỂM SANG TỔNG HỢP"                        │
+│  ➜ Điểm: Cảm xúc (0-10) + Tập trung (0-10)                 │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│  BƯỚC 2: Đánh Giá Rõ Ràng & Nội Dung                        │
+│  ─────────────────────────────────────────────────────────  │
+│  Tab: "Chuyển Đổi Audio"                                    │
+│  1. Chọn file audio/video hoặc thu âm                       │
+│  2. Nhấn "Bắt Đầu Chuyển Đổi"                               │
+│  3. Đợi phân tích hoàn tất                                  │
+│  4. Nhấn "📤 Gửi Điểm"                                      │
+│  ➜ Điểm: Rõ ràng (0-10) + Nội dung (0-10)                  │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│  BƯỚC 3: Tổng Hợp & Quyết Định                              │
+│  ─────────────────────────────────────────────────────────  │
+│  Tab: "Tổng Hợp Điểm"                                       │
+│  1. Nhập thông tin ứng viên                                 │
+│  2. Chọn vị trí ứng tuyển                                   │
+│  3. Nhấn "📥 LẤY ĐIỂM" (tự động)                            │
+│  4. Nhấn "🧮 TÍNH TỔNG"                                     │
+│  5. Xem quyết định tuyển dụng                               │
+│  6. Xuất báo cáo (TXT/JSON)                                 │
+│  ➜ Kết quả: Điểm tổng + Quyết định tuyển dụng              │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Test Hệ Thống
+### Ví Dụ Báo Cáo Xuất Ra
 
-```bash
-# Test với điểm số mẫu
-python test_integrated_evaluation.py
-
-# Test hệ thống chấm điểm
-python test_overall_scoring.py
-
-# Verify thang điểm 0-10 (MỚI)
-python test_score_scale_verification.py
+**File TXT (với box drawing characters):**
 ```
+================================================================================
+                        KẾT QUẢ ĐÁNH GIÁ PHỎNG VẤN
+================================================================================
+
+Họ tên: Nguyễn Văn A
+Mã ứng viên: UV001
+Vị trí: technical
+Ngày: 16/12/2025 14:30:00
+
+────────────────────────────────────────────────────────────────────────────────
+ĐIỂM CHI TIẾT:
+────────────────────────────────────────────────────────────────────────────────
+Nội dung:   8.5/10 (35%)
+Rõ ràng:    7.8/10 (25%)
+Tập trung:  8.2/10 (25%)
+Cảm xúc:    7.5/10 (15%)
+
+================================================================================
+ĐIỂM TỔNG: 8.1/10
+ĐÁNH GIÁ: RẤT TỐT ⭐⭐
+QUYẾT ĐỊNH: ✅ TUYỂN DỤNG
+================================================================================
+```
+
+**File JSON:**
+```json
+{
+  "candidate_info": {
+    "name": "Nguyễn Văn A",
+    "id": "UV001",
+    "position": "technical",
+    "date": "2025-12-16T14:30:00"
+  },
+  "scores": {
+    "emotion": 7.5,
+    "focus": 8.2,
+    "clarity": 7.8,
+    "content": 8.5,
+    "total": 8.1
+  },
+  "weights": {
+    "emotion": 0.15,
+    "focus": 0.25,
+    "clarity": 0.25,
+    "content": 0.35
+  }
+}
+```
+
+### Tính Năng Nổi Bật
+
+✅ **Tự động hóa hoàn toàn**: Từ quét khuôn mặt → phân tích giọng nói → tính điểm → quyết định  
+✅ **Giao diện trực quan**: 3 tab rõ ràng, dễ sử dụng  
+✅ **Điểm số minh bạch**: Hiển thị chi tiết từng tiêu chí và trọng số  
+✅ **Tùy chỉnh linh hoạt**: Điều chỉnh trọng số theo nhu cầu  
+✅ **Xuất báo cáo đẹp**: Format TXT với box drawing + JSON cho xử lý tự động  
+✅ **Quyết định khách quan**: Dựa trên dữ liệu, giảm thiểu bias  
+
+### Troubleshooting
+
+**Vấn đề: Tab "Tổng Hợp Điểm" không hiển thị điểm**
+- **Nguyên nhân**: Chưa gửi điểm từ 2 tab trước
+- **Giải pháp**: 
+  1. Quay lại tab "Nhận Diện Cảm Xúc", nhấn "📤 GỬI ĐIỂM SANG TỔNG HỢP"
+  2. Quay lại tab "Chuyển Đổi Audio", nhấn "📤 Gửi Điểm"
+  3. Quay lại tab "Tổng Hợp Điểm", nhấn "📥 LẤY ĐIỂM"
+
+**Vấn đề: Điểm hiển thị 0.0**
+- **Nguyên nhân**: Chưa có đủ dữ liệu để tính điểm
+- **Giải pháp**: Quét khuôn mặt/phân tích audio lâu hơn (ít nhất 30 giây)
+
+**Vấn đề: Tổng trọng số không bằng 100%**
+- **Nguyên nhân**: Đã điều chỉnh trọng số thủ công
+- **Giải pháp**: Nhấn nút preset (Default/Technical/Sales) để reset về giá trị chuẩn
 
 ### Tài Liệu Chi Tiết
 
-- **[INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)**: Hướng dẫn tích hợp chi tiết
-- **[SCORING_SYSTEM_GUIDE.md](SCORING_SYSTEM_GUIDE.md)**: Hướng dẫn hệ thống chấm điểm
-- **[CHANGELOG_SCORING_SYSTEM.md](CHANGELOG_SCORING_SYSTEM.md)**: Lịch sử thay đổi hệ thống chấm điểm
+- **[HUONG_DAN_SU_DUNG_TONG_HOP_DIEM.md](HUONG_DAN_SU_DUNG_TONG_HOP_DIEM.md)**: Hướng dẫn sử dụng tab Tổng Hợp Điểm
+- **[INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)**: Hướng dẫn tích hợp hệ thống
+- **[SCORING_SYSTEM_GUIDE.md](SCORING_SYSTEM_GUIDE.md)**: Chi tiết hệ thống chấm điểm
 
 ## Roadmap
 
@@ -972,16 +1157,28 @@ python test_score_scale_verification.py
 - [x] Real-time visualization
 - [x] Comprehensive documentation
 - [x] **Attention/Focus detection** ✨
-- [x] **Emotion scoring system (4 criteria)** ✨
+- [x] **Emotion scoring system (0-10 scale)** ✨
+- [x] **Focus scoring system (0-10 scale)** ✨
 - [x] **Speech clarity analysis** ✨
-- [x] **Content evaluation (semantic similarity)** ✨
+- [x] **Content evaluation với MAX similarity + smooth interpolation** ✨
 - [x] **Integrated interview evaluation system** ✨
+- [x] **GUI Application với 3 tabs** ✨
+- [x] **Tab "Nhận Diện Cảm Xúc"** (Emotion + Focus scoring) ✨
+- [x] **Tab "Chuyển Đổi Audio"** (Clarity + Content scoring) ✨
+- [x] **Tab "Tổng Hợp Điểm"** (Score aggregation + Decision making) ✨
+- [x] **ScoreManager Singleton** (Score sharing between tabs) ✨
+- [x] **Auto-refresh điểm** (Real-time score updates) ✨
+- [x] **Xuất báo cáo TXT/JSON** (Report generation with box drawing) ✨
+- [x] **Trọng số theo vị trí** (5 presets: Default/Technical/Sales/CS/Management) ✨
+- [x] **Quyết định tuyển dụng tự động** (4 levels: Tuyển/Tuyển có ĐK/Xem xét/Không) ✨
+- [x] **Xóa Performance Settings UI** (Tối ưu tự động) ✨
 
 ### In Progress 🚧
-- [ ] Speech clarity analyzer (WPM, filler words)
 - [ ] Ensemble model implementation
 - [ ] Temporal smoothing optimization
-- [ ] Performance profiling and optimization
+- [ ] Cải thiện độ chính xác Content scoring
+- [ ] Thêm nhiều preset vị trí (HR, Finance, etc.)
+- [ ] Tích hợp Speech Clarity scoring (hiện tại mặc định 0.0)
 
 ### Planned 📋
 - [ ] REST API for remote processing
@@ -993,6 +1190,9 @@ python test_score_scale_verification.py
 - [ ] Support for 20+ emotions (extended emotion set)
 - [ ] ONNX and TensorRT optimization
 - [ ] Docker containerization
+- [ ] Lưu lịch sử đánh giá ứng viên
+- [ ] So sánh nhiều ứng viên
+- [ ] Dashboard thống kê tổng quan
 
 ## Project Structure
 

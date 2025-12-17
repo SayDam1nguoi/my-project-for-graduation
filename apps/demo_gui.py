@@ -3060,12 +3060,13 @@ File duoc luu tai: {filename}
     
     def calculate_emotion_score(self) -> float:
         """
-        Tính điểm Cảm xúc (0-10) từ emotion_counts.
+        Tính điểm Cảm xúc (0-10) từ emotion_counts - VERSION 2.0.
         
-        Logic:
-        - Positive emotions (happy, surprise) → điểm cao
-        - Neutral → điểm trung bình  
-        - Negative emotions (sad, angry, fear, disgust) → điểm thấp
+        Cải tiến:
+        - Điều chỉnh trọng số cân bằng hơn (Happy 9.0, Neutral 8.0)
+        - Penalty nếu Happy quá nhiều (> 70%)
+        - Thưởng cho sự đa dạng cảm xúc (≥ 3 loại)
+        - Phạt nếu chỉ có 1 cảm xúc duy nhất
         
         Returns:
             Điểm cảm xúc (0-10)
@@ -3077,24 +3078,54 @@ File duoc luu tai: {filename}
         if total == 0:
             return 0.0
         
-        # Trọng số cho từng cảm xúc (thang 0-10)
+        # BƯỚC 1: Trọng số điều chỉnh (cân bằng hơn)
         weights = {
-            'happy': 10.0,      # Vui vẻ - tốt nhất
-            'surprise': 8.0,    # Ngạc nhiên - tốt
-            'neutral': 7.0,     # Trung lập - chấp nhận được
-            'sad': 4.0,         # Buồn - không tốt
-            'angry': 3.0,       # Tức giận - xấu
-            'fear': 3.0,        # Sợ hãi - xấu
-            'disgust': 2.0      # Ghê tởm - rất xấu
+            'happy': 9.0,       # Giảm từ 10.0 → 9.0 (vẫn tốt nhưng không áp đảo)
+            'surprise': 8.5,    # Tăng từ 8.0 → 8.5 (thể hiện sự quan tâm)
+            'neutral': 8.0,     # Tăng từ 7.0 → 8.0 (chuyên nghiệp, ổn định)
+            'sad': 4.0,         # Giữ nguyên
+            'angry': 3.0,       # Giữ nguyên
+            'fear': 3.0,        # Giữ nguyên
+            'disgust': 2.0      # Giữ nguyên
         }
         
-        # Tính điểm trung bình có trọng số
+        # BƯỚC 2: Tính điểm cơ bản có trọng số
         weighted_sum = sum(
             self.emotion_counts.get(emotion, 0) * weights.get(emotion, 5.0)
             for emotion in self.emotion_counts
         )
-        
         score = weighted_sum / total
+        
+        # BƯỚC 3: Penalty nếu Happy quá nhiều (> 70%)
+        # Lý do: Cười suốt không tự nhiên, có thể giả tạo
+        happy_ratio = self.emotion_counts.get('happy', 0) / total
+        if happy_ratio > 0.7:
+            # Giảm 50% điểm cho mỗi 10% vượt quá ngưỡng
+            # Ví dụ: 80% Happy → penalty = 0.1 * 0.5 = 0.05 (giảm 5%)
+            #        90% Happy → penalty = 0.2 * 0.5 = 0.10 (giảm 10%)
+            #        100% Happy → penalty = 0.3 * 0.5 = 0.15 (giảm 15%)
+            penalty = (happy_ratio - 0.7) * 0.5
+            score = score * (1 - penalty)
+        
+        # BƯỚC 4: Diversity bonus/penalty
+        # Đếm số loại cảm xúc xuất hiện (có count > 0)
+        num_emotions = sum(1 for count in self.emotion_counts.values() if count > 0)
+        
+        if num_emotions >= 3:
+            # Thưởng 5% nếu có ít nhất 3 cảm xúc khác nhau
+            # → Thể hiện sự tự nhiên, cảm xúc phong phú
+            diversity_factor = 1.05
+        elif num_emotions == 2:
+            # Không thưởng, không phạt
+            diversity_factor = 1.0
+        else:  # num_emotions == 1
+            # Phạt 10% nếu chỉ có 1 cảm xúc duy nhất
+            # → Không tự nhiên, có thể giả tạo hoặc quá căng thẳng
+            diversity_factor = 0.9
+        
+        score = score * diversity_factor
+        
+        # BƯỚC 5: Clamp về 0-10 và làm tròn 2 chữ số
         return round(min(10.0, max(0.0, score)), 2)
     
     def calculate_focus_score(self) -> float:

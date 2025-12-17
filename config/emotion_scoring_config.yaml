@@ -20,6 +20,8 @@ score_thresholds:
   negative_overload: [4.0, 7.0]
 
 # Final score multiplier (1.0 to keep 0-10 scale)
+# Emotion score: 0-10 (same as other criteria)
+# Weight adjustment is handled in OverallInterviewScorer (5%)
 final_score_multiplier: 1.0
 
 # Face detection settings

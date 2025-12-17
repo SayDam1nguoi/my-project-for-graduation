@@ -179,7 +179,8 @@ class IntegratedInterviewEvaluator:
                 candidate_id=candidate_id
             )
             
-            # Emotion engine bây giờ trả về 0-10 (final_score_multiplier = 1.0)
+            # Emotion engine trả về 0-10 (giống các module khác)
+            # Trọng số 5% sẽ được áp dụng ở OverallInterviewScorer
             emotion_score = emotion_report.total_score
             
             # Đảm bảo điểm trong khoảng 0-10

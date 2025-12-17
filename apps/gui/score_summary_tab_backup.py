@@ -467,23 +467,19 @@ class ScoreSummaryTab:
         """Áp dụng trọng số preset."""
         presets = {
             "default": {
-                "content": 0.25, "clarity": 0.25, "focus": 0.25, "emotion": 0.25
+                "content": 0.40, "clarity": 0.35, "focus": 0.20, "emotion": 0.05
             },
             "technical": {
-                "content": 0.35, "clarity": 0.25, "focus": 0.25, "emotion": 0.15
+                "content": 0.45, "clarity": 0.30, "focus": 0.20, "emotion": 0.05
             },
             "sales": {
-                "content": 0.20, "clarity": 0.25, "focus": 0.20, "emotion": 0.35
+                "content": 0.35, "clarity": 0.35, "focus": 0.20, "emotion": 0.10
             },
             "customer_service": {
-                "content": 0.20, "clarity": 0.30, "focus": 0.20, "emotion": 0.30
+                "content": 0.30, "clarity": 0.40, "focus": 0.20, "emotion": 0.10
             },
             "management": {
-                "content": 0.30, "clarity": 0.20, "focus": 0.25, "emotion": 0.25
-            },
-            # Preset từ hình (45-25-15-15)
-            "custom_image": {
-                "content": 0.45, "clarity": 0.25, "focus": 0.15, "emotion": 0.15
+                "content": 0.45, "clarity": 0.30, "focus": 0.20, "emotion": 0.05
             }
         }
         

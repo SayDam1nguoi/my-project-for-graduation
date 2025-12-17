@@ -57,13 +57,13 @@ class ScoreManager:
         Cập nhật điểm Cảm xúc (Emotion).
         
         Args:
-            score: Điểm 0-10
+            score: Điểm 0-10 (giống các tiêu chí khác)
             source: Nguồn điểm (ví dụ: "emotion_recognition_tab")
         """
         score = max(0.0, min(10.0, score))  # Clamp 0-10
         self.emotion_score = score
         self.emotion_source = source
-        logger.info(f"Emotion score updated: {score:.2f} from {source}")
+        logger.info(f"Emotion score updated: {score:.2f}/10 from {source}")
         self._notify_callbacks("emotion", score)
     
     def set_focus_score(self, score: float, source: str = "unknown"):
@@ -137,18 +137,20 @@ class ScoreManager:
     def calculate_total_score(
         self,
         weight_content: float = 40.0,
-        weight_focus: float = 30.0,
-        weight_clarity: float = 25.0,
+        weight_focus: float = 20.0,
+        weight_clarity: float = 35.0,
         weight_emotion: float = 5.0
     ) -> float:
         """
-        Tính điểm tổng theo công thức.
+        Tính điểm tổng theo công thức có trọng số.
         
         Công thức mặc định:
-        - Nội dung (N): 40%
-        - Tập trung (T): 30%
-        - Giọng nói (G): 25%
-        - Cảm xúc (O): 5%
+        - Nội dung (N): 40% (0-10 điểm)
+        - Tập trung (T): 20% (0-10 điểm)
+        - Giọng nói (G): 35% (0-10 điểm)
+        - Cảm xúc (O): 5% (0-10 điểm)
+        
+        Total = (N×40% + T×20% + G×35% + O×5%) / 100% = 0-10 điểm
         
         Args:
             weight_content: Trọng số nội dung (%)
@@ -164,7 +166,7 @@ class ScoreManager:
         if abs(total_weight - 100.0) > 0.01:
             logger.warning(f"Total weight is {total_weight}%, not 100%")
         
-        # Tính điểm tổng
+        # Tính điểm tổng (tất cả điểm đều 0-10)
         total = (
             self.content_score * (weight_content / 100.0) +
             self.focus_score * (weight_focus / 100.0) +

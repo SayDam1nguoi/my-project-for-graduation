@@ -39,11 +39,11 @@ class ScoreSummaryTab:
         self._content_score_value = 0.0
         self._total_score_value = 0.0
         
-        # Trọng số
-        self.weight_content = tk.DoubleVar(value=25.0)
-        self.weight_focus = tk.DoubleVar(value=25.0)
-        self.weight_clarity = tk.DoubleVar(value=25.0)
-        self.weight_emotion = tk.DoubleVar(value=25.0)
+        # Trọng số (theo công thức: N=40%, T=20%, G=35%, O=5%)
+        self.weight_content = tk.DoubleVar(value=40.0)    # Nội dung (N)
+        self.weight_focus = tk.DoubleVar(value=20.0)      # Tập trung (T)
+        self.weight_clarity = tk.DoubleVar(value=35.0)    # Giọng nói (G)
+        self.weight_emotion = tk.DoubleVar(value=5.0)     # Cảm xúc (O)
         
         # Thông tin ứng viên
         self.candidate_name = tk.StringVar(value="")
@@ -388,11 +388,11 @@ class ScoreSummaryTab:
     def _apply_preset(self, preset_name):
         """Áp dụng trọng số preset."""
         presets = {
-            "default": {"content": 25, "clarity": 25, "focus": 25, "emotion": 25},
-            "technical": {"content": 35, "clarity": 25, "focus": 25, "emotion": 15},
-            "sales": {"content": 20, "clarity": 25, "focus": 20, "emotion": 35},
-            "customer_service": {"content": 20, "clarity": 30, "focus": 20, "emotion": 30},
-            "management": {"content": 30, "clarity": 20, "focus": 25, "emotion": 25}
+            "default": {"content": 40, "clarity": 35, "focus": 20, "emotion": 5},
+            "technical": {"content": 45, "clarity": 30, "focus": 20, "emotion": 5},
+            "sales": {"content": 35, "clarity": 35, "focus": 20, "emotion": 10},
+            "customer_service": {"content": 30, "clarity": 40, "focus": 20, "emotion": 10},
+            "management": {"content": 45, "clarity": 30, "focus": 20, "emotion": 5}
         }
         
         if preset_name in presets:

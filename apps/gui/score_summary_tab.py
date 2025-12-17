@@ -252,7 +252,7 @@ class ScoreSummaryTab:
         bottom_frame = ttk.Frame(parent)
         bottom_frame.grid(row=1, column=0, columnspan=3, sticky="ew", pady=20)
         
-        # Điểm tổng
+        # Left: Điểm tổng
         total_frame = ttk.LabelFrame(bottom_frame, text="ĐIỂM TỔNG", padding=20)
         total_frame.pack(side=tk.LEFT, padx=10)
         
@@ -271,50 +271,118 @@ class ScoreSummaryTab:
         )
         self.rating_label.pack(pady=(10, 0))
         
-        # Buttons
-        buttons_frame = ttk.Frame(bottom_frame)
-        buttons_frame.pack(side=tk.LEFT, padx=20, fill=tk.BOTH, expand=True)
+        # Center: Quyết định tuyển dụng
+        decision_frame = ttk.LabelFrame(bottom_frame, text="QUYẾT ĐỊNH", padding=20)
+        decision_frame.pack(side=tk.LEFT, padx=10, fill=tk.BOTH, expand=True)
         
-        # Nút tính tổng
-        calc_button = ttk.Button(
+        self.decision_label = tk.Label(
+            decision_frame,
+            text="Chưa có quyết định",
+            font=("Arial", 20, "bold"),
+            fg="#757575",
+            bg="white"
+        )
+        self.decision_label.pack(pady=10)
+        
+        self.decision_reason = tk.Label(
+            decision_frame,
+            text="",
+            font=("Arial", 11),
+            fg="#424242",
+            bg="white",
+            wraplength=300,
+            justify=tk.CENTER
+        )
+        self.decision_reason.pack(pady=5)
+        
+        # Right: Buttons
+        buttons_frame = ttk.Frame(bottom_frame)
+        buttons_frame.pack(side=tk.LEFT, padx=10)
+        
+        # Nút lấy điểm từ các tab (quan trọng nhất)
+        fetch_button = tk.Button(
+            buttons_frame,
+            text="📥 LẤY ĐIỂM TỪ CÁC TAB",
+            command=self.fetch_scores_from_tabs,
+            font=("Arial", 11, "bold"),
+            bg="#2196F3",
+            fg="white",
+            activebackground="#1976D2",
+            cursor="hand2",
+            relief=tk.RAISED,
+            bd=2,
+            padx=15,
+            pady=10
+        )
+        fetch_button.pack(fill=tk.X, pady=5)
+        
+        # Nút tính tổng (quan trọng thứ 2)
+        calc_button = tk.Button(
             buttons_frame,
             text="🧮 TÍNH ĐIỂM TỔNG",
             command=self.calculate_total_score,
-            style="Accent.TButton"
+            font=("Arial", 11, "bold"),
+            bg="#4CAF50",
+            fg="white",
+            activebackground="#388E3C",
+            cursor="hand2",
+            relief=tk.RAISED,
+            bd=2,
+            padx=15,
+            pady=10
         )
         calc_button.pack(fill=tk.X, pady=5)
         
         # Nút xuất file
-        export_button = ttk.Button(
+        export_button = tk.Button(
             buttons_frame,
-            text="📄 XUẤT KẾT QUẢ",
-            command=self.export_results
+            text="📄 XUẤT KẾT QUẢ (.TXT)",
+            command=self.export_results,
+            font=("Arial", 10),
+            bg="#FF9800",
+            fg="white",
+            activebackground="#F57C00",
+            cursor="hand2",
+            relief=tk.RAISED,
+            bd=2,
+            padx=15,
+            pady=8
         )
         export_button.pack(fill=tk.X, pady=5)
         
-        # Nút reset
-        reset_button = ttk.Button(
-            buttons_frame,
-            text="🔄 RESET",
-            command=self.reset_scores
-        )
-        reset_button.pack(fill=tk.X, pady=5)
-        
         # Nút lưu JSON
-        save_json_button = ttk.Button(
+        save_json_button = tk.Button(
             buttons_frame,
             text="💾 LƯU JSON",
-            command=self.save_json
+            command=self.save_json,
+            font=("Arial", 10),
+            bg="#9C27B0",
+            fg="white",
+            activebackground="#7B1FA2",
+            cursor="hand2",
+            relief=tk.RAISED,
+            bd=2,
+            padx=15,
+            pady=8
         )
         save_json_button.pack(fill=tk.X, pady=5)
         
-        # Nút lấy điểm từ các tab
-        fetch_button = ttk.Button(
+        # Nút reset
+        reset_button = tk.Button(
             buttons_frame,
-            text="📥 LẤY ĐIỂM TỪ CÁC TAB",
-            command=self.fetch_scores_from_tabs
+            text="🔄 RESET",
+            command=self.reset_scores,
+            font=("Arial", 10),
+            bg="#607D8B",
+            fg="white",
+            activebackground="#455A64",
+            cursor="hand2",
+            relief=tk.RAISED,
+            bd=2,
+            padx=15,
+            pady=8
         )
-        fetch_button.pack(fill=tk.X, pady=5)
+        reset_button.pack(fill=tk.X, pady=5)
     
     def _update_total_weight(self):
         """Cập nhật tổng trọng số."""
@@ -371,7 +439,7 @@ class ScoreSummaryTab:
             self._update_total_weight()
     
     def calculate_total_score(self):
-        """Tính điểm tổng."""
+        """Tính điểm tổng và hiển thị quyết định tuyển dụng."""
         # Kiểm tra trọng số
         total_weight = (
             self.weight_content.get() +
@@ -401,10 +469,18 @@ class ScoreSummaryTab:
         rating = self._get_rating(total)
         self.rating_label.config(text=rating)
         
+        # Xác định quyết định tuyển dụng
+        decision, reason, color = self._get_decision_details(total)
+        self.decision_label.config(text=decision, fg=color)
+        self.decision_reason.config(text=reason)
+        
         # Hiển thị thông báo
         messagebox.showinfo(
             "Kết quả",
-            f"Điểm tổng: {total:.2f}/10\nĐánh giá: {rating}"
+            f"Điểm tổng: {total:.2f}/10\n"
+            f"Đánh giá: {rating}\n\n"
+            f"Quyết định: {decision}\n"
+            f"{reason}"
         )
     
     def _get_rating(self, score):
@@ -471,24 +547,23 @@ class ScoreSummaryTab:
     def _generate_report_content(self):
         """Tạo nội dung báo cáo."""
         lines = []
-        lines.append("="*80)
-        lines.append("KẾT QUẢ ĐÁNH GIÁ PHỎNG VẤN")
-        lines.append("="*80)
+        lines.append("╔" + "═"*78 + "╗")
+        lines.append("║" + " "*20 + "KẾT QUẢ ĐÁNH GIÁ PHỎNG VẤN" + " "*32 + "║")
+        lines.append("╚" + "═"*78 + "╝")
         lines.append("")
         
         # Thông tin ứng viên
-        lines.append("THÔNG TIN ỨNG VIÊN:")
-        lines.append(f"  Họ tên: {self.candidate_name.get() or 'N/A'}")
-        lines.append(f"  Mã ứng viên: {self.candidate_id.get() or 'N/A'}")
-        lines.append(f"  Vị trí: {self.position.get()}")
-        lines.append(f"  Ngày đánh giá: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+        lines.append("┌─ THÔNG TIN ỨNG VIÊN " + "─"*56 + "┐")
+        lines.append(f"│  Họ tên:        {self.candidate_name.get() or 'N/A':<60}│")
+        lines.append(f"│  Mã ứng viên:   {self.candidate_id.get() or 'N/A':<60}│")
+        lines.append(f"│  Vị trí:        {self.position.get():<60}│")
+        lines.append(f"│  Ngày đánh giá: {datetime.now().strftime('%d/%m/%Y %H:%M:%S'):<60}│")
+        lines.append("└" + "─"*78 + "┘")
         lines.append("")
         
         # Điểm chi tiết
-        lines.append("-"*80)
-        lines.append("ĐIỂM CHI TIẾT (Thang 0-10):")
-        lines.append("-"*80)
-        lines.append("")
+        lines.append("┌─ ĐIỂM CHI TIẾT (Thang 0-10) " + "─"*48 + "┐")
+        lines.append("│" + " "*78 + "│")
         
         scores = [
             ("📝 Nội dung (Content)", self.content_score.get(), self.weight_content.get()),
@@ -499,51 +574,66 @@ class ScoreSummaryTab:
         
         for name, score, weight in scores:
             contribution = score * (weight / 100)
-            lines.append(f"{name}:")
-            lines.append(f"  Điểm: {score:.2f}/10")
-            lines.append(f"  Trọng số: {weight:.0f}%")
-            lines.append(f"  Đóng góp: {contribution:.2f} điểm")
-            lines.append("")
+            lines.append(f"│  {name:<30}                                        │")
+            lines.append(f"│    • Điểm:      {score:>5.2f}/10                                           │")
+            lines.append(f"│    • Trọng số:  {weight:>5.0f}%                                             │")
+            lines.append(f"│    • Đóng góp:  {contribution:>5.2f} điểm                                         │")
+            lines.append("│" + " "*78 + "│")
         
-        # Điểm tổng
-        lines.append("="*80)
-        lines.append("ĐIỂM TỔNG:")
-        lines.append("="*80)
+        lines.append("└" + "─"*78 + "┘")
         lines.append("")
         
+        # Điểm tổng
         total = self.total_score.get()
         rating = self._get_rating(total)
         
-        lines.append(f"  Điểm: {total:.2f}/10")
-        lines.append(f"  Đánh giá: {rating}")
+        lines.append("╔" + "═"*78 + "╗")
+        lines.append("║" + " "*30 + "ĐIỂM TỔNG" + " "*39 + "║")
+        lines.append("╠" + "═"*78 + "╣")
+        lines.append(f"║  Điểm:     {total:>5.2f}/10" + " "*58 + "║")
+        lines.append(f"║  Đánh giá: {rating:<60}║")
+        lines.append("╚" + "═"*78 + "╝")
         lines.append("")
         
         # Kết luận
-        lines.append("-"*80)
-        lines.append("KẾT LUẬN:")
-        lines.append("-"*80)
+        decision, reason, _ = self._get_decision_details(total)
+        
+        lines.append("┌─ KẾT LUẬN " + "─"*66 + "┐")
+        lines.append("│" + " "*78 + "│")
+        lines.append(f"│  Quyết định: {decision:<63}│")
+        lines.append("│" + " "*78 + "│")
+        
+        # Wrap reason text
+        reason_lines = reason.split('\n')
+        for reason_line in reason_lines:
+            if len(reason_line) <= 74:
+                lines.append(f"│  {reason_line:<76}│")
+            else:
+                # Split long lines
+                words = reason_line.split()
+                current_line = ""
+                for word in words:
+                    if len(current_line) + len(word) + 1 <= 74:
+                        current_line += word + " "
+                    else:
+                        lines.append(f"│  {current_line:<76}│")
+                        current_line = word + " "
+                if current_line:
+                    lines.append(f"│  {current_line:<76}│")
+        
+        lines.append("│" + " "*78 + "│")
+        lines.append("└" + "─"*78 + "┘")
         lines.append("")
         
-        if total >= 8.0:
-            decision = "✅ ĐỀ XUẤT TUYỂN DỤNG"
-            reason = "Ứng viên có màn thể hiện xuất sắc/rất tốt."
-        elif total >= 7.0:
-            decision = "✅ ĐỀ XUẤT TUYỂN DỤNG CÓ ĐIỀU KIỆN"
-            reason = "Ứng viên có màn thể hiện tốt, cần xem xét thêm."
-        elif total >= 6.0:
-            decision = "⚠️ CẦN XEM XÉT THÊM"
-            reason = "Ứng viên đạt mức chấp nhận được nhưng cần đánh giá kỹ hơn."
-        else:
-            decision = "❌ KHÔNG ĐỀ XUẤT TUYỂN DỤNG"
-            reason = "Ứng viên cần cải thiện nhiều hoặc không phù hợp với vị trí."
-        
-        lines.append(f"  {decision}")
-        lines.append(f"  Lý do: {reason}")
+        # Chữ ký
+        lines.append("─"*80)
+        lines.append("Người đánh giá: ___________________    Ngày: ___/___/______")
         lines.append("")
-        
-        lines.append("="*80)
-        lines.append("HẾT")
-        lines.append("="*80)
+        lines.append("Chữ ký: ___________________")
+        lines.append("")
+        lines.append("─"*80)
+        lines.append("Hệ thống đánh giá phỏng vấn tự động - Emotion Recognition System")
+        lines.append("─"*80)
         
         return "\n".join(lines)
 
@@ -625,6 +715,38 @@ class ScoreSummaryTab:
             return "XEM XÉT THÊM"
         else:
             return "KHÔNG TUYỂN DỤNG"
+    
+    def _get_decision_details(self, score):
+        """
+        Lấy chi tiết quyết định tuyển dụng.
+        
+        Returns:
+            (decision, reason, color)
+        """
+        if score >= 8.0:
+            return (
+                "✅ TUYỂN DỤNG",
+                "Ứng viên có màn thể hiện xuất sắc/rất tốt.\nĐề xuất tuyển dụng ngay.",
+                "#4CAF50"  # Green
+            )
+        elif score >= 7.0:
+            return (
+                "✅ TUYỂN DỤNG CÓ ĐIỀU KIỆN",
+                "Ứng viên có màn thể hiện tốt.\nCó thể tuyển dụng với thời gian thử việc.",
+                "#FF9800"  # Orange
+            )
+        elif score >= 6.0:
+            return (
+                "⚠️ CẦN XEM XÉT THÊM",
+                "Ứng viên đạt mức chấp nhận được.\nCần phỏng vấn vòng 2 hoặc đánh giá kỹ hơn.",
+                "#FFC107"  # Amber
+            )
+        else:
+            return (
+                "❌ KHÔNG TUYỂN DỤNG",
+                "Ứng viên cần cải thiện nhiều.\nKhông phù hợp với vị trí hiện tại.",
+                "#F44336"  # Red
+            )
     
     def reset_scores(self):
         """Reset tất cả điểm về 0."""

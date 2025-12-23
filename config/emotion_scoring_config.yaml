@@ -3,12 +3,12 @@
 # Chú ý: Không dùng để đánh giá năng lực, chỉ đánh giá hành vi thể hiện
 
 # Criterion weights (must sum to 1.0)
-# Each criterion is scored 0-10, then multiplied by 0.5 for final score
+# CHỈ ĐÁNH GIÁ ỔN ĐỊNH CẢM XÚC
 criterion_weights:
-  emotion_stability: 0.40        # 40% - Ổn định cảm xúc (Emotion Stability)
-  emotion_content_alignment: 0.35 # 35% - Khớp cảm xúc & nội dung (Emotion-Content Alignment)
-  positive_ratio: 0.15           # 15% - Tích cực (Positive Ratio)
-  negative_overload: 0.10        # 10% - Mức tiêu cực vượt ngưỡng (Negative Overload)
+  emotion_stability: 1.0         # 100% - Chỉ đánh giá ổn định cảm xúc
+  emotion_content_alignment: 0.0 # Không đánh giá
+  positive_ratio: 0.0            # Không đánh giá
+  negative_overload: 0.0         # Không đánh giá
 
 # Score thresholds for each criterion
 # Format: [low_threshold, high_threshold]

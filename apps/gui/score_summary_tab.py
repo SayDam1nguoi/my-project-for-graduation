@@ -22,8 +22,8 @@ class ScoreSummaryTab:
         print("[ScoreSummaryTab] Initializing...")
         self.parent = parent
         
-        # Tạo frame chính với màu nền sáng
-        self.frame = tk.Frame(parent, bg="#F5F5F5")
+        # Tạo frame chính với màu nền tối (dark theme)
+        self.frame = tk.Frame(parent, bg="#1a1a1a")
         
         # Điểm số (dùng StringVar để format)
         self.emotion_score = tk.StringVar(value="0.0")
@@ -86,7 +86,7 @@ class ScoreSummaryTab:
     def _create_ui(self):
         """Tạo giao diện."""
         # Header
-        header = tk.Frame(self.frame, bg="#1976D2", height=60)
+        header = tk.Frame(self.frame, bg="#0d47a1", height=60)
         header.pack(fill=tk.X)
         header.pack_propagate(False)
         
@@ -94,16 +94,16 @@ class ScoreSummaryTab:
             header,
             text="📊 TỔNG HỢP ĐIỂM PHỎNG VẤN",
             font=("Arial", 18, "bold"),
-            bg="#1976D2",
+            bg="#0d47a1",
             fg="white"
         ).pack(pady=15)
         
         # Main content
-        content = tk.Frame(self.frame, bg="#F5F5F5")
+        content = tk.Frame(self.frame, bg="#1a1a1a")
         content.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Row 1: Thông tin + 4 điểm + Trọng số
-        row1 = tk.Frame(content, bg="#F5F5F5")
+        row1 = tk.Frame(content, bg="#1a1a1a")
         row1.pack(fill=tk.X, pady=(0, 20))
         
         self._create_info_panel(row1)
@@ -111,7 +111,7 @@ class ScoreSummaryTab:
         self._create_weights_panel(row1)
         
         # Row 2: Điểm tổng + Quyết định + Buttons
-        row2 = tk.Frame(content, bg="#F5F5F5")
+        row2 = tk.Frame(content, bg="#1a1a1a")
         row2.pack(fill=tk.X)
         
         self._create_total_panel(row2)
@@ -124,31 +124,31 @@ class ScoreSummaryTab:
             parent,
             text=" Thông Tin Ứng Viên ",
             font=("Arial", 10, "bold"),
-            bg="white",
-            fg="#424242",
+            bg="#252525",
+            fg="#e0e0e0",
             relief=tk.GROOVE,
             bd=2
         )
         frame.pack(side=tk.LEFT, padx=(0, 10), fill=tk.BOTH)
         
         # Họ tên
-        tk.Label(frame, text="Họ tên:", bg="white", anchor="w").grid(
+        tk.Label(frame, text="Họ tên:", bg="#252525", fg="#e0e0e0", anchor="w").grid(
             row=0, column=0, sticky="w", padx=10, pady=5
         )
-        tk.Entry(frame, textvariable=self.candidate_name, width=20).grid(
+        tk.Entry(frame, textvariable=self.candidate_name, width=20, bg="#333333", fg="#ffffff", insertbackground="#ffffff").grid(
             row=0, column=1, padx=10, pady=5
         )
         
         # Mã ứng viên
-        tk.Label(frame, text="Mã ứng viên:", bg="white", anchor="w").grid(
+        tk.Label(frame, text="Mã ứng viên:", bg="#252525", fg="#e0e0e0", anchor="w").grid(
             row=1, column=0, sticky="w", padx=10, pady=5
         )
-        tk.Entry(frame, textvariable=self.candidate_id, width=20).grid(
+        tk.Entry(frame, textvariable=self.candidate_id, width=20, bg="#333333", fg="#ffffff", insertbackground="#ffffff").grid(
             row=1, column=1, padx=10, pady=5
         )
         
         # Vị trí
-        tk.Label(frame, text="Vị trí:", bg="white", anchor="w").grid(
+        tk.Label(frame, text="Vị trí:", bg="#252525", fg="#e0e0e0", anchor="w").grid(
             row=2, column=0, sticky="w", padx=10, pady=5
         )
         combo = ttk.Combobox(
@@ -167,8 +167,8 @@ class ScoreSummaryTab:
             parent,
             text=" Điểm Đánh Giá (0-10) ",
             font=("Arial", 10, "bold"),
-            bg="white",
-            fg="#424242",
+            bg="#252525",
+            fg="#e0e0e0",
             relief=tk.GROOVE,
             bd=2
         )
@@ -183,18 +183,18 @@ class ScoreSummaryTab:
         ]
         
         for title, var, color, row, col in scores:
-            box = tk.Frame(frame, bg="white", relief=tk.SOLID, bd=1)
+            box = tk.Frame(frame, bg="#252525", relief=tk.SOLID, bd=1)
             box.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
             
-            tk.Label(box, text=title, font=("Arial", 11, "bold"), bg="white").pack(pady=5)
+            tk.Label(box, text=title, font=("Arial", 11, "bold"), bg="#252525", fg="#ffffff").pack(pady=5)
             tk.Label(
                 box,
                 textvariable=var,
                 font=("Arial", 32, "bold"),
                 fg=color,
-                bg="white"
+                bg="#252525"
             ).pack()
-            tk.Label(box, text="/10", font=("Arial", 10), bg="white").pack(pady=5)
+            tk.Label(box, text="/10", font=("Arial", 10), bg="#252525", fg="#ffffff").pack(pady=5)
         
         frame.grid_columnconfigure(0, weight=1)
         frame.grid_columnconfigure(1, weight=1)
@@ -205,8 +205,8 @@ class ScoreSummaryTab:
             parent,
             text=" Trọng Số (%) ",
             font=("Arial", 10, "bold"),
-            bg="white",
-            fg="#424242",
+            bg="#252525",
+            fg="#e0e0e0",
             relief=tk.GROOVE,
             bd=2
         )
@@ -220,7 +220,7 @@ class ScoreSummaryTab:
         ]
         
         for i, (label, var) in enumerate(weights):
-            tk.Label(frame, text=label, bg="white").grid(
+            tk.Label(frame, text=label, bg="#252525", fg="#ffffff").grid(
                 row=i, column=0, sticky="w", padx=10, pady=5
             )
             spinbox = ttk.Spinbox(
@@ -236,11 +236,11 @@ class ScoreSummaryTab:
             spinbox.bind("<KeyRelease>", lambda e: self._update_total_weight())
         
         # Tổng
-        tk.Frame(frame, height=2, bg="#CCCCCC").grid(
+        tk.Frame(frame, height=2, bg="#444444").grid(
             row=4, column=0, columnspan=2, sticky="ew", padx=10, pady=5
         )
         
-        tk.Label(frame, text="Tổng:", font=("Arial", 10, "bold"), bg="white").grid(
+        tk.Label(frame, text="Tổng:", font=("Arial", 10, "bold"), bg="#252525", fg="#ffffff").grid(
             row=5, column=0, sticky="w", padx=10, pady=5
         )
         
@@ -248,27 +248,11 @@ class ScoreSummaryTab:
             frame,
             text="100%",
             font=("Arial", 10, "bold"),
-            fg="green",
-            bg="white"
+            fg="#4CAF50",
+            bg="#252525"
         )
         self.total_weight_label.grid(row=5, column=1, padx=10, pady=5)
-        
-        # Preset buttons
-        preset_frame = tk.Frame(frame, bg="white")
-        preset_frame.grid(row=6, column=0, columnspan=2, pady=10)
-        
-        for preset in ["Default", "Technical", "Sales"]:
-            tk.Button(
-                preset_frame,
-                text=preset,
-                command=lambda p=preset.lower(): self._apply_preset(p),
-                font=("Arial", 8),
-                bg="#E0E0E0",
-                relief=tk.RAISED,
-                bd=1,
-                padx=5,
-                pady=2
-            ).pack(side=tk.LEFT, padx=2)
+
     
     def _create_total_panel(self, parent):
         """Panel điểm tổng."""
@@ -276,8 +260,8 @@ class ScoreSummaryTab:
             parent,
             text=" ĐIỂM TỔNG ",
             font=("Arial", 11, "bold"),
-            bg="white",
-            fg="#424242",
+            bg="#252525",
+            fg="#e0e0e0",
             relief=tk.GROOVE,
             bd=2
         )
@@ -288,16 +272,16 @@ class ScoreSummaryTab:
             textvariable=self.total_score,
             font=("Arial", 48, "bold"),
             fg="#2ECC71",
-            bg="white"
+            bg="#252525"
         ).pack()
         
-        tk.Label(frame, text="/10", font=("Arial", 14), bg="white").pack()
+        tk.Label(frame, text="/10", font=("Arial", 14), bg="#252525", fg="#ffffff").pack()
         
         self.rating_label = tk.Label(
             frame,
             text="",
             font=("Arial", 12, "bold"),
-            bg="white"
+            bg="#252525"
         )
         self.rating_label.pack(pady=5)
     
@@ -307,8 +291,8 @@ class ScoreSummaryTab:
             parent,
             text=" QUYẾT ĐỊNH TUYỂN DỤNG ",
             font=("Arial", 11, "bold"),
-            bg="white",
-            fg="#424242",
+            bg="#252525",
+            fg="#e0e0e0",
             relief=tk.GROOVE,
             bd=2
         )
@@ -318,8 +302,8 @@ class ScoreSummaryTab:
             frame,
             text="Chưa có quyết định",
             font=("Arial", 16, "bold"),
-            fg="#757575",
-            bg="white"
+            fg="#BDBDBD",
+            bg="#252525"
         )
         self.decision_label.pack(pady=10)
         
@@ -327,8 +311,8 @@ class ScoreSummaryTab:
             frame,
             text="Vui lòng tính điểm tổng để xem quyết định",
             font=("Arial", 10),
-            fg="#9E9E9E",
-            bg="white",
+            fg="#BDBDBD",
+            bg="#252525",
             wraplength=300,
             justify=tk.CENTER
         )
@@ -336,7 +320,7 @@ class ScoreSummaryTab:
     
     def _create_buttons_panel(self, parent):
         """Panel buttons."""
-        frame = tk.Frame(parent, bg="#F5F5F5")
+        frame = tk.Frame(parent, bg="#1a1a1a")
         frame.pack(side=tk.LEFT, padx=(10, 0))
         
         buttons = [
@@ -377,7 +361,7 @@ class ScoreSummaryTab:
         self.total_weight_label.config(text=f"{total:.0f}%")
         
         if abs(total - 100) < 0.01:
-            self.total_weight_label.config(fg="green")
+            self.total_weight_label.config(fg="#4CAF50")
         else:
             self.total_weight_label.config(fg="red")
     
@@ -501,7 +485,7 @@ class ScoreSummaryTab:
             color = "#F44336"
         
         self.decision_label.config(text=decision, fg=color)
-        self.decision_reason.config(text=reason, fg="#424242")
+        self.decision_reason.config(text=reason, fg="#e0e0e0")
         
         messagebox.showinfo(
             "Kết Quả",
@@ -624,10 +608,10 @@ class ScoreSummaryTab:
             self._set_content_score(0.0)
             self._set_total_score(0.0)
             self.rating_label.config(text="")
-            self.decision_label.config(text="Chưa có quyết định", fg="#757575")
+            self.decision_label.config(text="Chưa có quyết định", fg="#BDBDBD")
             self.decision_reason.config(
                 text="Vui lòng tính điểm tổng để xem quyết định",
-                fg="#9E9E9E"
+                fg="#BDBDBD"
             )
     
     def _set_emotion_score(self, score: float):

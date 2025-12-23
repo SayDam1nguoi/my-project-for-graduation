@@ -254,21 +254,7 @@ class ScoreSummaryTab:
         tk.Label(weights_frame, text="Preset:", font=("Arial", 9), bg="white").grid(
             row=6, column=0, columnspan=2, sticky="w", pady=(10, 5)
         )
-        
-        preset_frame = tk.Frame(weights_frame, bg="white")
-        preset_frame.grid(row=7, column=0, columnspan=2, sticky="ew")
-        
-        ttk.Button(
-            preset_frame, text="Default", command=lambda: self._apply_preset("default")
-        ).pack(side=tk.LEFT, padx=2)
-        
-        ttk.Button(
-            preset_frame, text="Technical", command=lambda: self._apply_preset("technical")
-        ).pack(side=tk.LEFT, padx=2)
-        
-        ttk.Button(
-            preset_frame, text="Sales", command=lambda: self._apply_preset("sales")
-        ).pack(side=tk.LEFT, padx=2)
+
     
     def _create_weight_row(self, parent, label, variable, row):
         """Tạo một hàng trọng số."""

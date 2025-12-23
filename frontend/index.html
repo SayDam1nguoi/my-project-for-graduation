@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Analysis System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-section.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-name {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .analyze-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .analyze-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status-section {
+            display: none;
+            margin-top: 30px;
+            padding: 30px;
+            background: #f8f9ff;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .status-section.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .status-text {
+            font-size: 1.2em;
+            color: #667eea;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .total-score {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .total-score h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .total-score .score {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .total-score .rating {
+            font-size: 1.8em;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .score-card {
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            transition: transform 0.3s;
+        }
+
+        .score-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .score-card.emotion {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .score-card.focus {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .score-card.clarity {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .score-card.content {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .score-card h3 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .score-card .score {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 15px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .scores-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Interview Analysis System</h1>
+            <p>Phân tích video phỏng vấn bằng AI</p>
+        </div>
+
+        <div class="content">
+            <!-- Upload Section -->
+            <div class="upload-section" id="uploadSection">
+                <h2 style="margin-bottom: 20px; color: #667eea;">📹 Upload Video Phỏng Vấn</h2>
+                <p style="margin-bottom: 30px; color: #666;">Kéo thả video vào đây hoặc click để chọn file</p>
+
+                <div class="file-input-wrapper">
+                    <input type="file" id="videoInput" accept="video/*">
+                    <label class="file-input-label">
+                        📁 Chọn Video
+                    </label>
+                </div>
+
+                <div class="file-name" id="fileName"></div>
+
+                <button class="analyze-btn" id="analyzeBtn" disabled>
+                    🚀 Phân Tích Video
+                </button>
+            </div>
+
+            <!-- Info Box -->
+            <div class="info-box">
+                <p><strong>ℹ️ Lưu ý:</strong></p>
+                <p>• Video nên có độ dài 1-10 phút</p>
+                <p>• Format: MP4, AVI, MOV</p>
+                <p>• Quá trình phân tích có thể mất 2-5 phút</p>
+            </div>
+
+            <!-- Status Section -->
+            <div class="status-section" id="statusSection">
+                <div class="spinner"></div>
+                <div class="status-text" id="statusText">Đang phân tích video...</div>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage"></div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection">
+                <div class="total-score">
+                    <h2>Điểm Tổng</h2>
+                    <div class="score" id="totalScore">0.0</div>
+                    <div class="rating" id="rating">-</div>
+                </div>
+
+                <div class="scores-grid">
+                    <div class="score-card emotion">
+                        <h3>😊 Cảm Xúc</h3>
+                        <div class="score" id="emotionScore">0.0</div>
+                    </div>
+                    <div class="score-card focus">
+                        <h3>👁️ Tập Trung</h3>
+                        <div class="score" id="focusScore">0.0</div>
+                    </div>
+                    <div class="score-card clarity">
+                        <h3>🗣️ Rõ Ràng</h3>
+                        <div class="score" id="clarityScore">0.0</div>
+                    </div>
+                    <div class="score-card content">
+                        <h3>📝 Nội Dung</h3>
+                        <div class="score" id="contentScore">0.0</div>
+                    </div>
+                </div>
+
+                <button class="reset-btn" id="resetBtn">
+                    🔄 Phân Tích Video Khác
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        const videoInput = document.getElementById('videoInput');
+        const fileName = document.getElementById('fileName');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const uploadSection = document.getElementById('uploadSection');
+        const statusSection = document.getElementById('statusSection');
+        const statusText = document.getElementById('statusText');
+        const resultsSection = document.getElementById('resultsSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let selectedFile = null;
+
+        // File input change
+        videoInput.addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                fileName.textContent = `📹 ${selectedFile.name}`;
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        // Drag and drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                selectedFile = files[0];
+                fileName.textContent = `📹 ${selectedFile.name}`;
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        // Analyze button
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            // Hide upload, show status
+            uploadSection.style.display = 'none';
+            statusSection.classList.add('show');
+            errorMessage.classList.remove('show');
+            resultsSection.classList.remove('show');
+
+            try {
+                // Upload and analyze
+                statusText.textContent = 'Đang upload video...';
+
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                statusText.textContent = 'Đang phân tích video... (có thể mất vài phút)';
+
+                const response = await fetch(`${API_URL}/api/analyze-sync`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                // Show results
+                displayResults(result);
+
+            } catch (error) {
+                console.error('Error:', error);
+                statusSection.classList.remove('show');
+                errorMessage.textContent = `❌ Lỗi: ${error.message}. Vui lòng thử lại!`;
+                errorMessage.classList.add('show');
+                uploadSection.style.display = 'block';
+            }
+        });
+
+        // Display results
+        function displayResults(result) {
+            statusSection.classList.remove('show');
+            resultsSection.classList.add('show');
+
+            // Total score
+            document.getElementById('totalScore').textContent = result.scores.total.toFixed(1);
+            document.getElementById('rating').textContent = result.rating;
+
+            // Individual scores
+            document.getElementById('emotionScore').textContent = result.scores.emotion.toFixed(1);
+            document.getElementById('focusScore').textContent = result.scores.focus.toFixed(1);
+            document.getElementById('clarityScore').textContent = result.scores.clarity.toFixed(1);
+            document.getElementById('contentScore').textContent = result.scores.content.toFixed(1);
+        }
+
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileName.textContent = '';
+            analyzeBtn.disabled = true;
+            videoInput.value = '';
+
+            resultsSection.classList.remove('show');
+            uploadSection.style.display = 'block';
+        });
+
+        // Check API on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                if (!response.ok) {
+                    throw new Error('API not responding');
+                }
+                console.log('✅ API is running');
+            } catch (error) {
+                errorMessage.textContent = '⚠️ Không thể kết nối với API. Vui lòng chạy: python api/main.py';
+                errorMessage.classList.add('show');
+            }
+        });
+    </script>
+</body>
+
+</html>

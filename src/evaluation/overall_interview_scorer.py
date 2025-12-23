@@ -90,39 +90,40 @@ class OverallInterviewScorer:
     """
     
     # Cấu hình trọng số mặc định
-    # Emotion: 5%, Focus: 20%, Clarity: 35%, Content: 40%
+    # CHỈ ĐÁNH GIÁ CẢM XÚC (ỔN ĐỊNH CẢM XÚC)
     DEFAULT_WEIGHTS = {
-        'emotion': 0.05,   # 5% - Cảm xúc (0-10 điểm)
-        'focus': 0.20,     # 20% - Tập trung (0-10 điểm)
-        'clarity': 0.35,   # 35% - Rõ ràng lời nói (0-10 điểm)
-        'content': 0.40    # 40% - Nội dung (0-10 điểm)
+        'emotion': 1.0,    # 100% - Chỉ đánh giá ổn định cảm xúc
+        'focus': 0.0,      # 0% - Không đánh giá
+        'clarity': 0.0,    # 0% - Không đánh giá
+        'content': 0.0     # 0% - Không đánh giá
     }
     
     # Cấu hình trọng số cho các vị trí khác nhau
+    # TẤT CẢ CHỈ ĐÁNH GIÁ CẢM XÚC (ỔN ĐỊNH CẢM XÚC)
     POSITION_WEIGHTS = {
-        'technical': {  # Vị trí kỹ thuật
-            'emotion': 0.05,   # 5% - Cảm xúc ít quan trọng
-            'focus': 0.20,     # 20% - Tập trung
-            'clarity': 0.30,   # 30% - Rõ ràng
-            'content': 0.45    # 45% - Nội dung quan trọng nhất
+        'technical': {
+            'emotion': 1.0,
+            'focus': 0.0,
+            'clarity': 0.0,
+            'content': 0.0
         },
-        'sales': {  # Vị trí bán hàng
-            'emotion': 0.10,   # 10% - Cảm xúc quan trọng hơn
-            'focus': 0.20,     # 20% - Tập trung
-            'clarity': 0.35,   # 35% - Rõ ràng quan trọng
-            'content': 0.35    # 35% - Nội dung
+        'sales': {
+            'emotion': 1.0,
+            'focus': 0.0,
+            'clarity': 0.0,
+            'content': 0.0
         },
-        'customer_service': {  # Vị trí chăm sóc khách hàng
-            'emotion': 0.10,   # 10% - Cảm xúc quan trọng
-            'focus': 0.20,     # 20% - Tập trung
-            'clarity': 0.40,   # 40% - Rõ ràng rất quan trọng
-            'content': 0.30    # 30% - Nội dung
+        'customer_service': {
+            'emotion': 1.0,
+            'focus': 0.0,
+            'clarity': 0.0,
+            'content': 0.0
         },
-        'management': {  # Vị trí quản lý
-            'emotion': 0.05,   # 5% - Cảm xúc
-            'focus': 0.20,     # 20% - Tập trung
-            'clarity': 0.30,   # 30% - Rõ ràng
-            'content': 0.45    # 45% - Nội dung quan trọng nhất
+        'management': {
+            'emotion': 1.0,
+            'focus': 0.0,
+            'clarity': 0.0,
+            'content': 0.0
         },
         'default': DEFAULT_WEIGHTS
     }

@@ -218,23 +218,7 @@ class ScoreSummaryTab:
             bg="white"
         )
         self.total_weight_label.grid(row=5, column=1, padx=10, pady=5)
-        
-        # Preset buttons
-        preset_frame = tk.Frame(frame, bg="white")
-        preset_frame.grid(row=6, column=0, columnspan=2, pady=10)
-        
-        for preset in ["Default", "Technical", "Sales"]:
-            tk.Button(
-                preset_frame,
-                text=preset,
-                command=lambda p=preset.lower(): self._apply_preset(p),
-                font=("Arial", 8),
-                bg="#E0E0E0",
-                relief=tk.RAISED,
-                bd=1,
-                padx=5,
-                pady=2
-            ).pack(side=tk.LEFT, padx=2)
+
     
     def _create_total_panel(self, parent):
         """Panel điểm tổng."""

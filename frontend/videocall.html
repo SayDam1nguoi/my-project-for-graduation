@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Call - Emotion Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .room-setup {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .room-setup input {
+            padding: 12px;
+            font-size: 1.1em;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            background: #252525;
+            color: #e0e0e0;
+            width: 300px;
+            margin-right: 10px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+        }
+
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .video-box {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .video-box h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .video-box video {
+            width: 100%;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .video-box canvas {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+        }
+
+        .emotion-display {
+            margin-top: 15px;
+            padding: 15px;
+            background: #252525;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .emotion-display .emotion {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .emotion-display .confidence {
+            font-size: 1.2em;
+            color: #888;
+        }
+
+        .stats-panel {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .stats-panel h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .stat-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #252525;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .status-message.show {
+            display: block;
+        }
+
+        .status-message.info {
+            background: #1e3a5f;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-message.success {
+            background: #1e4d2b;
+            border-left: 4px solid #43e97b;
+        }
+
+        .status-message.error {
+            background: #4d1e1e;
+            border-left: 4px solid #f5576c;
+        }
+
+        .connection-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .connection-status.connected {
+            background: #43e97b;
+            color: #000;
+        }
+
+        .connection-status.connecting {
+            background: #ff9800;
+            color: #000;
+        }
+
+        .connection-status.disconnected {
+            background: #f44336;
+            color: #fff;
+        }
+
+        @media (max-width: 1024px) {
+            .video-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📹 Video Call - Emotion Analysis</h1>
+            <p>Kết nối và phân tích cảm xúc real-time</p>
+        </div>
+
+        <!-- Room Setup -->
+        <div class="room-setup" id="roomSetup">
+            <h2 style="margin-bottom: 20px;">Tạo hoặc Tham Gia Phòng</h2>
+            <div>
+                <input type="text" id="roomIdInput" placeholder="Nhập Room ID (để trống để tạo mới)">
+                <button class="btn btn-primary" onclick="joinRoom()">
+                    🚀 Tham Gia
+                </button>
+            </div>
+            <p style="margin-top: 15px; color: #888;">
+                Chia sẻ Room ID với người khác để họ tham gia
+            </p>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <!-- Video Call Interface (hidden initially) -->
+        <div id="callInterface" style="display: none;">
+            <div style="margin-bottom: 20px; text-align: center;">
+                <span>Room ID: <strong id="currentRoomId"></strong></span>
+                <span style="margin-left: 30px;">
+                    Status: <span class="connection-status disconnected" id="connectionStatus">Disconnected</span>
+                </span>
+                <button class="btn btn-danger" onclick="leaveRoom()" style="margin-left: 30px;">
+                    ❌ Rời Phòng
+                </button>
+            </div>
+
+            <div class="video-container">
+                <!-- Local Video -->
+                <div class="video-box">
+                    <h3>📹 Video Của Bạn</h3>
+                    <video id="localVideo" autoplay muted playsinline></video>
+                    <canvas id="localCanvas"></canvas>
+                    <div class="emotion-display">
+                        <div class="emotion" id="localEmotion">😐</div>
+                        <div class="confidence" id="localConfidence">-</div>
+                    </div>
+                </div>
+
+                <!-- Remote Video -->
+                <div class="video-box">
+                    <h3>👤 Video Người Khác</h3>
+                    <video id="remoteVideo" autoplay playsinline></video>
+                    <canvas id="remoteCanvas"></canvas>
+                    <div class="emotion-display">
+                        <div class="emotion" id="remoteEmotion">😐</div>
+                        <div class="confidence" id="remoteConfidence">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-panel">
+                <h3>📊 Thống Kê Phân Tích</h3>
+                <div class="stat-item">
+                    <span>Thời gian kết nối:</span>
+                    <span id="connectionTime">00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span>Frames đã phân tích:</span>
+                    <span id="framesAnalyzed">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Cảm xúc phổ biến (Bạn):</span>
+                    <span id="localTopEmotion">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>Cảm xúc phổ biến (Người khác):</span>
+                    <span id="remoteTopEmotion">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Face-api.js for emotion detection -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="videocall.js"></script>
+</body>
+
+</html>

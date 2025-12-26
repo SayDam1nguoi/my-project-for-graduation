@@ -15,9 +15,13 @@ import uuid
 import sys
 import logging
 from datetime import datetime
+import os
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 # Import core engine
-sys.path.append('./')
 from src.evaluation.integrated_interview_evaluator import IntegratedInterviewEvaluator
 
 # Setup logging
@@ -328,7 +332,212 @@ def get_results(job_id: str):
     return AnalysisResult(**job)
 
 
-@app.get("/api/jobs")
+@app.post("/api/transcribe-video")
+async def transcribe_video(file: UploadFile = File(...)):
+    """
+    Chuyển đổi audio trong video sang text - Dùng Whisper AI (offline, chính xác cao).
+    """
+    
+    job_id = str(uuid.uuid4())[:8]
+    file_path = UPLOAD_DIR / f"{job_id}_{file.filename}"
+    audio_path = UPLOAD_DIR / f"{job_id}_audio.wav"
+    
+    try:
+        # Save file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        logger.info(f"[{job_id}] Processing video: {file.filename}")
+        
+        # Extract audio using moviepy
+        try:
+            from moviepy.editor import VideoFileClip
+            import whisper
+            
+            logger.info(f"[{job_id}] Extracting audio with moviepy...")
+            
+            # Load video
+            video = VideoFileClip(str(file_path))
+            
+            # Check if video has audio
+            if video.audio is None:
+                video.close()
+                return {
+                    "job_id": job_id,
+                    "status": "completed",
+                    "filename": file.filename,
+                    "transcript": "Video không có audio track.",
+                    "language": "none",
+                    "word_count": 0,
+                    "duration": 0,
+                    "created_at": datetime.now().isoformat()
+                }
+            
+            # Get duration
+            duration = video.duration
+            
+            # Extract audio to WAV
+            logger.info(f"[{job_id}] Writing audio file...")
+            video.audio.write_audiofile(
+                str(audio_path),
+                fps=16000,
+                nbytes=2,
+                codec='pcm_s16le',
+                logger=None
+            )
+            video.close()
+            
+            # Transcribe with Whisper
+            logger.info(f"[{job_id}] Loading Whisper model...")
+            model = whisper.load_model("base")  # base model: cân bằng tốc độ & độ chính xác
+            
+            logger.info(f"[{job_id}] Transcribing with Whisper AI...")
+            result = model.transcribe(
+                str(audio_path),
+                language=None,  # Auto-detect language
+                task="transcribe",
+                verbose=False
+            )
+            
+            transcript = result["text"].strip()
+            detected_lang = result.get("language", "unknown")
+            
+            # Map language codes
+            lang_map = {
+                "vi": "Tiếng Việt",
+                "en": "English",
+                "zh": "中文",
+                "ja": "日本語",
+                "ko": "한국어"
+            }
+            lang_display = lang_map.get(detected_lang, detected_lang)
+            
+            logger.info(f"[{job_id}] Transcription successful: {len(transcript)} chars, language: {detected_lang}")
+            
+            return {
+                "job_id": job_id,
+                "status": "completed",
+                "filename": file.filename,
+                "transcript": transcript,
+                "language": detected_lang,
+                "language_display": lang_display,
+                "word_count": len(transcript.split()) if transcript else 0,
+                "duration": round(duration, 1),
+                "created_at": datetime.now().isoformat()
+            }
+            
+        except ImportError as e:
+            logger.error(f"[{job_id}] Import error: {e}")
+            missing = []
+            if "moviepy" in str(e).lower():
+                missing.append("moviepy")
+            if "whisper" in str(e).lower():
+                missing.append("openai-whisper")
+            
+            raise HTTPException(
+                status_code=500,
+                detail=f"Cần cài đặt: pip install {' '.join(missing)}"
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[{job_id}] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Lỗi khi xử lý video: {str(e)}"
+        )
+    
+    finally:
+        # Cleanup
+        for path in [file_path, audio_path]:
+            if path.exists():
+                try:
+                    path.unlink()
+                except:
+                    pass
+
+
+@app.post("/api/transcribe-audio")
+async def transcribe_audio(file: UploadFile = File(...)):
+    """
+    Chuyển đổi audio sang text.
+    
+    Returns:
+        transcript: Text từ audio
+    """
+    
+    # Validate file type
+    if not file.content_type.startswith('audio/'):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type: {file.content_type}"
+        )
+    
+    # Tạo job ID
+    job_id = str(uuid.uuid4())[:8]
+    
+    # Lưu file
+    file_path = UPLOAD_DIR / f"{job_id}_{file.filename}"
+    
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        logger.info(f"[{job_id}] Transcribing audio: {file.filename}")
+        
+        # Import audio transcriber
+        try:
+            from src.audio_recording.transcriber import AudioTranscriber
+            
+            # Transcribe audio
+            transcriber = AudioTranscriber()
+            transcript_text = transcriber.transcribe(str(file_path))
+            
+            if not transcript_text:
+                transcript_text = "Không thể trích xuất transcript từ audio."
+            
+            response = {
+                "job_id": job_id,
+                "status": "completed",
+                "filename": file.filename,
+                "transcript": transcript_text,
+                "word_count": len(transcript_text.split()) if transcript_text else 0,
+                "created_at": datetime.now().isoformat()
+            }
+            
+            logger.info(f"[{job_id}] Transcription completed: {len(transcript_text)} chars")
+            
+            return response
+            
+        except ImportError as e:
+            logger.error(f"[{job_id}] Import error: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail="AudioTranscriber không khả dụng. Vui lòng kiểm tra dependencies."
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[{job_id}] Transcription failed: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi khi xử lý audio: {str(e)}"
+        )
+    
+    finally:
+        # Cleanup file
+        if file_path.exists():
+            try:
+                file_path.unlink()
+            except:
+                pass
 def list_jobs():
     """
     Liệt kê tất cả jobs.

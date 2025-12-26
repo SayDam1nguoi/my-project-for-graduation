@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interview Analysis System</title>
+    <title>Interview Analysis System - Chọn Phiên Bản</title>
     <style>
         * {
             margin: 0;
@@ -16,99 +16,107 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
         }
 
         .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
+            max-width: 1200px;
+            width: 100%;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
             text-align: center;
+            color: white;
+            margin-bottom: 50px;
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
 
         .header p {
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
+
+        .versions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .version-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .version-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .version-card.simple {
+            border-top: 5px solid #4CAF50;
+        }
+
+        .version-card.full {
+            border-top: 5px solid #FF9800;
+        }
+
+        .version-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .version-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .version-description {
             font-size: 1.1em;
-            opacity: 0.9;
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
         }
 
-        .content {
-            padding: 40px;
-        }
-
-        .upload-section {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            background: #f8f9ff;
+        .version-features {
+            list-style: none;
             margin-bottom: 30px;
-            transition: all 0.3s;
         }
 
-        .upload-section:hover {
-            border-color: #764ba2;
-            background: #f0f2ff;
+        .version-features li {
+            padding: 10px 0;
+            color: #555;
+            font-size: 1em;
+            border-bottom: 1px solid #eee;
         }
 
-        .upload-section.dragover {
-            border-color: #764ba2;
-            background: #e8ebff;
-            transform: scale(1.02);
+        .version-features li:last-child {
+            border-bottom: none;
         }
 
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-
-        .file-input-wrapper input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .file-input-label {
-            display: inline-block;
-            padding: 15px 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 50px;
-            font-size: 1.1em;
+        .version-features li::before {
+            content: "✓ ";
+            color: #4CAF50;
             font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
+            margin-right: 10px;
         }
 
-        .file-input-label:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .file-name {
-            margin-top: 20px;
-            font-size: 1.1em;
-            color: #667eea;
-            font-weight: bold;
-        }
-
-        .analyze-btn {
+        .version-button {
+            display: block;
             width: 100%;
             padding: 18px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -119,200 +127,513 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 20px;
+            text-decoration: none;
+            text-align: center;
         }
 
-        .analyze-btn:hover:not(:disabled) {
+        .version-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
 
-        .analyze-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
+        .version-card.simple .version-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
         }
 
-        .status-section {
-            display: none;
-            margin-top: 30px;
-            padding: 30px;
-            background: #f8f9ff;
-            border-radius: 15px;
-            text-align: center;
+        .version-card.full .version-button {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
         }
 
-        .status-section.show {
-            display: block;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .status-text {
-            font-size: 1.2em;
-            color: #667eea;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-
-        .results-section {
-            display: none;
-            margin-top: 30px;
-        }
-
-        .results-section.show {
-            display: block;
-        }
-
-        .total-score {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .comparison {
+            background: white;
+            border-radius: 20px;
             padding: 40px;
-            border-radius: 15px;
-            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-top: 30px;
+        }
+
+        .comparison h2 {
+            font-size: 2em;
             margin-bottom: 30px;
-        }
-
-        .total-score h2 {
-            font-size: 1.5em;
-            margin-bottom: 15px;
-            opacity: 0.9;
-        }
-
-        .total-score .score {
-            font-size: 4em;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .total-score .rating {
-            font-size: 1.8em;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        .scores-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .score-card {
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            color: white;
-            transition: transform 0.3s;
-        }
-
-        .score-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .score-card.emotion {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        .score-card.focus {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-
-        .score-card.clarity {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        }
-
-        .score-card.content {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        }
-
-        .score-card h3 {
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            opacity: 0.9;
-        }
-
-        .score-card .score {
-            font-size: 2.5em;
-            font-weight: bold;
-        }
-
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .reset-btn {
-            width: 100%;
-            padding: 15px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s;
-        }
-
-        .reset-btn:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-
-        .info-box {
-            background: #e7f3ff;
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
-        .info-box p {
-            margin: 5px 0;
             color: #333;
+            text-align: center;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comparison-table th {
+            background: #f5f5f5;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .comparison-table td {
+            color: #666;
+        }
+
+        .comparison-table .check {
+            color: #4CAF50;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .comparison-table .cross {
+            color: #f44336;
+            font-weight: bold;
+            text-align: center;
         }
 
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 1.8em;
+                font-size: 2em;
             }
 
-            .content {
-                padding: 20px;
-            }
-
-            .scores-grid {
+            .versions {
                 grid-template-columns: 1fr;
+            }
+
+            .comparison-table {
+                font-size: 0.9em;
             }
         }
     </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Interview Analysis System</h1>
+            <p>Chọn phiên bản phù hợp với nhu cầu của bạn</p>
+        </div>
+
+        <div class="versions">
+            <!-- Simple Version -->
+            <div class="version-card simple" onclick="window.location.href='index_simple.html'">
+                <div class="version-icon">🚀</div>
+                <div class="version-title">Phiên Bản Đơn Giản</div>
+                <div class="version-description">
+                    Giao diện đơn giản, dễ sử dụng. Phù hợp cho người mới bắt đầu hoặc cần phân tích nhanh.
+                </div>
+                <ul class="version-features">
+                    <li>Upload video và phân tích</li>
+                    <li>Hiển thị điểm số cơ bản</li>
+                    <li>Giao diện thân thiện</li>
+                    <li>Xử lý nhanh chóng</li>
+                </ul>
+                <a href="index_simple.html" class="version-button">
+                    Chọn Phiên Bản Đơn Giản
+                </a>
+            </div>
+
+            <!-- Full Version -->
+            <div class="version-card full" onclick="window.location.href='app.html'">
+                <div class="version-icon">⚡</div>
+                <div class="version-title">Phiên Bản Đầy Đủ</div>
+                <div class="version-description">
+                    Đầy đủ tính năng như launcher.py. Phù hợp cho người dùng chuyên nghiệp cần phân tích chi tiết.
+                </div>
+                <ul class="version-features">
+                    <li>Camera real-time với AI</li>
+                    <li>So sánh 2 người</li>
+                    <li>Thu âm & chuyển đổi</li>
+                    <li>Screen capture</li>
+                    <li>Đánh giá ngoại hình</li>
+                    <li>Tùy chỉnh trọng số</li>
+                    <li>8 chức năng chính</li>
+                </ul>
+                <a href="app.html" class="version-button">
+                    Chọn Phiên Bản Đầy Đủ
+                </a>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="comparison">
+            <h2>📊 So Sánh Chi Tiết</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Chức Năng</th>
+                        <th style="text-align: center;">Đơn Giản</th>
+                        <th style="text-align: center;">Đầy Đủ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Upload & Phân Tích Video</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Điểm Số Cơ Bản</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Camera Real-time</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>So Sánh 2 Người</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Thu Âm & Chuyển Đổi</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Screen Capture</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Đánh Giá Ngoại Hình</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Tùy Chỉnh Trọng Số</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Video Transcription</td>
+                        <td class="cross">✗</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Độ Phức Tạp</td>
+                        <td style="text-align: center;">⭐</td>
+                        <td style="text-align: center;">⭐⭐⭐⭐⭐</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+    }
+
+    .content {
+        padding: 40px;
+    }
+
+    .upload-section {
+        border: 3px dashed #667eea;
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        background: #f8f9ff;
+        margin-bottom: 30px;
+        transition: all 0.3s;
+    }
+
+    .upload-section:hover {
+        border-color: #764ba2;
+        background: #f0f2ff;
+    }
+
+    .upload-section.dragover {
+        border-color: #764ba2;
+        background: #e8ebff;
+        transform: scale(1.02);
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .file-input-wrapper input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-input-label {
+        display: inline-block;
+        padding: 15px 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .file-input-label:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .file-name {
+        margin-top: 20px;
+        font-size: 1.1em;
+        color: #667eea;
+        font-weight: bold;
+    }
+
+    .analyze-btn {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.2em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 20px;
+    }
+
+    .analyze-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .analyze-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .status-section {
+        display: none;
+        margin-top: 30px;
+        padding: 30px;
+        background: #f8f9ff;
+        border-radius: 15px;
+        text-align: center;
+    }
+
+    .status-section.show {
+        display: block;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .status-text {
+        font-size: 1.2em;
+        color: #667eea;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+
+    .results-section {
+        display: none;
+        margin-top: 30px;
+    }
+
+    .results-section.show {
+        display: block;
+    }
+
+    .total-score {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .total-score h2 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+        opacity: 0.9;
+    }
+
+    .total-score .score {
+        font-size: 4em;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .total-score .rating {
+        font-size: 1.8em;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    .scores-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .score-card {
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        color: white;
+        transition: transform 0.3s;
+    }
+
+    .score-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .score-card.emotion {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .score-card.focus {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .score-card.clarity {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .score-card.content {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+
+    .score-card h3 {
+        font-size: 1.1em;
+        margin-bottom: 10px;
+        opacity: 0.9;
+    }
+
+    .score-card .score {
+        font-size: 2.5em;
+        font-weight: bold;
+    }
+
+    .error-message {
+        background: #fee;
+        color: #c33;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        display: none;
+    }
+
+    .error-message.show {
+        display: block;
+    }
+
+    .reset-btn {
+        width: 100%;
+        padding: 15px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: all 0.3s;
+    }
+
+    .reset-btn:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+
+    .info-box {
+        background: #e7f3ff;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .info-box p {
+        margin: 5px 0;
+        color: #333;
+    }
+
+    @media (max-width: 768px) {
+        .header h1 {
+            font-size: 1.8em;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .scores-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 </head>
 
 <body>

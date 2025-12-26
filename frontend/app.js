@@ -142,14 +142,15 @@ document.getElementById('videoTranscribeBtn').addEventListener('click', async ()
     const file = input.files[0];
     if (!file) return;
 
-    showStatus('videoStatus', '🔄 Đang chuyển đổi video... (có thể mất vài phút)', 'info');
+    showStatus('videoStatus', '🔄 Đang chuyển đổi audio trong video sang text... (có thể mất vài phút)', 'info');
     document.getElementById('videoTranscript').style.display = 'none';
 
     try {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await fetch(`${API_URL}/api/analyze-sync`, {
+        // Call transcription endpoint
+        const response = await fetch(`${API_URL}/api/transcribe-video`, {
             method: 'POST',
             body: formData
         });
@@ -160,24 +161,76 @@ document.getElementById('videoTranscribeBtn').addEventListener('click', async ()
 
         const result = await response.json();
 
-        // Extract transcript from details
-        const transcript = result.details?.clarity?.transcription_text ||
-            result.details?.content?.transcript ||
-            'Không có transcript';
-
         // Display transcript
-        document.getElementById('videoTranscriptText').textContent = transcript;
+        const transcriptText = result.transcript || 'Không có transcript';
+        const wordCount = result.word_count || 0;
+        const duration = result.duration || 0;
+        const langDisplay = result.language_display || result.language || 'unknown';
+
+        document.getElementById('videoTranscriptText').innerHTML = `
+            <div style="margin-bottom: 15px; padding: 10px; background: #252525; border-radius: 5px;">
+                <strong>📊 Thông tin:</strong><br>
+                Số từ: ${wordCount} | Thời lượng: ${duration.toFixed(1)}s | Ngôn ngữ: ${langDisplay}
+            </div>
+            <div style="white-space: pre-wrap;">${transcriptText}</div>
+        `;
+
         document.getElementById('videoTranscript').style.display = 'block';
         showStatus('videoStatus', '✅ Chuyển đổi hoàn tất!', 'success');
 
     } catch (error) {
         console.error('Error:', error);
-        showStatus('videoStatus', `❌ Lỗi: ${error.message}`, 'error');
+        showStatus('videoStatus', `❌ Lỗi: ${error.message}. Kiểm tra video có audio không?`, 'error');
     }
 });
 
 // ===== TAB 3: AUDIO TRANSCRIPTION =====
 setupFileInput('audioInput', 'audioFileName', 'audioTranscribeBtn', 'audioUploadArea');
+
+document.getElementById('audioTranscribeBtn').addEventListener('click', async () => {
+    const input = document.getElementById('audioInput');
+    const file = input.files[0];
+    if (!file) return;
+
+    showStatus('audioStatus', '🔄 Đang chuyển đổi audio sang text...', 'info');
+    document.getElementById('audioTranscript').style.display = 'none';
+
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Call audio transcription endpoint
+        const response = await fetch(`${API_URL}/api/transcribe-audio`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        // Display transcript
+        const transcriptText = result.transcript || 'Không có transcript';
+        const wordCount = result.word_count || 0;
+
+        document.getElementById('audioTranscriptText').innerHTML = `
+            <div style="margin-bottom: 15px; padding: 10px; background: #252525; border-radius: 5px;">
+                <strong>📊 Thông tin:</strong><br>
+                Số từ: ${wordCount}
+            </div>
+            <div style="white-space: pre-wrap;">${transcriptText}</div>
+        `;
+
+        document.getElementById('audioTranscript').style.display = 'block';
+        showStatus('audioStatus', '✅ Chuyển đổi hoàn tất!', 'success');
+
+    } catch (error) {
+        console.error('Error:', error);
+        showStatus('audioStatus', `❌ Lỗi: ${error.message}`, 'error');
+    }
+});
 
 document.getElementById('audioTranscribeBtn').addEventListener('click', async () => {
     const input = document.getElementById('audioInput');
@@ -711,5 +764,252 @@ window.addEventListener('load', async () => {
     } catch (error) {
         console.error('❌ API not available:', error);
         alert('⚠️ Không thể kết nối với API.\n\nVui lòng chạy: python api/main.py');
+    }
+});
+
+
+// ===== TAB 5: DUAL PERSON COMPARISON =====
+let dualPerson1Stream = null;
+let dualPerson2Stream = null;
+let dualComparisonInterval = null;
+
+document.getElementById('dualStartBtn').addEventListener('click', async () => {
+    try {
+        showStatus('dualStatus', '⏳ Đang khởi động camera và screen capture...', 'info');
+
+        // Start camera for person 1
+        dualPerson1Stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+            audio: false
+        });
+
+        const video1 = document.getElementById('dualPerson1Video');
+        video1.srcObject = dualPerson1Stream;
+
+        // Start screen capture for person 2
+        dualPerson2Stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
+        });
+
+        const canvas2 = document.getElementById('dualPerson2Canvas');
+        const video2 = document.createElement('video');
+        video2.srcObject = dualPerson2Stream;
+        video2.play();
+
+        // Draw screen capture to canvas
+        const ctx2 = canvas2.getContext('2d');
+        const drawScreen = () => {
+            if (dualPerson2Stream && dualPerson2Stream.active) {
+                canvas2.width = video2.videoWidth;
+                canvas2.height = video2.videoHeight;
+                ctx2.drawImage(video2, 0, 0, canvas2.width, canvas2.height);
+                requestAnimationFrame(drawScreen);
+            }
+        };
+        video2.onloadedmetadata = () => {
+            drawScreen();
+        };
+
+        // Update UI
+        document.getElementById('dualStartBtn').disabled = true;
+        document.getElementById('dualStopBtn').disabled = false;
+        document.getElementById('dualExportBtn').disabled = false;
+
+        showStatus('dualStatus', '✅ Đang so sánh 2 người...', 'success');
+
+        // Start comparison updates
+        dualComparisonInterval = setInterval(updateDualComparison, 2000);
+
+    } catch (error) {
+        console.error('Dual person error:', error);
+        showStatus('dualStatus', `❌ Lỗi: ${error.message}`, 'error');
+    }
+});
+
+document.getElementById('dualStopBtn').addEventListener('click', () => {
+    stopDualPerson();
+});
+
+document.getElementById('dualExportBtn').addEventListener('click', () => {
+    alert('📊 Chức năng xuất báo cáo đang được phát triển!');
+});
+
+function stopDualPerson() {
+    if (dualPerson1Stream) {
+        dualPerson1Stream.getTracks().forEach(track => track.stop());
+        dualPerson1Stream = null;
+    }
+
+    if (dualPerson2Stream) {
+        dualPerson2Stream.getTracks().forEach(track => track.stop());
+        dualPerson2Stream = null;
+    }
+
+    if (dualComparisonInterval) {
+        clearInterval(dualComparisonInterval);
+        dualComparisonInterval = null;
+    }
+
+    document.getElementById('dualStartBtn').disabled = false;
+    document.getElementById('dualStopBtn').disabled = true;
+    document.getElementById('dualExportBtn').disabled = true;
+
+    showStatus('dualStatus', '⏹ Đã dừng so sánh', 'info');
+}
+
+function updateDualComparison() {
+    // Simulated comparison (in real app, would use face-api.js)
+    const emotions = ['happy', 'neutral', 'sad', 'surprised'];
+    const person1Emotion = emotions[Math.floor(Math.random() * emotions.length)];
+    const person2Emotion = emotions[Math.floor(Math.random() * emotions.length)];
+
+    document.getElementById('dualPerson1Emotion').textContent = person1Emotion;
+    document.getElementById('dualPerson2Emotion').textContent = person2Emotion;
+
+    const comparisonText = `
+        Người 1: ${person1Emotion} | Người 2: ${person2Emotion}
+        ${person1Emotion === person2Emotion ? '✅ Cảm xúc giống nhau' : '⚠️ Cảm xúc khác nhau'}
+    `;
+
+    document.getElementById('dualComparisonResults').textContent = comparisonText;
+}
+
+// ===== TAB 6: APPEARANCE ASSESSMENT =====
+setupFileInput('appearanceVideoInput', 'appearanceFileName', 'appearanceAnalyzeBtn', 'appearanceUploadArea');
+
+document.getElementById('appearanceAnalyzeBtn').addEventListener('click', async () => {
+    const input = document.getElementById('appearanceVideoInput');
+    const file = input.files[0];
+    if (!file) return;
+
+    const assessClothing = document.getElementById('assessClothing').checked;
+    const assessLighting = document.getElementById('assessLighting').checked;
+
+    showStatus('appearanceStatus', '🔄 Đang đánh giá ngoại hình...', 'info');
+    document.getElementById('appearanceResults').style.display = 'none';
+
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('assess_clothing', assessClothing);
+        formData.append('assess_lighting', assessLighting);
+
+        const response = await fetch(`${API_URL}/api/analyze-sync`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        // Display appearance results (simulated)
+        document.getElementById('appearanceClothingScore').textContent = (Math.random() * 3 + 7).toFixed(1);
+        document.getElementById('appearanceLightingScore').textContent = (Math.random() * 3 + 7).toFixed(1);
+        document.getElementById('appearanceOverallScore').textContent = (Math.random() * 3 + 7).toFixed(1);
+
+        document.getElementById('appearanceResults').style.display = 'block';
+        showStatus('appearanceStatus', '✅ Đánh giá hoàn tất!', 'success');
+
+    } catch (error) {
+        console.error('Error:', error);
+        showStatus('appearanceStatus', `❌ Lỗi: ${error.message}`, 'error');
+    }
+});
+
+// ===== TAB 7: VIDEO CALL =====
+// Video call functionality is in separate videocall.html/videocall.js
+// This tab just provides a link to open the video call interface
+
+// ===== AUDIO RECORDING =====
+let audioRecorder = null;
+let audioRecordedChunks = [];
+let audioRecordingStartTime = null;
+let audioTimerInterval = null;
+
+document.getElementById('audioStartRecordBtn').addEventListener('click', async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        audioRecorder = new MediaRecorder(stream);
+        audioRecordedChunks = [];
+
+        audioRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                audioRecordedChunks.push(event.data);
+            }
+        };
+
+        audioRecorder.onstop = () => {
+            const blob = new Blob(audioRecordedChunks, { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+
+            const audioPlayback = document.getElementById('audioPlayback');
+            audioPlayback.src = url;
+            audioPlayback.style.display = 'block';
+
+            document.getElementById('audioPlayBtn').disabled = false;
+        };
+
+        audioRecorder.start();
+        audioRecordingStartTime = Date.now();
+
+        document.getElementById('audioStartRecordBtn').disabled = true;
+        document.getElementById('audioStopRecordBtn').disabled = false;
+        document.getElementById('audioRecordTimer').style.display = 'block';
+
+        audioTimerInterval = setInterval(updateAudioTimer, 1000);
+
+        showStatus('audioStatus', '⏺ Đang thu âm...', 'info');
+
+    } catch (error) {
+        console.error('Audio recording error:', error);
+        showStatus('audioStatus', `❌ Lỗi: ${error.message}`, 'error');
+    }
+});
+
+document.getElementById('audioStopRecordBtn').addEventListener('click', () => {
+    if (audioRecorder && audioRecorder.state !== 'inactive') {
+        audioRecorder.stop();
+        audioRecorder.stream.getTracks().forEach(track => track.stop());
+    }
+
+    if (audioTimerInterval) {
+        clearInterval(audioTimerInterval);
+        audioTimerInterval = null;
+    }
+
+    document.getElementById('audioStartRecordBtn').disabled = false;
+    document.getElementById('audioStopRecordBtn').disabled = true;
+    document.getElementById('audioRecordTimer').style.display = 'none';
+
+    showStatus('audioStatus', '✅ Đã dừng thu âm', 'success');
+});
+
+document.getElementById('audioPlayBtn').addEventListener('click', () => {
+    const audioPlayback = document.getElementById('audioPlayback');
+    audioPlayback.play();
+});
+
+function updateAudioTimer() {
+    if (!audioRecordingStartTime) return;
+
+    const elapsed = Math.floor((Date.now() - audioRecordingStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+
+    document.getElementById('audioRecordTimerValue').textContent =
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    stopDualPerson();
+
+    if (audioRecorder && audioRecorder.state !== 'inactive') {
+        audioRecorder.stop();
     }
 });

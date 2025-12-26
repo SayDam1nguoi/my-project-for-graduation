@@ -135,12 +135,12 @@ class HallucinationFilter:
         
         return text, False, ""
     
-    def filter_segments(self, segments: List[dict]) -> Tuple[List[dict], int]:
+    def filter_segments(self, segments: List) -> Tuple[List, int]:
         """
         Filter hallucinations from a list of segments.
         
         Args:
-            segments: List of segment dicts with 'text' field
+            segments: List of segment dicts with 'text' field or TranscriptionSegment objects
             
         Returns:
             Tuple of (filtered_segments, num_filtered)
@@ -149,7 +149,13 @@ class HallucinationFilter:
         num_filtered = 0
         
         for segment in segments:
-            text = segment.get('text', '')
+            # Handle both dict and object (TranscriptionSegment)
+            if isinstance(segment, dict):
+                text = segment.get('text', '')
+            else:
+                # Assume it's an object with .text attribute
+                text = getattr(segment, 'text', '')
+            
             filtered_text, was_filtered, reason = self.filter_text(text)
             
             if not was_filtered:

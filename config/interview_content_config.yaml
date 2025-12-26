@@ -9,35 +9,53 @@ model:
   # - "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
   device: "auto"  # auto, cuda, cpu
 
-# Scoring Thresholds
+# Scoring Thresholds - SMOOTH INTERPOLATION (Nội suy mượt)
 scoring:
-  # Similarity -> Score mapping
-  thresholds:
-    excellent: 0.85  # >= 0.85 -> 10 points
-    good: 0.75       # >= 0.75 -> 8 points
-    average: 0.65    # >= 0.65 -> 6 points
-    below_average: 0.50  # >= 0.50 -> 4 points
-    poor: 0.0        # < 0.50 -> 2 points
+  # Similarity -> Score mapping với nội suy tuyến tính
+  # Công thức: score = min_score + (similarity - min_sim) / (max_sim - min_sim) * (max_score - min_score)
   
-  # Custom score mapping (optional)
-  custom_mapping:
-    enabled: false
-    ranges:
-      - min: 0.85
-        max: 1.0
-        score: 10
-      - min: 0.75
-        max: 0.85
-        score: 8
-      - min: 0.65
-        max: 0.75
-        score: 6
-      - min: 0.50
-        max: 0.65
-        score: 4
-      - min: 0.0
-        max: 0.50
-        score: 2
+  smooth_ranges:
+    # Range 1: Xuất sắc (9-10 điểm)
+    - min_similarity: 0.85
+      max_similarity: 1.0
+      min_score: 9.0
+      max_score: 10.0
+      label: "Xuất sắc"
+    
+    # Range 2: Rất tốt (7.5-9 điểm)
+    - min_similarity: 0.75
+      max_similarity: 0.85
+      min_score: 7.5
+      max_score: 9.0
+      label: "Rất tốt"
+    
+    # Range 3: Tốt (6-7.5 điểm)
+    - min_similarity: 0.65
+      max_similarity: 0.75
+      min_score: 6.0
+      max_score: 7.5
+      label: "Tốt"
+    
+    # Range 4: Trung bình (4-6 điểm)
+    - min_similarity: 0.50
+      max_similarity: 0.65
+      min_score: 4.0
+      max_score: 6.0
+      label: "Trung bình"
+    
+    # Range 5: Yếu (2-4 điểm)
+    - min_similarity: 0.30
+      max_similarity: 0.50
+      min_score: 2.0
+      max_score: 4.0
+      label: "Yếu"
+    
+    # Range 6: Rất yếu (0-2 điểm)
+    - min_similarity: 0.0
+      max_similarity: 0.30
+      min_score: 0.0
+      max_score: 2.0
+      label: "Rất yếu"
 
 # Question Weights
 question_weights:
@@ -47,6 +65,26 @@ question_weights:
   Q4_communication: 0.15
   Q5_achievement: 0.10
 
+# Scoring Method
+scoring_method:
+  # Method: "best_match" (lấy MAX similarity - KHUYẾN NGHỊ)
+  method: "best_match"  # best_match (MAX), average, weighted_average
+  
+  # Sử dụng trọng số cho từng sample answer
+  use_sample_weights: true
+  
+  # Smooth scoring - Nội suy tuyến tính thay vì nhảy cứng
+  smooth_interpolation: true
+  
+  # Kiểm tra độ dài câu trả lời (fail-safe cho ASR)
+  min_answer_length: 20  # characters
+  max_answer_length: 2000
+  
+  # Kiểm tra coverage (đủ ý)
+  check_coverage: true
+  coverage_keywords: true  # Kiểm tra keywords quan trọng
+  coverage_penalty: 0.1  # Trừ 0.1 điểm nếu thiếu keyword quan trọng
+
 # Standard Interview Questions
 questions:
   Q1:
@@ -54,9 +92,32 @@ questions:
     category: "Problem Solving"
     weight: 0.35
     question: "Hãy kể về một lần bạn giải quyết một vấn đề khó trong công việc."
+    # Keywords quan trọng cần có trong câu trả lời
+    required_keywords:
+      - ["vấn đề", "khó khăn", "thách thức", "lỗi", "sự cố"]  # Phải có 1 trong các từ này
+      - ["giải quyết", "xử lý", "fix", "khắc phục"]  # Phải có 1 trong các từ này
+      - ["kết quả", "thành công", "hoàn thành", "ổn định"]  # Phải có 1 trong các từ này
     sample_answers:
-      - "Tôi gặp một lỗi nghiêm trọng trong hệ thống CRM khiến dữ liệu khách hàng không đồng bộ. Tôi phân tích log, tái hiện lỗi ở môi trường staging, xác định nguyên nhân là do conflict ở API version. Sau đó tôi đề xuất cập nhật version và bổ sung kiểm tra hợp lệ. Kết quả hệ thống ổn định lại trong vòng 2 giờ."
-      - "Nhóm tôi bị trễ deadline dự án 3 ngày do yêu cầu thay đổi. Tôi tách task, phân ưu tiên theo mức ảnh hưởng và trao đổi lại với khách hàng để chốt phạm vi mới. Nhờ đó team hoàn thành đúng hạn còn lại và khách hàng đánh giá cao khả năng xử lý."
+      # Sample 1: Technical problem solving (Trọng số cao - quan trọng nhất)
+      - answer: "Tôi gặp một lỗi nghiêm trọng trong hệ thống CRM khiến dữ liệu khách hàng không đồng bộ. Tôi phân tích log, tái hiện lỗi ở môi trường staging, xác định nguyên nhân là do conflict ở API version. Sau đó tôi đề xuất cập nhật version và bổ sung kiểm tra hợp lệ. Kết quả hệ thống ổn định lại trong vòng 2 giờ."
+        weight: 1.5  # Trọng số cao hơn
+        keywords: ["lỗi", "phân tích", "nguyên nhân", "giải pháp", "kết quả"]
+      # Sample 2: Project management problem
+      - answer: "Nhóm tôi bị trễ deadline dự án 3 ngày do yêu cầu thay đổi. Tôi tách task, phân ưu tiên theo mức ảnh hưởng và trao đổi lại với khách hàng để chốt phạm vi mới. Nhờ đó team hoàn thành đúng hạn còn lại và khách hàng đánh giá cao khả năng xử lý."
+        weight: 1.2
+        keywords: ["deadline", "ưu tiên", "phân tích", "giải quyết", "hoàn thành"]
+      # Sample 3: Customer service problem
+      - answer: "Khách hàng VIP phàn nàn về chất lượng dịch vụ và đe dọa hủy hợp đồng. Tôi lắng nghe kỹ vấn đề, xin lỗi chân thành, đề xuất giải pháp bồi thường và cải thiện quy trình. Khách hàng đồng ý tiếp tục hợp tác và sau đó trở thành đối tác lâu dài."
+        weight: 1.0
+        keywords: ["khách hàng", "vấn đề", "giải pháp", "cải thiện", "thành công"]
+      # Sample 4: Process improvement
+      - answer: "Quy trình báo cáo hàng tháng mất 3 ngày và hay sai sót. Tôi phân tích bottleneck, tự động hóa thu thập dữ liệu bằng Python script, và tạo template chuẩn. Kết quả giảm thời gian xuống còn 4 giờ và độ chính xác tăng 95%."
+        weight: 1.3
+        keywords: ["quy trình", "phân tích", "tự động hóa", "cải thiện", "kết quả"]
+      # Sample 5: Conflict resolution
+      - answer: "Hai team member tranh cãi về hướng giải quyết kỹ thuật, ảnh hưởng tiến độ. Tôi tổ chức meeting, để mỗi người trình bày quan điểm, phân tích ưu nhược điểm từng phương án, và đưa ra quyết định dựa trên dữ liệu. Cả hai đều chấp nhận và dự án tiếp tục suôn sẻ."
+        weight: 1.0
+        keywords: ["xung đột", "phân tích", "quyết định", "giải quyết", "thành công"]
   
   Q2:
     id: "Q2"
@@ -64,8 +125,21 @@ questions:
     weight: 0.20
     question: "Bạn đã từng phải làm việc dưới áp lực deadline chưa? Bạn xử lý thế nào?"
     sample_answers:
-      - "Tôi từng phải hoàn thành báo cáo tài chính trong 24 giờ. Tôi lập danh sách ưu tiên, gom dữ liệu tự động bằng script, và tập trung vào các mục quan trọng nhất. Kết quả hoàn thành trước hạn 3 giờ."
-      - "Khi đối mặt với deadline gấp, tôi chia nhỏ công việc thành các task cụ thể, ưu tiên những việc quan trọng nhất trước, và loại bỏ những việc không cần thiết. Tôi cũng thông báo rõ ràng với team về tiến độ để mọi người hỗ trợ kịp thời."
+      # Sample 1: Financial report
+      - answer: "Tôi từng phải hoàn thành báo cáo tài chính trong 24 giờ. Tôi lập danh sách ưu tiên, gom dữ liệu tự động bằng script, và tập trung vào các mục quan trọng nhất. Kết quả hoàn thành trước hạn 3 giờ."
+        weight: 1.0
+      # Sample 2: Task prioritization
+      - answer: "Khi đối mặt với deadline gấp, tôi chia nhỏ công việc thành các task cụ thể, ưu tiên những việc quan trọng nhất trước, và loại bỏ những việc không cần thiết. Tôi cũng thông báo rõ ràng với team về tiến độ để mọi người hỗ trợ kịp thời."
+        weight: 1.0
+      # Sample 3: Emergency fix
+      - answer: "Hệ thống production gặp lỗi nghiêm trọng vào cuối tuần, phải fix trong 6 giờ. Tôi tập hợp team, phân công rõ ràng, debug song song nhiều components, và deploy hotfix. Hệ thống hoạt động trở lại đúng hạn và không mất dữ liệu."
+        weight: 1.0
+      # Sample 4: Multiple deadlines
+      - answer: "Tôi phải xử lý 3 dự án cùng deadline trong 1 tuần. Tôi lập ma trận ưu tiên theo độ quan trọng và khẩn cấp, delegate một số task cho junior, và làm việc tập trung theo time-blocking. Cả 3 dự án đều hoàn thành đúng hạn."
+        weight: 1.0
+      # Sample 5: Client presentation
+      - answer: "Khách hàng yêu cầu presentation trong 2 ngày thay vì 1 tuần. Tôi tái sử dụng template có sẵn, tập trung vào key messages, và rehearse nhiều lần. Presentation thành công và khách hàng ký hợp đồng ngay sau đó."
+        weight: 1.0
   
   Q3:
     id: "Q3"
@@ -73,8 +147,21 @@ questions:
     weight: 0.20
     question: "Kể về một lần bạn làm việc nhóm hiệu quả và vai trò của bạn."
     sample_answers:
-      - "Trong dự án website, tôi đóng vai trò kết nối giữa dev và designer. Tôi tạo quy tắc giao tiếp, cập nhật tiến độ mỗi ngày và xử lý các vướng mắc. Nhờ đó team hoàn thành đúng deadline và giảm 40% lỗi giao diện."
-      - "Tôi làm việc trong nhóm 5 người phát triển ứng dụng mobile. Vai trò của tôi là điều phối và đảm bảo code quality. Tôi tổ chức daily standup, code review, và giải quyết conflict kỹ thuật. Dự án hoàn thành đúng hạn với chất lượng cao."
+      # Sample 1: Bridge role
+      - answer: "Trong dự án website, tôi đóng vai trò kết nối giữa dev và designer. Tôi tạo quy tắc giao tiếp, cập nhật tiến độ mỗi ngày và xử lý các vướng mắc. Nhờ đó team hoàn thành đúng deadline và giảm 40% lỗi giao diện."
+        weight: 1.0
+      # Sample 2: Coordinator role
+      - answer: "Tôi làm việc trong nhóm 5 người phát triển ứng dụng mobile. Vai trò của tôi là điều phối và đảm bảo code quality. Tôi tổ chức daily standup, code review, và giải quyết conflict kỹ thuật. Dự án hoàn thành đúng hạn với chất lượng cao."
+        weight: 1.0
+      # Sample 3: Mentor role
+      - answer: "Trong team có 2 junior mới, tôi đảm nhận vai trò mentor. Tôi tạo tài liệu onboarding, pair programming, và review code chi tiết. Sau 2 tháng, cả hai đều làm việc độc lập và năng suất team tăng 30%."
+        weight: 1.0
+      # Sample 4: Problem solver
+      - answer: "Team gặp khó khăn với công nghệ mới, tiến độ chậm 2 tuần. Tôi nghiên cứu documentation, tạo proof of concept, và training cho team. Nhờ đó mọi người nắm được công nghệ và dự án bắt kịp tiến độ."
+        weight: 1.0
+      # Sample 5: Cross-functional collaboration
+      - answer: "Tôi làm việc với team Marketing, Sales và Tech để launch sản phẩm mới. Vai trò của tôi là đảm bảo alignment giữa các team. Tôi tổ chức weekly sync, giải quyết dependencies, và track milestones. Launch thành công vượt target 20%."
+        weight: 1.0
   
   Q4:
     id: "Q4"
@@ -82,8 +169,21 @@ questions:
     weight: 0.15
     question: "Hãy kể về một tình huống bạn phải thuyết phục người khác."
     sample_answers:
-      - "Tôi phải thuyết phục khách hàng đồng ý thay đổi kiến trúc hệ thống. Tôi chuẩn bị tài liệu so sánh, đưa ra rủi ro và ROI cụ thể. Khách hàng đồng ý và dự án chạy ổn định hơn 30%."
-      - "Tôi thuyết phục ban lãnh đạo đầu tư vào công nghệ mới. Tôi trình bày phân tích chi phí-lợi ích, demo sản phẩm, và so sánh với đối thủ. Cuối cùng công ty chấp thuận và năng suất tăng 25%."
+      # Sample 1: Client persuasion
+      - answer: "Tôi phải thuyết phục khách hàng đồng ý thay đổi kiến trúc hệ thống. Tôi chuẩn bị tài liệu so sánh, đưa ra rủi ro và ROI cụ thể. Khách hàng đồng ý và dự án chạy ổn định hơn 30%."
+        weight: 1.0
+      # Sample 2: Management persuasion
+      - answer: "Tôi thuyết phục ban lãnh đạo đầu tư vào công nghệ mới. Tôi trình bày phân tích chi phí-lợi ích, demo sản phẩm, và so sánh với đối thủ. Cuối cùng công ty chấp thuận và năng suất tăng 25%."
+        weight: 1.0
+      # Sample 3: Team persuasion
+      - answer: "Team không muốn áp dụng quy trình mới vì sợ phức tạp. Tôi giải thích lợi ích, demo cách sử dụng đơn giản, và pilot với 1 dự án nhỏ. Sau khi thấy hiệu quả, cả team đồng ý áp dụng rộng rãi."
+        weight: 1.0
+      # Sample 4: Stakeholder alignment
+      - answer: "Các stakeholders có quan điểm khác nhau về feature priority. Tôi thu thập feedback, phân tích impact vs effort, và present data-driven recommendation. Cuối cùng đạt được consensus và roadmap rõ ràng."
+        weight: 1.0
+      # Sample 5: Change management
+      - answer: "Công ty muốn chuyển sang làm việc remote nhưng nhiều người phản đối. Tôi tổ chức survey, giải quyết concerns, đề xuất hybrid model, và pilot 3 tháng. Kết quả satisfaction tăng và công ty chính thức áp dụng."
+        weight: 1.0
   
   Q5:
     id: "Q5"
@@ -91,8 +191,21 @@ questions:
     weight: 0.10
     question: "Thành tựu khiến bạn tự hào nhất là gì và vì sao?"
     sample_answers:
-      - "Thành tựu tôi tự hào nhất là cải tiến quy trình code review giúp giảm thời gian review 50% và tăng chất lượng code. Giải pháp này sau đó được áp dụng toàn công ty."
-      - "Tôi tự hào khi phát triển hệ thống tự động hóa giúp công ty tiết kiệm 100 giờ làm việc mỗi tháng. Hệ thống này được đánh giá cao và tôi nhận được giải thưởng nhân viên xuất sắc."
+      # Sample 1: Process improvement
+      - answer: "Thành tựu tôi tự hào nhất là cải tiến quy trình code review giúp giảm thời gian review 50% và tăng chất lượng code. Giải pháp này sau đó được áp dụng toàn công ty."
+        weight: 1.0
+      # Sample 2: Automation
+      - answer: "Tôi tự hào khi phát triển hệ thống tự động hóa giúp công ty tiết kiệm 100 giờ làm việc mỗi tháng. Hệ thống này được đánh giá cao và tôi nhận được giải thưởng nhân viên xuất sắc."
+        weight: 1.0
+      # Sample 3: Team building
+      - answer: "Tôi xây dựng team từ 0 lên 10 người trong 6 tháng. Tôi tuyển dụng, training, và tạo văn hóa làm việc tích cực. Team hiện là top performer của công ty với retention rate 95%."
+        weight: 1.0
+      # Sample 4: Revenue impact
+      - answer: "Tôi phát triển tính năng mới giúp tăng revenue 40% trong quý. Tôi nghiên cứu user behavior, thiết kế solution, và collaborate với nhiều teams. Tính năng này trở thành competitive advantage của công ty."
+        weight: 1.0
+      # Sample 5: Problem solving
+      - answer: "Tôi giải quyết được vấn đề performance nghiêm trọng khiến hệ thống chậm 10x. Tôi profiling, optimize database queries, và refactor critical paths. Response time giảm từ 5s xuống 0.5s, customer satisfaction tăng đáng kể."
+        weight: 1.0
 
 # Evaluation Settings
 evaluation:

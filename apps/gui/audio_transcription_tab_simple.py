@@ -50,6 +50,9 @@ class AudioTranscriptionTab:
         self.selected_question = None
         self.content_evaluation_result = None
         
+        # Tips window reference (to prevent multiple windows)
+        self.tips_window = None
+        
         # State variables
         self.selected_audio_path: Optional[str] = None
         self.transcription_result: Optional[str] = None
@@ -399,11 +402,27 @@ class AudioTranscriptionTab:
         if not self.selected_question:
             return
         
+        # If tips window already exists and is visible, bring it to front
+        if self.tips_window is not None and self.tips_window.winfo_exists():
+            self.tips_window.lift()
+            self.tips_window.focus_force()
+            return
+        
         # Create tips window
         tips_window = tk.Toplevel(self.parent)
         tips_window.title(f"Tips - {self.selected_question.id}")
         tips_window.geometry("600x400")
         tips_window.configure(bg='#1a1a1a')
+        
+        # Store reference
+        self.tips_window = tips_window
+        
+        # Clear reference when window is closed
+        def on_close():
+            self.tips_window = None
+            tips_window.destroy()
+        
+        tips_window.protocol("WM_DELETE_WINDOW", on_close)
         
         # Header
         header = tk.Label(
@@ -457,7 +476,7 @@ class AudioTranscriptionTab:
             font=("Segoe UI", 10, "bold"),
             bg='#455a64',
             fg='#ffffff',
-            command=tips_window.destroy,
+            command=on_close,
             cursor='hand2',
             relief=tk.FLAT,
             padx=20,
@@ -568,7 +587,7 @@ class AudioTranscriptionTab:
                 try:
                     progress_callback("🎯 Đang đánh giá nội dung câu trả lời...")
                     
-                    score, similarity, best_match = self.content_evaluator.evaluate_answer(
+                    score, similarity, best_match, details = self.content_evaluator.evaluate_answer(
                         self.selected_question.id,
                         result
                     )
@@ -1100,9 +1119,19 @@ Chi tiết các yếu tố:
             )
             return
         
-        # Lấy điểm
-        clarity_score = self.clarity_result.get('clarity_score', 0.0)
-        content_score = self.content_evaluation_result.get('score', 0.0)
+        # Lấy điểm - clarity_result là SpeechClarityResult object
+        if isinstance(self.clarity_result, dict):
+            clarity_score = self.clarity_result.get('clarity_score', 0.0)
+        else:
+            # SpeechClarityResult object
+            clarity_score = self.clarity_result.clarity_score
+        
+        # content_evaluation_result có thể là dict hoặc ContentEvaluationResult
+        if isinstance(self.content_evaluation_result, dict):
+            content_score = self.content_evaluation_result.get('score', 0.0)
+        else:
+            # ContentEvaluationResult object
+            content_score = self.content_evaluation_result.total_score
         
         # Gửi vào ScoreManager
         score_manager = get_score_manager()

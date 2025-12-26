@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Camera Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .video-section {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #videoElement {
+            width: 100%;
+            display: block;
+            transform: scaleX(-1);
+            /* Mirror effect */
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .stats-section {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .stat-card {
+            background: #252525;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .emotion-bars {
+            margin-top: 20px;
+        }
+
+        .emotion-bar {
+            margin-bottom: 15px;
+        }
+
+        .emotion-bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .emotion-bar-fill {
+            height: 25px;
+            background: #252525;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .emotion-bar-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.active {
+            background: #43e97b;
+            box-shadow: 0 0 10px #43e97b;
+        }
+
+        .status-indicator.inactive {
+            background: #f5576c;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert.info {
+            background: #1e3a5f;
+            border-left: 4px solid #667eea;
+        }
+
+        .alert.warning {
+            background: #4d3d1e;
+            border-left: 4px solid #fee140;
+        }
+
+        .alert.error {
+            background: #4d1e1e;
+            border-left: 4px solid #f5576c;
+        }
+
+        .recording-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(245, 87, 108, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        .recording-indicator.show {
+            display: block;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .timer {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📹 Real-time Camera Analysis</h1>
+            <p>Phân tích cảm xúc và tập trung trực tiếp từ camera</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Video Section -->
+            <div class="video-section">
+                <div class="alert" id="alertBox"></div>
+
+                <div class="video-container">
+                    <video id="videoElement" autoplay playsinline></video>
+                    <canvas id="canvas"></canvas>
+                    <div class="recording-indicator" id="recordingIndicator">
+                        ⏺ ĐANG GHI HÌNH
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" id="startBtn">
+                        📹 Bật Camera
+                    </button>
+                    <button class="btn btn-danger" id="stopBtn" disabled>
+                        ⏹ Tắt Camera
+                    </button>
+                    <button class="btn btn-success" id="recordBtn" disabled>
+                        ⏺ Bắt Đầu Ghi
+                    </button>
+                    <button class="btn btn-danger" id="stopRecordBtn" disabled style="display: none;">
+                        ⏹ Dừng Ghi
+                    </button>
+                </div>
+
+                <div class="timer" id="timer" style="display: none;">
+                    Thời gian ghi: <span id="timerValue">00:00</span>
+                </div>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="stats-section">
+                <h2 style="margin-bottom: 20px; color: #667eea;">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    Trạng Thái
+                </h2>
+
+                <div class="stat-card">
+                    <h3>Điểm Tập Trung</h3>
+                    <div class="stat-value" id="focusScore">-</div>
+                    <div class="stat-label">Focus Score (0-10)</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Cảm Xúc Hiện Tại</h3>
+                    <div class="stat-value" id="currentEmotion">-</div>
+                    <div class="stat-label">Current Emotion</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Số Khuôn Mặt</h3>
+                    <div class="stat-value" id="faceCount">0</div>
+                    <div class="stat-label">Faces Detected</div>
+                </div>
+
+                <div class="emotion-bars">
+                    <h3 style="margin-bottom: 15px; color: #667eea;">Phân Bố Cảm Xúc</h3>
+
+                    <div class="emotion-bar">
+                        <div class="emotion-bar-label">
+                            <span>😊 Happy</span>
+                            <span id="happyPercent">0%</span>
+                        </div>
+                        <div class="emotion-bar-fill">
+                            <div class="emotion-bar-progress" id="happyBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="emotion-bar">
+                        <div class="emotion-bar-label">
+                            <span>😐 Neutral</span>
+                            <span id="neutralPercent">0%</span>
+                        </div>
+                        <div class="emotion-bar-fill">
+                            <div class="emotion-bar-progress" id="neutralBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="emotion-bar">
+                        <div class="emotion-bar-label">
+                            <span>😢 Sad</span>
+                            <span id="sadPercent">0%</span>
+                        </div>
+                        <div class="emotion-bar-fill">
+                            <div class="emotion-bar-progress" id="sadBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="emotion-bar">
+                        <div class="emotion-bar-label">
+                            <span>😠 Angry</span>
+                            <span id="angryPercent">0%</span>
+                        </div>
+                        <div class="emotion-bar-fill">
+                            <div class="emotion-bar-progress" id="angryBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="emotion-bar">
+                        <div class="emotion-bar-label">
+                            <span>😨 Fear</span>
+                            <span id="fearPercent">0%</span>
+                        </div>
+                        <div class="emotion-bar-fill">
+                            <div class="emotion-bar-progress" id="fearBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="camera.js"></script>
+</body>
+
+</html>

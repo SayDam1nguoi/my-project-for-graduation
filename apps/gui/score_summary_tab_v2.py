@@ -19,25 +19,17 @@ class ScoreSummaryTab:
     
     def __init__(self, parent):
         """Khởi tạo tab."""
-        print("[ScoreSummaryTab] Initializing...")
         self.parent = parent
         
-        # Tạo frame chính với màu nền tối (dark theme)
-        self.frame = tk.Frame(parent, bg="#1a1a1a")
+        # Tạo frame chính với màu nền sáng
+        self.frame = tk.Frame(parent, bg="#F5F5F5")
         
-        # Điểm số (dùng StringVar để format)
-        self.emotion_score = tk.StringVar(value="0.0")
-        self.focus_score = tk.StringVar(value="0.0")
-        self.clarity_score = tk.StringVar(value="0.0")
-        self.content_score = tk.StringVar(value="0.0")
-        self.total_score = tk.StringVar(value="0.0")
-        
-        # Điểm số thực (để tính toán)
-        self._emotion_score_value = 0.0
-        self._focus_score_value = 0.0
-        self._clarity_score_value = 0.0
-        self._content_score_value = 0.0
-        self._total_score_value = 0.0
+        # Điểm số
+        self.emotion_score = tk.DoubleVar(value=0.0)
+        self.focus_score = tk.DoubleVar(value=0.0)
+        self.clarity_score = tk.DoubleVar(value=0.0)
+        self.content_score = tk.DoubleVar(value=0.0)
+        self.total_score = tk.DoubleVar(value=0.0)
         
         # Trọng số (theo công thức: N=40%, T=20%, G=35%, O=5%)
         self.weight_content = tk.DoubleVar(value=40.0)    # Nội dung (N)
@@ -51,42 +43,16 @@ class ScoreSummaryTab:
         self.position = tk.StringVar(value="default")
         
         # Score Manager
-        print("[ScoreSummaryTab] Getting ScoreManager...")
         self.score_manager = get_score_manager()
-        print(f"[ScoreSummaryTab] ScoreManager ID: {id(self.score_manager)}")
-        
-        print("[ScoreSummaryTab] Registering callback...")
         self.score_manager.register_callback(self._on_score_updated)
-        print("[ScoreSummaryTab] Callback registered!")
-        
-        # Lấy điểm hiện tại từ manager (nếu có)
-        print("[ScoreSummaryTab] Loading existing scores...")
-        all_scores = self.score_manager.get_all_scores()
-        self._set_emotion_score(all_scores["emotion"]["score"])
-        self._set_focus_score(all_scores["focus"]["score"])
-        self._set_clarity_score(all_scores["clarity"]["score"])
-        self._set_content_score(all_scores["content"]["score"])
-        print(f"  Emotion: {all_scores['emotion']['score']:.1f}")
-        print(f"  Focus: {all_scores['focus']['score']:.1f}")
-        print(f"  Clarity: {all_scores['clarity']['score']:.1f}")
-        print(f"  Content: {all_scores['content']['score']:.1f}")
         
         # Tạo UI
-        print("[ScoreSummaryTab] Creating UI...")
         self._create_ui()
-        print("[ScoreSummaryTab] Initialization complete!")
-        
-        # Bind event khi tab được hiển thị
-        self.frame.bind("<Visibility>", self._on_tab_visible)
-        
-        # Start auto-refresh timer (check mỗi 2 giây)
-        self._last_check_time = 0
-        self._start_auto_refresh()
     
     def _create_ui(self):
         """Tạo giao diện."""
         # Header
-        header = tk.Frame(self.frame, bg="#0d47a1", height=60)
+        header = tk.Frame(self.frame, bg="#1976D2", height=60)
         header.pack(fill=tk.X)
         header.pack_propagate(False)
         
@@ -94,16 +60,16 @@ class ScoreSummaryTab:
             header,
             text="📊 TỔNG HỢP ĐIỂM PHỎNG VẤN",
             font=("Arial", 18, "bold"),
-            bg="#0d47a1",
+            bg="#1976D2",
             fg="white"
         ).pack(pady=15)
         
         # Main content
-        content = tk.Frame(self.frame, bg="#1a1a1a")
+        content = tk.Frame(self.frame, bg="#F5F5F5")
         content.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Row 1: Thông tin + 4 điểm + Trọng số
-        row1 = tk.Frame(content, bg="#1a1a1a")
+        row1 = tk.Frame(content, bg="#F5F5F5")
         row1.pack(fill=tk.X, pady=(0, 20))
         
         self._create_info_panel(row1)
@@ -111,7 +77,7 @@ class ScoreSummaryTab:
         self._create_weights_panel(row1)
         
         # Row 2: Điểm tổng + Quyết định + Buttons
-        row2 = tk.Frame(content, bg="#1a1a1a")
+        row2 = tk.Frame(content, bg="#F5F5F5")
         row2.pack(fill=tk.X)
         
         self._create_total_panel(row2)
@@ -124,31 +90,31 @@ class ScoreSummaryTab:
             parent,
             text=" Thông Tin Ứng Viên ",
             font=("Arial", 10, "bold"),
-            bg="#252525",
-            fg="#e0e0e0",
+            bg="white",
+            fg="#424242",
             relief=tk.GROOVE,
             bd=2
         )
         frame.pack(side=tk.LEFT, padx=(0, 10), fill=tk.BOTH)
         
         # Họ tên
-        tk.Label(frame, text="Họ tên:", bg="#252525", fg="#e0e0e0", anchor="w").grid(
+        tk.Label(frame, text="Họ tên:", bg="white", anchor="w").grid(
             row=0, column=0, sticky="w", padx=10, pady=5
         )
-        tk.Entry(frame, textvariable=self.candidate_name, width=20, bg="#333333", fg="#ffffff", insertbackground="#ffffff").grid(
+        tk.Entry(frame, textvariable=self.candidate_name, width=20).grid(
             row=0, column=1, padx=10, pady=5
         )
         
         # Mã ứng viên
-        tk.Label(frame, text="Mã ứng viên:", bg="#252525", fg="#e0e0e0", anchor="w").grid(
+        tk.Label(frame, text="Mã ứng viên:", bg="white", anchor="w").grid(
             row=1, column=0, sticky="w", padx=10, pady=5
         )
-        tk.Entry(frame, textvariable=self.candidate_id, width=20, bg="#333333", fg="#ffffff", insertbackground="#ffffff").grid(
+        tk.Entry(frame, textvariable=self.candidate_id, width=20).grid(
             row=1, column=1, padx=10, pady=5
         )
         
         # Vị trí
-        tk.Label(frame, text="Vị trí:", bg="#252525", fg="#e0e0e0", anchor="w").grid(
+        tk.Label(frame, text="Vị trí:", bg="white", anchor="w").grid(
             row=2, column=0, sticky="w", padx=10, pady=5
         )
         combo = ttk.Combobox(
@@ -167,8 +133,8 @@ class ScoreSummaryTab:
             parent,
             text=" Điểm Đánh Giá (0-10) ",
             font=("Arial", 10, "bold"),
-            bg="#252525",
-            fg="#e0e0e0",
+            bg="white",
+            fg="#424242",
             relief=tk.GROOVE,
             bd=2
         )
@@ -183,18 +149,18 @@ class ScoreSummaryTab:
         ]
         
         for title, var, color, row, col in scores:
-            box = tk.Frame(frame, bg="#252525", relief=tk.SOLID, bd=1)
+            box = tk.Frame(frame, bg="white", relief=tk.SOLID, bd=1)
             box.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
             
-            tk.Label(box, text=title, font=("Arial", 11, "bold"), bg="#252525", fg="#ffffff").pack(pady=5)
+            tk.Label(box, text=title, font=("Arial", 11, "bold"), bg="white").pack(pady=5)
             tk.Label(
                 box,
                 textvariable=var,
                 font=("Arial", 32, "bold"),
                 fg=color,
-                bg="#252525"
+                bg="white"
             ).pack()
-            tk.Label(box, text="/10", font=("Arial", 10), bg="#252525", fg="#ffffff").pack(pady=5)
+            tk.Label(box, text="/10", font=("Arial", 10), bg="white").pack(pady=5)
         
         frame.grid_columnconfigure(0, weight=1)
         frame.grid_columnconfigure(1, weight=1)
@@ -205,8 +171,8 @@ class ScoreSummaryTab:
             parent,
             text=" Trọng Số (%) ",
             font=("Arial", 10, "bold"),
-            bg="#252525",
-            fg="#e0e0e0",
+            bg="white",
+            fg="#424242",
             relief=tk.GROOVE,
             bd=2
         )
@@ -220,7 +186,7 @@ class ScoreSummaryTab:
         ]
         
         for i, (label, var) in enumerate(weights):
-            tk.Label(frame, text=label, bg="#252525", fg="#ffffff").grid(
+            tk.Label(frame, text=label, bg="white").grid(
                 row=i, column=0, sticky="w", padx=10, pady=5
             )
             spinbox = ttk.Spinbox(
@@ -236,11 +202,11 @@ class ScoreSummaryTab:
             spinbox.bind("<KeyRelease>", lambda e: self._update_total_weight())
         
         # Tổng
-        tk.Frame(frame, height=2, bg="#444444").grid(
+        tk.Frame(frame, height=2, bg="#CCCCCC").grid(
             row=4, column=0, columnspan=2, sticky="ew", padx=10, pady=5
         )
         
-        tk.Label(frame, text="Tổng:", font=("Arial", 10, "bold"), bg="#252525", fg="#ffffff").grid(
+        tk.Label(frame, text="Tổng:", font=("Arial", 10, "bold"), bg="white").grid(
             row=5, column=0, sticky="w", padx=10, pady=5
         )
         
@@ -248,8 +214,8 @@ class ScoreSummaryTab:
             frame,
             text="100%",
             font=("Arial", 10, "bold"),
-            fg="#4CAF50",
-            bg="#252525"
+            fg="green",
+            bg="white"
         )
         self.total_weight_label.grid(row=5, column=1, padx=10, pady=5)
 
@@ -260,8 +226,8 @@ class ScoreSummaryTab:
             parent,
             text=" ĐIỂM TỔNG ",
             font=("Arial", 11, "bold"),
-            bg="#252525",
-            fg="#e0e0e0",
+            bg="white",
+            fg="#424242",
             relief=tk.GROOVE,
             bd=2
         )
@@ -272,16 +238,16 @@ class ScoreSummaryTab:
             textvariable=self.total_score,
             font=("Arial", 48, "bold"),
             fg="#2ECC71",
-            bg="#252525"
+            bg="white"
         ).pack()
         
-        tk.Label(frame, text="/10", font=("Arial", 14), bg="#252525", fg="#ffffff").pack()
+        tk.Label(frame, text="/10", font=("Arial", 14), bg="white").pack()
         
         self.rating_label = tk.Label(
             frame,
             text="",
             font=("Arial", 12, "bold"),
-            bg="#252525"
+            bg="white"
         )
         self.rating_label.pack(pady=5)
     
@@ -291,8 +257,8 @@ class ScoreSummaryTab:
             parent,
             text=" QUYẾT ĐỊNH TUYỂN DỤNG ",
             font=("Arial", 11, "bold"),
-            bg="#252525",
-            fg="#e0e0e0",
+            bg="white",
+            fg="#424242",
             relief=tk.GROOVE,
             bd=2
         )
@@ -302,8 +268,8 @@ class ScoreSummaryTab:
             frame,
             text="Chưa có quyết định",
             font=("Arial", 16, "bold"),
-            fg="#BDBDBD",
-            bg="#252525"
+            fg="#757575",
+            bg="white"
         )
         self.decision_label.pack(pady=10)
         
@@ -311,8 +277,8 @@ class ScoreSummaryTab:
             frame,
             text="Vui lòng tính điểm tổng để xem quyết định",
             font=("Arial", 10),
-            fg="#BDBDBD",
-            bg="#252525",
+            fg="#9E9E9E",
+            bg="white",
             wraplength=300,
             justify=tk.CENTER
         )
@@ -320,7 +286,7 @@ class ScoreSummaryTab:
     
     def _create_buttons_panel(self, parent):
         """Panel buttons."""
-        frame = tk.Frame(parent, bg="#1a1a1a")
+        frame = tk.Frame(parent, bg="#F5F5F5")
         frame.pack(side=tk.LEFT, padx=(10, 0))
         
         buttons = [
@@ -361,7 +327,7 @@ class ScoreSummaryTab:
         self.total_weight_label.config(text=f"{total:.0f}%")
         
         if abs(total - 100) < 0.01:
-            self.total_weight_label.config(fg="#4CAF50")
+            self.total_weight_label.config(fg="green")
         else:
             self.total_weight_label.config(fg="red")
     
@@ -389,23 +355,12 @@ class ScoreSummaryTab:
     
     def fetch_scores_from_tabs(self):
         """Lấy điểm từ các tab."""
-        print("\n[ScoreSummaryTab] Fetching scores from ScoreManager...")
-        print(f"  ScoreManager ID: {id(self.score_manager)}")
-        
         all_scores = self.score_manager.get_all_scores()
         
-        print(f"  Scores in manager:")
-        print(f"    Emotion: {all_scores['emotion']['score']:.1f} (from {all_scores['emotion']['source']})")
-        print(f"    Focus: {all_scores['focus']['score']:.1f} (from {all_scores['focus']['source']})")
-        print(f"    Clarity: {all_scores['clarity']['score']:.1f} (from {all_scores['clarity']['source']})")
-        print(f"    Content: {all_scores['content']['score']:.1f} (from {all_scores['content']['source']})")
-        
-        self._set_emotion_score(all_scores["emotion"]["score"])
-        self._set_focus_score(all_scores["focus"]["score"])
-        self._set_clarity_score(all_scores["clarity"]["score"])
-        self._set_content_score(all_scores["content"]["score"])
-        
-        print(f"  ✓ Scores loaded into UI")
+        self.emotion_score.set(all_scores["emotion"]["score"])
+        self.focus_score.set(all_scores["focus"]["score"])
+        self.clarity_score.set(all_scores["clarity"]["score"])
+        self.content_score.set(all_scores["content"]["score"])
         
         missing = self.score_manager.get_missing_scores()
         
@@ -419,10 +374,10 @@ class ScoreSummaryTab:
             messagebox.showinfo(
                 "Thành Công",
                 f"✅ Đã lấy đủ 4 điểm!\n\n"
-                f"Cảm xúc: {all_scores['emotion']['score']:.1f}\n"
-                f"Tập trung: {all_scores['focus']['score']:.1f}\n"
-                f"Rõ ràng: {all_scores['clarity']['score']:.1f}\n"
-                f"Nội dung: {all_scores['content']['score']:.1f}"
+                f"Cảm xúc: {all_scores['emotion']['score']:.2f}\n"
+                f"Tập trung: {all_scores['focus']['score']:.2f}\n"
+                f"Rõ ràng: {all_scores['clarity']['score']:.2f}\n"
+                f"Nội dung: {all_scores['content']['score']:.2f}"
             )
     
     def calculate_total_score(self):
@@ -442,13 +397,13 @@ class ScoreSummaryTab:
             return
         
         total = (
-            self._content_score_value * (self.weight_content.get() / 100) +
-            self._clarity_score_value * (self.weight_clarity.get() / 100) +
-            self._focus_score_value * (self.weight_focus.get() / 100) +
-            self._emotion_score_value * (self.weight_emotion.get() / 100)
+            self.content_score.get() * (self.weight_content.get() / 100) +
+            self.clarity_score.get() * (self.weight_clarity.get() / 100) +
+            self.focus_score.get() * (self.weight_focus.get() / 100) +
+            self.emotion_score.get() * (self.weight_emotion.get() / 100)
         )
         
-        self._set_total_score(total)
+        self.total_score.set(round(total, 2))
         
         # Đánh giá
         if total >= 9.0:
@@ -485,18 +440,18 @@ class ScoreSummaryTab:
             color = "#F44336"
         
         self.decision_label.config(text=decision, fg=color)
-        self.decision_reason.config(text=reason, fg="#e0e0e0")
+        self.decision_reason.config(text=reason, fg="#424242")
         
         messagebox.showinfo(
             "Kết Quả",
-            f"Điểm tổng: {total:.1f}/10\n"
+            f"Điểm tổng: {total:.2f}/10\n"
             f"Đánh giá: {rating}\n\n"
             f"Quyết định: {decision}"
         )
     
     def export_results(self):
         """Xuất kết quả ra file .txt."""
-        if self._total_score_value == 0.0:
+        if self.total_score.get() == 0.0:
             messagebox.showwarning("Cảnh báo", "Vui lòng tính điểm tổng trước!")
             return
         
@@ -530,13 +485,13 @@ class ScoreSummaryTab:
         lines.append("-"*80)
         lines.append("ĐIỂM CHI TIẾT:")
         lines.append("-"*80)
-        lines.append(f"Nội dung:   {self._content_score_value:.1f}/10 ({self.weight_content.get():.0f}%)")
-        lines.append(f"Rõ ràng:    {self._clarity_score_value:.1f}/10 ({self.weight_clarity.get():.0f}%)")
-        lines.append(f"Tập trung:  {self._focus_score_value:.1f}/10 ({self.weight_focus.get():.0f}%)")
-        lines.append(f"Cảm xúc:    {self._emotion_score_value:.1f}/10 ({self.weight_emotion.get():.0f}%)")
+        lines.append(f"Nội dung:   {self.content_score.get():.2f}/10 ({self.weight_content.get():.0f}%)")
+        lines.append(f"Rõ ràng:    {self.clarity_score.get():.2f}/10 ({self.weight_clarity.get():.0f}%)")
+        lines.append(f"Tập trung:  {self.focus_score.get():.2f}/10 ({self.weight_focus.get():.0f}%)")
+        lines.append(f"Cảm xúc:    {self.emotion_score.get():.2f}/10 ({self.weight_emotion.get():.0f}%)")
         lines.append("")
         lines.append("="*80)
-        lines.append(f"ĐIỂM TỔNG: {self._total_score_value:.1f}/10")
+        lines.append(f"ĐIỂM TỔNG: {self.total_score.get():.2f}/10")
         lines.append(f"ĐÁNH GIÁ: {self.rating_label.cget('text')}")
         lines.append(f"QUYẾT ĐỊNH: {self.decision_label.cget('text')}")
         lines.append("="*80)
@@ -550,7 +505,7 @@ class ScoreSummaryTab:
     
     def save_json(self):
         """Lưu JSON."""
-        if self._total_score_value == 0.0:
+        if self.total_score.get() == 0.0:
             messagebox.showwarning("Cảnh báo", "Vui lòng tính điểm tổng trước!")
             return
         
@@ -578,11 +533,11 @@ class ScoreSummaryTab:
                 "date": datetime.now().isoformat()
             },
             "scores": {
-                "emotion": round(self._emotion_score_value, 1),
-                "focus": round(self._focus_score_value, 1),
-                "clarity": round(self._clarity_score_value, 1),
-                "content": round(self._content_score_value, 1),
-                "total": round(self._total_score_value, 1)
+                "emotion": self.emotion_score.get(),
+                "focus": self.focus_score.get(),
+                "clarity": self.clarity_score.get(),
+                "content": self.content_score.get(),
+                "total": self.total_score.get()
             },
             "weights": {
                 "emotion": self.weight_emotion.get() / 100,
@@ -602,117 +557,28 @@ class ScoreSummaryTab:
     def reset_scores(self):
         """Reset điểm."""
         if messagebox.askyesno("Xác nhận", "Bạn có chắc muốn reset?"):
-            self._set_emotion_score(0.0)
-            self._set_focus_score(0.0)
-            self._set_clarity_score(0.0)
-            self._set_content_score(0.0)
-            self._set_total_score(0.0)
+            self.emotion_score.set(0.0)
+            self.focus_score.set(0.0)
+            self.clarity_score.set(0.0)
+            self.content_score.set(0.0)
+            self.total_score.set(0.0)
             self.rating_label.config(text="")
-            self.decision_label.config(text="Chưa có quyết định", fg="#BDBDBD")
+            self.decision_label.config(text="Chưa có quyết định", fg="#757575")
             self.decision_reason.config(
                 text="Vui lòng tính điểm tổng để xem quyết định",
-                fg="#BDBDBD"
+                fg="#9E9E9E"
             )
-    
-    def _set_emotion_score(self, score: float):
-        """Set emotion score với format."""
-        self._emotion_score_value = score
-        self.emotion_score.set(f"{score:.1f}")
-    
-    def _set_focus_score(self, score: float):
-        """Set focus score với format."""
-        self._focus_score_value = score
-        self.focus_score.set(f"{score:.1f}")
-    
-    def _set_clarity_score(self, score: float):
-        """Set clarity score với format."""
-        self._clarity_score_value = score
-        self.clarity_score.set(f"{score:.1f}")
-    
-    def _set_content_score(self, score: float):
-        """Set content score với format."""
-        self._content_score_value = score
-        self.content_score.set(f"{score:.1f}")
-    
-    def _set_total_score(self, score: float):
-        """Set total score với format."""
-        self._total_score_value = score
-        self.total_score.set(f"{score:.1f}")
     
     def _on_score_updated(self, score_type: str, score: float):
         """Callback khi có điểm mới."""
-        print(f"[ScoreSummaryTab] Received score update: {score_type} = {score:.1f}")
-        
-        try:
-            if score_type == "emotion":
-                self._set_emotion_score(score)
-                print(f"  → Emotion score updated to {score:.1f}")
-            elif score_type == "focus":
-                self._set_focus_score(score)
-                print(f"  → Focus score updated to {score:.1f}")
-            elif score_type == "clarity":
-                self._set_clarity_score(score)
-                print(f"  → Clarity score updated to {score:.1f}")
-            elif score_type == "content":
-                self._set_content_score(score)
-                print(f"  → Content score updated to {score:.1f}")
-        except Exception as e:
-            print(f"  ✗ Error updating score: {e}")
-    
-    def _start_auto_refresh(self):
-        """Bắt đầu auto-refresh timer."""
-        self._auto_refresh()
-    
-    def _auto_refresh(self):
-        """Tự động refresh điểm từ ScoreManager."""
-        try:
-            import time
-            current_time = time.time()
-            
-            # Chỉ check mỗi 2 giây
-            if current_time - self._last_check_time >= 2.0:
-                self._last_check_time = current_time
-                
-                all_scores = self.score_manager.get_all_scores()
-                
-                # Chỉ update nếu có thay đổi
-                if (all_scores["emotion"]["score"] != self._emotion_score_value or
-                    all_scores["focus"]["score"] != self._focus_score_value or
-                    all_scores["clarity"]["score"] != self._clarity_score_value or
-                    all_scores["content"]["score"] != self._content_score_value):
-                    
-                    print(f"\n[ScoreSummaryTab] Auto-refresh detected changes:")
-                    print(f"  Emotion: {self._emotion_score_value:.1f} → {all_scores['emotion']['score']:.1f}")
-                    print(f"  Focus: {self._focus_score_value:.1f} → {all_scores['focus']['score']:.1f}")
-                    print(f"  Clarity: {self._clarity_score_value:.1f} → {all_scores['clarity']['score']:.1f}")
-                    print(f"  Content: {self._content_score_value:.1f} → {all_scores['content']['score']:.1f}")
-                    
-                    self._set_emotion_score(all_scores["emotion"]["score"])
-                    self._set_focus_score(all_scores["focus"]["score"])
-                    self._set_clarity_score(all_scores["clarity"]["score"])
-                    self._set_content_score(all_scores["content"]["score"])
-                    
-                    print(f"  ✓ UI updated!")
-        except Exception as e:
-            print(f"[ScoreSummaryTab] Auto-refresh error: {e}")
-        
-        # Schedule next check (sau 1 giây)
-        self.frame.after(1000, self._auto_refresh)
-    
-    def _on_tab_visible(self, event=None):
-        """Callback khi tab được hiển thị - tự động load điểm."""
-        print("\n[ScoreSummaryTab] Tab became visible - loading scores...")
-        try:
-            all_scores = self.score_manager.get_all_scores()
-            
-            self._set_emotion_score(all_scores["emotion"]["score"])
-            self._set_focus_score(all_scores["focus"]["score"])
-            self._set_clarity_score(all_scores["clarity"]["score"])
-            self._set_content_score(all_scores["content"]["score"])
-            
-            print(f"  ✓ Scores loaded!")
-        except Exception as e:
-            print(f"  ✗ Error loading scores: {e}")
+        if score_type == "emotion":
+            self.emotion_score.set(score)
+        elif score_type == "focus":
+            self.focus_score.set(score)
+        elif score_type == "clarity":
+            self.clarity_score.set(score)
+        elif score_type == "content":
+            self.content_score.set(score)
     
     def get_frame(self):
         """Lấy frame."""

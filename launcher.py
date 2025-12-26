@@ -7,8 +7,22 @@ Chỉ cần chạy: python launcher.py
 """
 
 if __name__ == '__main__':
+    import os
     import sys
+    import warnings
     from pathlib import Path
+    
+    # Suppress TensorFlow warnings
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # 0=all, 1=info, 2=warning, 3=error
+    os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Disable oneDNN custom ops
+    
+    # Suppress Python warnings
+    warnings.filterwarnings('ignore', category=FutureWarning)
+    warnings.filterwarnings('ignore', category=DeprecationWarning)
+    
+    # Suppress TensorFlow deprecation warnings
+    import logging
+    logging.getLogger('tensorflow').setLevel(logging.ERROR)
     
     # Add to path
     sys.path.insert(0, str(Path(__file__).parent))

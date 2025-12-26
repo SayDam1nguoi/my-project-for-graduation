@@ -179,7 +179,8 @@ class IntegratedInterviewEvaluator:
                 candidate_id=candidate_id
             )
             
-            # Emotion engine bây giờ trả về 0-10 (final_score_multiplier = 1.0)
+            # Emotion engine trả về 0-10 (giống các module khác)
+            # Trọng số 5% sẽ được áp dụng ở OverallInterviewScorer
             emotion_score = emotion_report.total_score
             
             # Đảm bảo điểm trong khoảng 0-10
@@ -291,32 +292,198 @@ class IntegratedInterviewEvaluator:
         details: Dict
     ) -> float:
         """
-        Đánh giá rõ ràng lời nói.
+        Đánh giá rõ ràng lời nói (Simplified Version).
+        
+        Dựa trên 3 yếu tố:
+        1. ASR Confidence (60%) - Độ rõ phát âm
+        2. Transcript Length (20%) - Độ dài phù hợp
+        3. Speech Rate (20%) - Tốc độ nói
         
         Returns:
             Clarity score (0-10)
         """
         try:
-            if self._speech_evaluator is None:
-                logger.warning("Speech evaluator not provided, using default score")
-                clarity_score = 7.0
-            else:
-                # Gọi speech evaluator để tính clarity score
-                # (Cần implement speech clarity analyzer)
-                clarity_score = 7.0
+            # Kiểm tra có transcript không
+            if not transcription or len(transcription.strip()) == 0:
+                logger.warning("No transcription available for clarity evaluation")
+                details['clarity'] = {
+                    'score': 3.0,
+                    'error': 'No transcription',
+                    'method': 'simplified'
+                }
+                return 3.0
+            
+            # Lấy ASR confidence từ transcriber (nếu có)
+            asr_confidence = None
+            try:
+                from src.audio_recording.transcriber import get_transcriber
+                transcriber = get_transcriber()
+                if hasattr(transcriber, 'last_confidence') and transcriber.last_confidence is not None:
+                    asr_confidence = transcriber.last_confidence
+                    logger.info(f"  Using ASR confidence from transcriber: {asr_confidence:.2%}")
+            except Exception as e:
+                logger.debug(f"Could not get confidence from transcriber: {e}")
+            
+            # Lấy video duration để tính WPM
+            video_duration = None
+            try:
+                import cv2
+                cap = cv2.VideoCapture(video_path)
+                if cap.isOpened():
+                    fps = cap.get(cv2.CAP_PROP_FPS)
+                    frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+                    if fps > 0:
+                        video_duration = frame_count / fps
+                        logger.info(f"  Video duration: {video_duration:.1f}s")
+                    cap.release()
+            except Exception as e:
+                logger.debug(f"Could not get video duration: {e}")
+            
+            # Nếu không có confidence, ước tính từ transcript quality
+            if asr_confidence is None:
+                words = transcription.split()
+                word_count = len(words)
+                
+                # Ước tính confidence dựa trên độ dài transcript
+                if word_count > 100:
+                    asr_confidence = 0.80
+                elif word_count > 50:
+                    asr_confidence = 0.75
+                else:
+                    asr_confidence = 0.70
+                
+                logger.info(f"  ASR confidence estimated: {asr_confidence:.2%}")
+            
+            # Tính clarity score đơn giản
+            clarity_score, clarity_details = self._calculate_simple_clarity(
+                transcription, asr_confidence, video_duration
+            )
             
             details['clarity'] = {
                 'score': clarity_score,
-                'transcription_length': len(transcription) if transcription else 0
+                'method': 'simplified',
+                'asr_confidence': asr_confidence,
+                'video_duration': video_duration,
+                'transcription_length': len(transcription),
+                'word_count': clarity_details['word_count'],
+                'wpm': clarity_details.get('wpm'),
+                'confidence_score': clarity_details['confidence_score'],
+                'length_score': clarity_details['length_score'],
+                'rate_score': clarity_details['rate_score']
             }
             
-            logger.info(f"  Clarity score: {clarity_score:.2f}/10")
+            logger.info(f"  Clarity score: {clarity_score:.2f}/10 (simplified method)")
+            logger.info(f"    - Confidence: {clarity_details['confidence_score']:.1f}/10 (weight: 60%)")
+            logger.info(f"    - Length: {clarity_details['length_score']:.1f}/10 (weight: 20%)")
+            logger.info(f"    - Rate: {clarity_details['rate_score']:.1f}/10 (weight: 20%)")
+            if clarity_details.get('wpm'):
+                logger.info(f"    - WPM: {clarity_details['wpm']:.1f}")
+            
             return clarity_score
             
         except Exception as e:
             logger.error(f"Error evaluating speech clarity: {e}")
             details['clarity'] = {'error': str(e), 'score': 5.0}
             return 5.0
+    
+    def _calculate_simple_clarity(
+        self,
+        transcript: str,
+        asr_confidence: float,
+        video_duration: Optional[float] = None
+    ) -> Tuple[float, Dict]:
+        """
+        Tính clarity score đơn giản.
+        
+        Args:
+            transcript: Transcript text
+            asr_confidence: ASR confidence (0-1)
+            video_duration: Video duration in seconds (optional)
+            
+        Returns:
+            (clarity_score, details_dict)
+        """
+        # 1. ASR Confidence Score (60%)
+        # Whisper confidence thường cao, nên điều chỉnh thang điểm
+        if asr_confidence >= 0.85:
+            conf_score = 10.0
+        elif asr_confidence >= 0.75:
+            # Linear interpolation: 0.75→8, 0.85→10
+            conf_score = 8.0 + (asr_confidence - 0.75) * 20
+        elif asr_confidence >= 0.65:
+            # Linear interpolation: 0.65→6, 0.75→8
+            conf_score = 6.0 + (asr_confidence - 0.65) * 20
+        elif asr_confidence >= 0.50:
+            # Linear interpolation: 0.50→4, 0.65→6
+            conf_score = 4.0 + (asr_confidence - 0.50) * 13.33
+        else:
+            # Linear: 0→0, 0.50→4
+            conf_score = asr_confidence * 8
+        
+        # 2. Transcript Length Score (20%)
+        # Optimal: 50-500 words (phỏng vấn ~3-5 phút)
+        words = transcript.split()
+        word_count = len(words)
+        
+        if 50 <= word_count <= 500:
+            length_score = 10.0
+        elif word_count < 50:
+            # Quá ngắn: scale từ 0 đến 10
+            length_score = (word_count / 50) * 10
+        else:
+            # Quá dài: giảm dần
+            length_score = max(0, 10 - (word_count - 500) / 100)
+        
+        # 3. Speech Rate Score (20%)
+        # Optimal: 120-160 WPM (words per minute)
+        if video_duration and video_duration > 0:
+            wpm = (word_count / video_duration) * 60
+            
+            if 120 <= wpm <= 160:
+                rate_score = 10.0
+            elif 100 <= wpm < 120:
+                # Hơi chậm: 100→7, 120→10
+                rate_score = 7.0 + (wpm - 100) * 0.15
+            elif 160 < wpm <= 180:
+                # Hơi nhanh: 160→10, 180→7
+                rate_score = 10.0 - (wpm - 160) * 0.15
+            elif wpm < 100:
+                # Quá chậm
+                rate_score = max(0, 7.0 - (100 - wpm) * 0.1)
+            else:
+                # Quá nhanh (>180)
+                rate_score = max(0, 7.0 - (wpm - 180) * 0.1)
+        else:
+            # Không có duration, ước tính từ word count
+            # Giả sử video ~3 phút = 180s
+            # Optimal: 360-480 words
+            if 360 <= word_count <= 480:
+                rate_score = 10.0
+            else:
+                deviation = abs(word_count - 420) / 420
+                rate_score = max(0, 10 - deviation * 10)
+        
+        # Tính tổng có trọng số
+        clarity_score = (
+            conf_score * 0.60 +
+            length_score * 0.20 +
+            rate_score * 0.20
+        )
+        
+        # Clamp vào [0, 10]
+        clarity_score = max(0.0, min(10.0, clarity_score))
+        
+        details = {
+            'confidence_score': conf_score,
+            'length_score': length_score,
+            'rate_score': rate_score,
+            'word_count': word_count,
+            'asr_confidence': asr_confidence,
+            'video_duration': video_duration,
+            'wpm': (word_count / video_duration * 60) if video_duration and video_duration > 0 else None
+        }
+        
+        return clarity_score, details
     
     def _evaluate_content(
         self,

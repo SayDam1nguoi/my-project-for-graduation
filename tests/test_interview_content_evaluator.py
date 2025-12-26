@@ -61,22 +61,24 @@ class TestInterviewContentEvaluator:
         Sau đó tôi đề xuất giải pháp và hệ thống ổn định lại.
         """
         
-        score, similarity, best_match = evaluator.evaluate_answer("Q1", answer)
+        score, similarity, best_match, details = evaluator.evaluate_answer("Q1", answer)
         
         assert 0 <= score <= 10
         assert 0 <= similarity <= 1
         assert len(best_match) > 0
         assert score >= 4  # Should be at least average
+        assert isinstance(details, dict)  # Check details is returned
     
     def test_evaluate_answer_poor(self, evaluator):
         """Test evaluating a poor answer."""
         answer = "Tôi fix bug."
         
-        score, similarity, best_match = evaluator.evaluate_answer("Q1", answer)
+        score, similarity, best_match, details = evaluator.evaluate_answer("Q1", answer)
         
         assert 0 <= score <= 10
         assert 0 <= similarity <= 1
         assert score <= 4  # Should be low
+        assert isinstance(details, dict)  # Check details is returned
     
     def test_evaluate_all_answers(self, evaluator):
         """Test evaluating all answers."""

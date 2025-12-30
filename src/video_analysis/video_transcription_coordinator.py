@@ -165,7 +165,7 @@ class VideoTranscriptionCoordinator:
         self.audio_extractor = AudioExtractor(
             target_sample_rate=16000,
             target_channels=1,
-            enable_enhancement=self.config.use_audio_enhancement
+            enable_enhancement=False  # Tắt enhancement để tránh lỗi
         )
         self.language_detector = LanguageDetector(
             whisper_model=whisper_engine.model,

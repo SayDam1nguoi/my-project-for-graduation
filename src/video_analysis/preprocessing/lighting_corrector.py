@@ -305,7 +305,7 @@ class LightingCorrector:
         skin_mask = skin_mask.astype(np.float32) / 255.0
         
         # Expand mask to 3 channels
-        skin_mask_3ch = np.stack([skin_mask] * 3, axis=2)
+        skin_mask_3ch = np.stack([skin_mask for _ in range(3)], axis=2)
         
         # Blend: more original in skin regions, more corrected elsewhere
         blended = (

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔧 Test API Connection</h1>
+
+    <div class="test-box">
+        <h2>Test 1: API Health Check</h2>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="healthResult" class="result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Test 2: Upload Video</h2>
+        <input type="file" id="videoFile" accept="video/*">
+        <button onclick="testUpload()">Test Upload & Transcribe</button>
+        <div id="uploadResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.innerHTML = 'Testing...';
+
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+
+                resultDiv.innerHTML = `<span class="success">✅ SUCCESS!</span>\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ ERROR!</span>\n${error.message}\n\nKiểm tra:\n1. API server có đang chạy không? (python api/main.py)\n2. Port 8000 có bị chặn không?`;
+            }
+        }
+
+        async function testUpload() {
+            const resultDiv = document.getElementById('uploadResult');
+            const fileInput = document.getElementById('videoFile');
+
+            if (!fileInput.files[0]) {
+                resultDiv.innerHTML = '<span class="error">❌ Vui lòng chọn video!</span>';
+                return;
+            }
+
+            resultDiv.innerHTML = 'Uploading and transcribing... (có thể mất vài phút)';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const response = await fetch(`${API_URL}/api/transcribe-video`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                resultDiv.innerHTML = `<span class="success">✅ SUCCESS!</span>\n\nTranscript:\n${data.transcript}\n\nLanguage: ${data.language_display}\nDuration: ${data.duration}s\nWords: ${data.word_count}`;
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ ERROR!</span>\n${error.message}`;
+            }
+        }
+    </script>
+</body>
+
+</html>

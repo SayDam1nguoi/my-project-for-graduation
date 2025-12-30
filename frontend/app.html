@@ -443,9 +443,6 @@
             <button class="tab-button" onclick="switchTab('dual')">
                 👥 So Sánh 2 Người
             </button>
-            <button class="tab-button" onclick="switchTab('appearance')">
-                👔 Đánh Giá Ngoại Hình
-            </button>
             <button class="tab-button" onclick="switchTab('videocall')">
                 � Video Call
             </button>
@@ -461,10 +458,9 @@
                     <div>
                         <div
                             style="position: relative; background: #000; border-radius: 10px; overflow: hidden; margin-bottom: 15px;">
-                            <video id="cameraVideo" autoplay playsinline
-                                style="width: 100%; display: block; transform: scaleX(-1);"></video>
+                            <video id="cameraVideo" autoplay playsinline style="width: 100%; display: block;"></video>
                             <canvas id="cameraCanvas"
-                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1);"></canvas>
+                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
                             <div id="cameraRecordingIndicator"
                                 style="position: absolute; top: 20px; right: 20px; background: rgba(245, 87, 108, 0.9); color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; display: none; animation: pulse 2s infinite;">
                                 ⏺ ĐANG GHI HÌNH
@@ -497,6 +493,32 @@
                         <div class="result-card" style="margin-bottom: 15px;">
                             <h3>📊 Trạng Thái</h3>
                             <div class="score" id="cameraStatus" style="font-size: 1.5em;">Chưa bật</div>
+                        </div>
+
+                        <div class="result-card" style="margin-bottom: 15px;">
+                            <h3>👁️ Điểm Tập Trung</h3>
+                            <div class="score" id="cameraFocusScore" style="color: #43e97b;">-</div>
+                            <div style="font-size: 0.9em; color: #888; margin-top: 5px;">Focus Score (0-10)</div>
+                        </div>
+
+                        <div class="result-card" style="margin-bottom: 15px;">
+                            <h3>⏱️ Thời Gian Tập Trung</h3>
+                            <div class="score" id="cameraFocusedTime" style="font-size: 1.8em;">0s</div>
+                            <div style="font-size: 0.9em; color: #888; margin-top: 5px;">Focused Time</div>
+                        </div>
+
+                        <div class="result-card" style="margin-bottom: 15px;">
+                            <h3>⚠️ Thời Gian Mất Tập Trung</h3>
+                            <div class="score" id="cameraDistractedTime" style="font-size: 1.8em; color: #f5576c;">0s
+                            </div>
+                            <div style="font-size: 0.9em; color: #888; margin-top: 5px;">Distracted Time</div>
+                        </div>
+
+                        <div class="result-card" style="margin-bottom: 15px;">
+                            <h3>🔢 Số Lần Mất Tập Trung</h3>
+                            <div class="score" id="cameraDistractedCount" style="font-size: 1.8em; color: #f5576c;">0
+                            </div>
+                            <div style="font-size: 0.9em; color: #888; margin-top: 5px;">Distraction Events</div>
                         </div>
 
                         <div class="result-card" style="margin-bottom: 15px;">
@@ -756,7 +778,7 @@
                         <h3 style="color: #4CAF50; margin-bottom: 15px;">👤 Người 1 (Camera)</h3>
                         <div style="background: #000; border-radius: 10px; overflow: hidden; margin-bottom: 15px;">
                             <video id="dualPerson1Video" autoplay playsinline
-                                style="width: 100%; display: block; transform: scaleX(-1);"></video>
+                                style="width: 100%; display: block;"></video>
                         </div>
                         <div class="result-card">
                             <h3>😊 Cảm Xúc</h3>
@@ -798,65 +820,6 @@
                 </div>
 
                 <div class="status-message" id="dualStatus"></div>
-            </div>
-        </div>
-
-        <!-- Tab 6: Appearance Assessment -->
-        <div id="tab-appearance" class="tab-content">
-            <div class="section">
-                <h2 class="section-title">👔 Đánh Giá Ngoại Hình</h2>
-
-                <div class="upload-area" id="appearanceUploadArea">
-                    <p style="font-size: 1.2em; margin-bottom: 20px;">
-                        📹 Upload video để đánh giá ngoại hình
-                    </p>
-                    <input type="file" id="appearanceVideoInput" accept="video/*">
-                    <label for="appearanceVideoInput" class="file-label">
-                        📁 Chọn Video
-                    </label>
-                    <div class="file-name" id="appearanceFileName"></div>
-                </div>
-
-                <!-- Assessment Options -->
-                <div style="background: #252525; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                    <h3 style="color: #667eea; margin-bottom: 15px;">⚙️ Tùy Chọn Đánh Giá</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <label style="display: flex; align-items: center; gap: 10px; color: #e0e0e0;">
-                            <input type="checkbox" id="assessClothing" checked>
-                            👔 Đánh giá trang phục
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 10px; color: #e0e0e0;">
-                            <input type="checkbox" id="assessLighting" checked>
-                            💡 Đánh giá ánh sáng
-                        </label>
-                    </div>
-                </div>
-
-                <div class="video-controls">
-                    <button class="btn btn-primary" id="appearanceAnalyzeBtn" disabled>
-                        🚀 Đánh Giá Ngoại Hình
-                    </button>
-                </div>
-
-                <div class="status-message" id="appearanceStatus"></div>
-
-                <div id="appearanceResults" style="display: none;">
-                    <h3 style="margin: 30px 0 20px; color: #667eea;">📊 Kết Quả Đánh Giá</h3>
-                    <div class="results-grid">
-                        <div class="result-card">
-                            <h3>👔 Trang Phục</h3>
-                            <div class="score" id="appearanceClothingScore">0.0</div>
-                        </div>
-                        <div class="result-card">
-                            <h3>💡 Ánh Sáng</h3>
-                            <div class="score" id="appearanceLightingScore">0.0</div>
-                        </div>
-                        <div class="result-card">
-                            <h3>📊 Tổng Thể</h3>
-                            <div class="score" id="appearanceOverallScore">0.0</div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -905,6 +868,8 @@
     <!-- Face-api.js for real-time face detection -->
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="app.js"></script>
+    <script src="focus_scoring_launcher.js"></script>
 </body>
 
 </html>
+

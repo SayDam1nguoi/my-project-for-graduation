@@ -63,8 +63,7 @@
         #videoElement {
             width: 100%;
             display: block;
-            transform: scaleX(-1);
-            /* Mirror effect */
+            /* Removed mirror effect to fix text orientation */
         }
 
         #canvas {
@@ -323,6 +322,24 @@
                     <h3>Điểm Tập Trung</h3>
                     <div class="stat-value" id="focusScore">-</div>
                     <div class="stat-label">Focus Score (0-10)</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Thời Gian Tập Trung</h3>
+                    <div class="stat-value" id="focusedTime">0s</div>
+                    <div class="stat-label">Focused Time</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Thời Gian Mất Tập Trung</h3>
+                    <div class="stat-value" id="distractedTime">0s</div>
+                    <div class="stat-label">Distracted Time</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Số Lần Mất Tập Trung</h3>
+                    <div class="stat-value" id="distractedCount">0</div>
+                    <div class="stat-label">Distraction Events</div>
                 </div>
 
                 <div class="stat-card">

@@ -241,7 +241,15 @@ async def analyze_video_sync(file: UploadFile = File(...)):
             "rating": score.overall_rating,
             "details": {
                 "emotion": details.get("emotion", {}),
-                "focus": details.get("focus", {}),
+                "focus": {
+                    "score": round(score.focus_score, 2),
+                    "focused_time": details.get("focus", {}).get("focused_time", 0),
+                    "distracted_time": details.get("focus", {}).get("distracted_time", 0),
+                    "distracted_count": details.get("focus", {}).get("distracted_count", 0),
+                    "focused_rate": round(details.get("focus", {}).get("focused_rate", 0) * 100, 1),
+                    "distracted_rate": round(details.get("focus", {}).get("distracted_rate", 0) * 100, 1),
+                    "average_attention": round(details.get("focus", {}).get("average_attention", 0), 2)
+                },
                 "clarity": details.get("clarity", {}),
                 "content": details.get("content", {})
             },
@@ -335,12 +343,11 @@ def get_results(job_id: str):
 @app.post("/api/transcribe-video")
 async def transcribe_video(file: UploadFile = File(...)):
     """
-    Chuyển đổi audio trong video sang text - Dùng Whisper AI (offline, chính xác cao).
+    Chuyển đổi audio trong video sang text - Dùng VideoTranscriptionCoordinator (giống launcher).
     """
     
     job_id = str(uuid.uuid4())[:8]
     file_path = UPLOAD_DIR / f"{job_id}_{file.filename}"
-    audio_path = UPLOAD_DIR / f"{job_id}_audio.wav"
     
     try:
         # Save file
@@ -349,58 +356,52 @@ async def transcribe_video(file: UploadFile = File(...)):
         
         logger.info(f"[{job_id}] Processing video: {file.filename}")
         
-        # Extract audio using moviepy
+        # Use VideoTranscriptionCoordinator - SAME AS LAUNCHER
         try:
-            from moviepy.editor import VideoFileClip
-            import whisper
+            from src.video_analysis.video_transcription_coordinator import VideoTranscriptionCoordinator
+            from src.speech_analysis.whisper_stt_engine import WhisperSTTEngine
+            from src.speech_analysis.config import WhisperSTTConfig
             
-            logger.info(f"[{job_id}] Extracting audio with moviepy...")
+            logger.info(f"[{job_id}] Initializing Whisper engine...")
+            # Dùng chính xác config như launcher
+            from src.speech_analysis.config import STTConfig
             
-            # Load video
-            video = VideoFileClip(str(file_path))
-            
-            # Check if video has audio
-            if video.audio is None:
-                video.close()
-                return {
-                    "job_id": job_id,
-                    "status": "completed",
-                    "filename": file.filename,
-                    "transcript": "Video không có audio track.",
-                    "language": "none",
-                    "word_count": 0,
-                    "duration": 0,
-                    "created_at": datetime.now().isoformat()
-                }
-            
-            # Get duration
-            duration = video.duration
-            
-            # Extract audio to WAV
-            logger.info(f"[{job_id}] Writing audio file...")
-            video.audio.write_audiofile(
-                str(audio_path),
-                fps=16000,
-                nbytes=2,
-                codec='pcm_s16le',
-                logger=None
-            )
-            video.close()
-            
-            # Transcribe with Whisper
-            logger.info(f"[{job_id}] Loading Whisper model...")
-            model = whisper.load_model("base")  # base model: cân bằng tốc độ & độ chính xác
-            
-            logger.info(f"[{job_id}] Transcribing with Whisper AI...")
-            result = model.transcribe(
-                str(audio_path),
-                language=None,  # Auto-detect language
-                task="transcribe",
-                verbose=False
+            stt_config = STTConfig(
+                language="vi",
+                sample_rate=16000
             )
             
-            transcript = result["text"].strip()
-            detected_lang = result.get("language", "unknown")
+            whisper_engine = WhisperSTTEngine(
+                config=stt_config,
+                model_size="large-v3",
+                device="cpu",
+                compute_type="int8"
+            )
+            
+            logger.info(f"[{job_id}] Initializing coordinator...")
+            from src.speech_analysis.config import VideoTranscriptionConfig
+            
+            # Tắt hallucination filter để giữ nguyên kết quả như launcher
+            video_config = VideoTranscriptionConfig()
+            video_config.enable_hallucination_filter = False  # TẮT filter
+            
+            coordinator = VideoTranscriptionCoordinator(
+                whisper_engine=whisper_engine,
+                config=video_config
+            )
+            
+            logger.info(f"[{job_id}] Transcribing video...")
+            result = coordinator.transcribe_video(str(file_path))
+            
+            # Format transcript with timestamps (like launcher)
+            transcript_with_timestamps = ""
+            for i, seg in enumerate(result.segments, 1):
+                start_time = f"{int(seg.start//60):02d}:{int(seg.start%60):02d}.{int((seg.start%1)*1000):03d}"
+                end_time = f"{int(seg.end//60):02d}:{int(seg.end%60):02d}.{int((seg.end%1)*1000):03d}"
+                transcript_with_timestamps += f"{i}. [{start_time} --> {end_time}]\n{seg.text}\n\n"
+            
+            # Also keep plain text
+            transcript_plain = result.full_text
             
             # Map language codes
             lang_map = {
@@ -410,33 +411,29 @@ async def transcribe_video(file: UploadFile = File(...)):
                 "ja": "日本語",
                 "ko": "한국어"
             }
-            lang_display = lang_map.get(detected_lang, detected_lang)
+            lang_display = lang_map.get(result.language, result.language)
             
-            logger.info(f"[{job_id}] Transcription successful: {len(transcript)} chars, language: {detected_lang}")
+            logger.info(f"[{job_id}] Transcription successful: {len(transcript_plain)} chars, language: {result.language}")
             
             return {
                 "job_id": job_id,
                 "status": "completed",
                 "filename": file.filename,
-                "transcript": transcript,
-                "language": detected_lang,
+                "transcript": transcript_plain,
+                "transcript_with_timestamps": transcript_with_timestamps,
+                "language": result.language,
                 "language_display": lang_display,
-                "word_count": len(transcript.split()) if transcript else 0,
-                "duration": round(duration, 1),
+                "word_count": len(transcript_plain.split()) if transcript_plain else 0,
+                "duration": round(result.duration, 1),
+                "segments": len(result.segments),
                 "created_at": datetime.now().isoformat()
             }
             
         except ImportError as e:
             logger.error(f"[{job_id}] Import error: {e}")
-            missing = []
-            if "moviepy" in str(e).lower():
-                missing.append("moviepy")
-            if "whisper" in str(e).lower():
-                missing.append("openai-whisper")
-            
             raise HTTPException(
                 status_code=500,
-                detail=f"Cần cài đặt: pip install {' '.join(missing)}"
+                detail=f"Thiếu dependencies: {str(e)}"
             )
         
     except HTTPException:
@@ -453,12 +450,11 @@ async def transcribe_video(file: UploadFile = File(...)):
     
     finally:
         # Cleanup
-        for path in [file_path, audio_path]:
-            if path.exists():
-                try:
-                    path.unlink()
-                except:
-                    pass
+        if file_path.exists():
+            try:
+                file_path.unlink()
+            except:
+                pass
 
 
 @app.post("/api/transcribe-audio")
@@ -533,6 +529,177 @@ async def transcribe_audio(file: UploadFile = File(...)):
     
     finally:
         # Cleanup file
+        if file_path.exists():
+            try:
+                file_path.unlink()
+            except:
+                pass
+
+
+@app.post("/api/analyze-focus")
+async def analyze_focus(file: UploadFile = File(...)):
+    """
+    Phân tích focus (tập trung) từ video - trả về chi tiết như launcher.
+    
+    Returns:
+        - focus_score: Điểm tập trung (0-10)
+        - focused_time: Thời gian tập trung (giây)
+        - distracted_time: Thời gian mất tập trung (giây)
+        - distracted_count: Số lần mất tập trung
+        - focused_rate: Tỷ lệ tập trung (%)
+        - distracted_rate: Tỷ lệ mất tập trung (%)
+    """
+    
+    job_id = str(uuid.uuid4())[:8]
+    file_path = UPLOAD_DIR / f"{job_id}_{file.filename}"
+    
+    try:
+        # Save file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        logger.info(f"[{job_id}] Analyzing focus: {file.filename}")
+        
+        # Import attention detector
+        try:
+            from src.video_analysis.attention_detector import AttentionDetector
+            import cv2
+            
+            # Initialize detector
+            detector = AttentionDetector()
+            
+            # Open video
+            cap = cv2.VideoCapture(str(file_path))
+            if not cap.isOpened():
+                raise Exception("Không thể mở video")
+            
+            fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            duration = total_frames / fps
+            
+            frame_count = 0
+            focused_frames = 0
+            distracted_frames = 0
+            
+            # Track distraction events
+            distraction_events = []
+            current_distraction_start = None
+            
+            logger.info(f"[{job_id}] Processing {total_frames} frames at {fps} fps...")
+            
+            # Process video (sample every 5 frames for speed)
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                
+                frame_count += 1
+                
+                # Sample every 5 frames
+                if frame_count % 5 != 0:
+                    continue
+                
+                # For now, simulate face detection (in production, use MTCNN or MediaPipe)
+                # This is a placeholder - you should integrate with your face detector
+                face_detected = True  # Placeholder
+                landmarks = None  # Placeholder
+                
+                # Calculate attention score
+                score, details = detector.calculate_attention_score(
+                    landmarks=landmarks,
+                    frame_shape=frame.shape[:2],
+                    face_detected=face_detected
+                )
+                
+                # Track focused/distracted frames
+                if score >= 6.0:
+                    focused_frames += 1
+                    # End current distraction event
+                    if current_distraction_start is not None:
+                        distraction_events.append({
+                            'start_frame': current_distraction_start,
+                            'end_frame': frame_count,
+                            'duration': (frame_count - current_distraction_start) / fps
+                        })
+                        current_distraction_start = None
+                else:
+                    distracted_frames += 1
+                    # Start new distraction event
+                    if current_distraction_start is None:
+                        current_distraction_start = frame_count
+            
+            cap.release()
+            
+            # Close last distraction event if still ongoing
+            if current_distraction_start is not None:
+                distraction_events.append({
+                    'start_frame': current_distraction_start,
+                    'end_frame': frame_count,
+                    'duration': (frame_count - current_distraction_start) / fps
+                })
+            
+            # Get statistics
+            stats = detector.get_statistics()
+            
+            # Calculate times
+            total_analyzed_frames = focused_frames + distracted_frames
+            if total_analyzed_frames > 0:
+                focused_time = (focused_frames / total_analyzed_frames) * duration
+                distracted_time = (distracted_frames / total_analyzed_frames) * duration
+                focused_rate = focused_frames / total_analyzed_frames
+                distracted_rate = distracted_frames / total_analyzed_frames
+            else:
+                focused_time = 0
+                distracted_time = 0
+                focused_rate = 0
+                distracted_rate = 0
+            
+            # Calculate total distraction time from events
+            total_distraction_time = sum(event['duration'] for event in distraction_events)
+            
+            result = {
+                "job_id": job_id,
+                "status": "completed",
+                "filename": file.filename,
+                "focus_score": round(stats['average_attention'], 2),
+                "focused_time": round(focused_time, 1),
+                "distracted_time": round(distracted_time, 1),
+                "total_distraction_time": round(total_distraction_time, 1),
+                "distracted_count": len(distraction_events),
+                "focused_rate": round(focused_rate * 100, 1),
+                "distracted_rate": round(distracted_rate * 100, 1),
+                "duration": round(duration, 1),
+                "total_frames": total_frames,
+                "analyzed_frames": total_analyzed_frames,
+                "distraction_events": distraction_events[:10],  # Return first 10 events
+                "created_at": datetime.now().isoformat()
+            }
+            
+            logger.info(f"[{job_id}] Focus analysis completed: {result['focus_score']:.1f}/10")
+            
+            return result
+            
+        except ImportError as e:
+            logger.error(f"[{job_id}] Import error: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Thiếu dependencies: {str(e)}"
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[{job_id}] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi khi phân tích focus: {str(e)}"
+        )
+    
+    finally:
+        # Cleanup
         if file_path.exists():
             try:
                 file_path.unlink()

@@ -23,6 +23,13 @@ let emotionHistory = {
 };
 let totalFrames = 0;
 
+// Focus tracking
+let focusHistory = [];
+let totalFocusedTime = 0;
+let totalDistractedTime = 0;
+let distractedEvents = 0;
+let currentlyDistracted = false;
+
 // ===== CAMERA CONTROLS =====
 
 document.getElementById('startBtn').addEventListener('click', async () => {
@@ -73,6 +80,25 @@ function stopCamera() {
     document.getElementById('stopBtn').disabled = true;
     document.getElementById('recordBtn').disabled = true;
     document.getElementById('statusIndicator').classList.remove('active');
+
+    // Reset focus tracking
+    totalFocusedTime = 0;
+    totalDistractedTime = 0;
+    distractedEvents = 0;
+    currentlyDistracted = false;
+    focusHistory = [];
+
+    // Reset emotion tracking
+    emotionHistory = {
+        happy: 0,
+        neutral: 0,
+        sad: 0,
+        angry: 0,
+        fear: 0,
+        surprise: 0,
+        disgust: 0
+    };
+    totalFrames = 0;
 
     showAlert('⏹ Camera đã tắt', 'info');
 }
@@ -183,7 +209,9 @@ async function uploadRecording(blob) {
 }
 
 function displayResults(result) {
-    // Show results in alert
+    // Show results in alert with focus details
+    const focusDetails = result.details && result.details.focus ? result.details.focus : {};
+
     const message = `
         📊 Kết Quả Phân Tích:
         
@@ -195,6 +223,12 @@ function displayResults(result) {
         - Tập trung: ${result.scores.focus.toFixed(1)}/10
         - Rõ ràng: ${result.scores.clarity.toFixed(1)}/10
         - Nội dung: ${result.scores.content.toFixed(1)}/10
+        
+        📊 Chi tiết tập trung:
+        - Thời gian tập trung: ${focusDetails.focused_time || 0}s (${focusDetails.focused_rate || 0}%)
+        - Thời gian mất tập trung: ${focusDetails.distracted_time || 0}s (${focusDetails.distracted_rate || 0}%)
+        - Số lần mất tập trung: ${focusDetails.distracted_count || 0} lần
+        - Điểm trung bình: ${focusDetails.average_attention || 0}/10
     `;
 
     alert(message);
@@ -221,12 +255,30 @@ function startAnalysis() {
             emotionHistory[randomEmotion]++;
             totalFrames++;
 
-            // Simulate focus score
+            // Simulate focus score (0-10)
             const focusScore = (Math.random() * 3 + 7).toFixed(1); // 7-10
+            focusHistory.push(parseFloat(focusScore));
+
+            // Track focus/distraction
+            if (focusScore >= 6.0) {
+                totalFocusedTime += 1; // 1 second
+                if (currentlyDistracted) {
+                    currentlyDistracted = false;
+                }
+            } else {
+                totalDistractedTime += 1; // 1 second
+                if (!currentlyDistracted) {
+                    currentlyDistracted = true;
+                    distractedEvents++;
+                }
+            }
 
             // Update UI
             document.getElementById('faceCount').textContent = '1';
             document.getElementById('focusScore').textContent = focusScore;
+            document.getElementById('focusedTime').textContent = `${totalFocusedTime}s`;
+            document.getElementById('distractedTime').textContent = `${totalDistractedTime}s`;
+            document.getElementById('distractedCount').textContent = distractedEvents;
             document.getElementById('currentEmotion').textContent =
                 getEmotionEmoji(randomEmotion) + ' ' + capitalize(randomEmotion);
 
@@ -236,6 +288,15 @@ function startAnalysis() {
             document.getElementById('faceCount').textContent = '0';
             document.getElementById('focusScore').textContent = '0.0';
             document.getElementById('currentEmotion').textContent = 'Không phát hiện';
+
+            // Count as distracted
+            totalDistractedTime += 1;
+            if (!currentlyDistracted) {
+                currentlyDistracted = true;
+                distractedEvents++;
+            }
+            document.getElementById('distractedTime').textContent = `${totalDistractedTime}s`;
+            document.getElementById('distractedCount').textContent = distractedEvents;
         }
     }, 1000); // Update every second
 }

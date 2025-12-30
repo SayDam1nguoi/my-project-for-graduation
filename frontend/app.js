@@ -100,6 +100,12 @@ document.getElementById('emotionAnalyzeBtn').addEventListener('click', async () 
 
         // Display emotion results
         displayEmotionResults(result);
+
+        // Also display focus details if available
+        if (result.details && result.details.focus) {
+            displayFocusDetails(result.details.focus);
+        }
+
         showStatus('emotionStatus', '✅ Phân tích hoàn tất!', 'success');
 
     } catch (error) {
@@ -134,6 +140,44 @@ function displayEmotionResults(result) {
     resultsDiv.style.display = 'block';
 }
 
+function displayFocusDetails(focusDetails) {
+    // Display focus details if available
+    if (!focusDetails) return;
+
+    const resultsDiv = document.getElementById('emotionResults');
+
+    // Add focus details section
+    const focusSection = document.createElement('div');
+    focusSection.style.marginTop = '20px';
+    focusSection.style.padding = '15px';
+    focusSection.style.background = '#252525';
+    focusSection.style.borderRadius = '10px';
+
+    focusSection.innerHTML = `
+        <h3 style="color: #667eea; margin-bottom: 15px;">📊 Chi Tiết Tập Trung</h3>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+            <div>
+                <strong>⏱️ Thời gian tập trung:</strong><br>
+                ${focusDetails.focused_time || 0}s (${focusDetails.focused_rate || 0}%)
+            </div>
+            <div>
+                <strong>⚠️ Thời gian mất tập trung:</strong><br>
+                ${focusDetails.distracted_time || 0}s (${focusDetails.distracted_rate || 0}%)
+            </div>
+            <div>
+                <strong>🔢 Số lần mất tập trung:</strong><br>
+                ${focusDetails.distracted_count || 0} lần
+            </div>
+            <div>
+                <strong>📈 Điểm trung bình:</strong><br>
+                ${focusDetails.average_attention || 0}/10
+            </div>
+        </div>
+    `;
+
+    resultsDiv.appendChild(focusSection);
+}
+
 // ===== TAB 2: VIDEO TRANSCRIPTION =====
 setupFileInput('videoInput', 'videoFileName', 'videoTranscribeBtn', 'videoUploadArea');
 
@@ -162,15 +206,16 @@ document.getElementById('videoTranscribeBtn').addEventListener('click', async ()
         const result = await response.json();
 
         // Display transcript
-        const transcriptText = result.transcript || 'Không có transcript';
+        const transcriptText = result.transcript_with_timestamps || result.transcript || 'Không có transcript';
         const wordCount = result.word_count || 0;
         const duration = result.duration || 0;
         const langDisplay = result.language_display || result.language || 'unknown';
+        const segments = result.segments || 0;
 
         document.getElementById('videoTranscriptText').innerHTML = `
             <div style="margin-bottom: 15px; padding: 10px; background: #252525; border-radius: 5px;">
                 <strong>📊 Thông tin:</strong><br>
-                Số từ: ${wordCount} | Thời lượng: ${duration.toFixed(1)}s | Ngôn ngữ: ${langDisplay}
+                Số từ: ${wordCount} | Thời lượng: ${duration.toFixed(1)}s | Ngôn ngữ: ${langDisplay} | Segments: ${segments}
             </div>
             <div style="white-space: pre-wrap;">${transcriptText}</div>
         `;
@@ -410,26 +455,56 @@ let cameraTimerInterval = null;
 let faceApiModelsLoaded = false;
 let detectionInterval = null;
 
+// Focus tracking variables
+let cameraFocusHistory = [];
+let cameraTotalFocusedTime = 0;
+let cameraTotalDistractedTime = 0;
+let cameraDistractedEvents = 0;
+let cameraCurrentlyDistracted = false;
+let cameraStartTime = null;
+
 // Load face-api.js models
 async function loadFaceApiModels() {
     if (faceApiModelsLoaded) return true;
 
     try {
-        showStatus('cameraStatusMsg', '⏳ Đang tải AI models... (chỉ lần đầu)', 'info');
+        showStatus('cameraStatusMsg', '⏳ Đang tải AI models... (chỉ lần đầu, ~10-15 giây)', 'info');
 
-        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model';
+        // Try multiple CDN sources
+        const MODEL_URLS = [
+            'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model',
+            'https://justadudewhohacks.github.io/face-api.js/models'
+        ];
 
-        await Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-            faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
-        ]);
+        let loaded = false;
+        for (const MODEL_URL of MODEL_URLS) {
+            try {
+                console.log(`Trying to load models from: ${MODEL_URL}`);
+
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),  // CẦN CHO HEAD POSE
+                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+                ]);
+
+                loaded = true;
+                console.log(`✅ Face-api.js models loaded from: ${MODEL_URL}`);
+                break;
+            } catch (err) {
+                console.warn(`Failed to load from ${MODEL_URL}:`, err);
+                continue;
+            }
+        }
+
+        if (!loaded) {
+            throw new Error('Could not load models from any CDN');
+        }
 
         faceApiModelsLoaded = true;
-        console.log('✅ Face-api.js models loaded');
         return true;
     } catch (error) {
         console.error('❌ Failed to load models:', error);
-        showStatus('cameraStatusMsg', '⚠️ Không thể tải AI models. Sẽ dùng simulated detection.', 'warning');
+        showStatus('cameraStatusMsg', '❌ Không thể tải AI models. Vui lòng kiểm tra kết nối internet.', 'error');
         return false;
     }
 }
@@ -439,7 +514,12 @@ document.getElementById('cameraStartBtn').addEventListener('click', async () => 
     try {
         // Load models first
         showStatus('cameraStatusMsg', '⏳ Đang khởi động camera...', 'info');
-        await loadFaceApiModels();
+
+        // Load models FIRST and WAIT
+        const modelsLoaded = await loadFaceApiModels();
+        if (!modelsLoaded) {
+            throw new Error('Không thể tải AI models. Vui lòng thử lại.');
+        }
 
         // Request camera access
         cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -470,8 +550,11 @@ document.getElementById('cameraStartBtn').addEventListener('click', async () => 
 
         showStatus('cameraStatusMsg', '✅ Camera đã bật! Đang phát hiện cảm xúc real-time...', 'success');
 
-        // Start real-time face detection
-        startRealTimeFaceDetection();
+        // Start real-time face detection with LAUNCHER FORMULA
+        // Wait a bit for video to stabilize
+        setTimeout(() => {
+            startRealTimeFaceDetection_Launcher();
+        }, 500);
 
     } catch (error) {
         console.error('Camera error:', error);
@@ -504,6 +587,14 @@ function stopCamera() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Reset focus tracking
+    cameraFocusHistory = [];
+    cameraTotalFocusedTime = 0;
+    cameraTotalDistractedTime = 0;
+    cameraDistractedEvents = 0;
+    cameraCurrentlyDistracted = false;
+    cameraStartTime = null;
+
     // Update UI
     document.getElementById('cameraStartBtn').disabled = false;
     document.getElementById('cameraStopBtn').disabled = true;
@@ -512,6 +603,10 @@ function stopCamera() {
     document.getElementById('cameraStatus').style.color = '#888';
     document.getElementById('cameraFaceCount').textContent = '0';
     document.getElementById('cameraEmotion').textContent = '-';
+    document.getElementById('cameraFocusScore').textContent = '-';
+    document.getElementById('cameraFocusedTime').textContent = '0s';
+    document.getElementById('cameraDistractedTime').textContent = '0s';
+    document.getElementById('cameraDistractedCount').textContent = '0';
 
     showStatus('cameraStatusMsg', '⏹ Camera đã tắt', 'info');
 }
@@ -626,7 +721,10 @@ async function uploadCameraRecording(blob) {
 }
 
 function displayCameraResults(result) {
-    // Show results in alert
+    // Extract focus details
+    const focusDetails = result.details && result.details.focus ? result.details.focus : {};
+
+    // Show results in alert with focus details
     const message = `📊 Kết Quả Phân Tích Camera:
 
 Điểm Tổng: ${result.scores.total.toFixed(1)}/10
@@ -636,7 +734,13 @@ Chi tiết:
 - Cảm xúc: ${result.scores.emotion.toFixed(1)}/10
 - Tập trung: ${result.scores.focus.toFixed(1)}/10
 - Rõ ràng: ${result.scores.clarity.toFixed(1)}/10
-- Nội dung: ${result.scores.content.toFixed(1)}/10`;
+- Nội dung: ${result.scores.content.toFixed(1)}/10
+
+📊 Chi tiết tập trung:
+- Thời gian tập trung: ${focusDetails.focused_time || 0}s (${focusDetails.focused_rate || 0}%)
+- Thời gian mất tập trung: ${focusDetails.distracted_time || 0}s (${focusDetails.distracted_rate || 0}%)
+- Số lần mất tập trung: ${focusDetails.distracted_count || 0} lần
+- Điểm trung bình: ${focusDetails.average_attention || 0}/10`;
 
     alert(message);
 }
@@ -653,6 +757,9 @@ async function startRealTimeFaceDetection() {
     const displaySize = { width: video.videoWidth, height: video.videoHeight };
     faceapi.matchDimensions(canvas, displaySize);
 
+    // Start tracking time
+    cameraStartTime = Date.now();
+
     // Detection loop
     detectionInterval = setInterval(async () => {
         if (!cameraStream) {
@@ -665,6 +772,9 @@ async function startRealTimeFaceDetection() {
             const detections = await faceapi
                 .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
                 .withFaceExpressions();
+
+            // Calculate focus score (0-10)
+            let focusScore = 0;
 
             if (detections && detections.length > 0) {
                 // Clear canvas
@@ -713,14 +823,81 @@ async function startRealTimeFaceDetection() {
                 document.getElementById('cameraEmotion').textContent = emotionEmoji;
                 document.getElementById('cameraEmotion').style.fontSize = '2em';
 
+                // Calculate focus score based on face position and size
+                const box = firstFace.detection.box;
+                const centerX = box.x + box.width / 2;
+                const centerY = box.y + box.height / 2;
+                const videoCenterX = displaySize.width / 2;
+                const videoCenterY = displaySize.height / 2;
+
+                // Calculate deviation from center (0-1)
+                const deviationX = Math.abs(centerX - videoCenterX) / (displaySize.width / 2);
+                const deviationY = Math.abs(centerY - videoCenterY) / (displaySize.height / 2);
+                const maxDeviation = Math.max(deviationX, deviationY);
+
+                // Calculate face size ratio (ideal: 0.3-0.5 of frame)
+                const faceArea = box.width * box.height;
+                const frameArea = displaySize.width * displaySize.height;
+                const sizeRatio = faceArea / frameArea;
+
+                // Focus score components (0-10 scale)
+                const positionScore = (1 - Math.min(maxDeviation, 1)) * 10; // 10 if centered
+                const sizeScore = sizeRatio > 0.1 && sizeRatio < 0.6 ? 10 : 5; // 10 if good size
+
+                // Combined focus score
+                focusScore = (positionScore * 0.7 + sizeScore * 0.3);
+
+                // Track focused/distracted time
+                if (focusScore >= 6.0) {
+                    cameraTotalFocusedTime += 0.1; // 100ms interval
+                    if (cameraCurrentlyDistracted) {
+                        cameraCurrentlyDistracted = false;
+                    }
+                } else {
+                    cameraTotalDistractedTime += 0.1;
+                    if (!cameraCurrentlyDistracted) {
+                        cameraCurrentlyDistracted = true;
+                        cameraDistractedEvents++;
+                    }
+                }
+
             } else {
-                // No face detected
+                // No face detected - count as distracted
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                 document.getElementById('cameraFaceCount').textContent = '0';
                 document.getElementById('cameraEmotion').textContent = '-';
                 document.getElementById('cameraEmotion').style.fontSize = '1.5em';
+
+                focusScore = 0;
+                cameraTotalDistractedTime += 0.1;
+                if (!cameraCurrentlyDistracted) {
+                    cameraCurrentlyDistracted = true;
+                    cameraDistractedEvents++;
+                }
+            }
+
+            // Update focus UI
+            cameraFocusHistory.push(focusScore);
+            if (cameraFocusHistory.length > 30) {
+                cameraFocusHistory.shift(); // Keep last 30 samples (3 seconds)
+            }
+
+            const avgFocusScore = cameraFocusHistory.reduce((a, b) => a + b, 0) / cameraFocusHistory.length;
+            document.getElementById('cameraFocusScore').textContent = avgFocusScore.toFixed(1);
+            document.getElementById('cameraFocusedTime').textContent = `${cameraTotalFocusedTime.toFixed(1)}s`;
+            document.getElementById('cameraDistractedTime').textContent = `${cameraTotalDistractedTime.toFixed(1)}s`;
+            document.getElementById('cameraDistractedCount').textContent = cameraDistractedEvents;
+
+            // Color code focus score
+            const focusScoreEl = document.getElementById('cameraFocusScore');
+            if (avgFocusScore >= 7.5) {
+                focusScoreEl.style.color = '#43e97b'; // Green - focused
+            } else if (avgFocusScore >= 6.0) {
+                focusScoreEl.style.color = '#fee140'; // Yellow - slightly distracted
+            } else {
+                focusScoreEl.style.color = '#f5576c'; // Red - distracted
             }
 
         } catch (error) {
@@ -874,51 +1051,6 @@ function updateDualComparison() {
 
     document.getElementById('dualComparisonResults').textContent = comparisonText;
 }
-
-// ===== TAB 6: APPEARANCE ASSESSMENT =====
-setupFileInput('appearanceVideoInput', 'appearanceFileName', 'appearanceAnalyzeBtn', 'appearanceUploadArea');
-
-document.getElementById('appearanceAnalyzeBtn').addEventListener('click', async () => {
-    const input = document.getElementById('appearanceVideoInput');
-    const file = input.files[0];
-    if (!file) return;
-
-    const assessClothing = document.getElementById('assessClothing').checked;
-    const assessLighting = document.getElementById('assessLighting').checked;
-
-    showStatus('appearanceStatus', '🔄 Đang đánh giá ngoại hình...', 'info');
-    document.getElementById('appearanceResults').style.display = 'none';
-
-    try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('assess_clothing', assessClothing);
-        formData.append('assess_lighting', assessLighting);
-
-        const response = await fetch(`${API_URL}/api/analyze-sync`, {
-            method: 'POST',
-            body: formData
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        // Display appearance results (simulated)
-        document.getElementById('appearanceClothingScore').textContent = (Math.random() * 3 + 7).toFixed(1);
-        document.getElementById('appearanceLightingScore').textContent = (Math.random() * 3 + 7).toFixed(1);
-        document.getElementById('appearanceOverallScore').textContent = (Math.random() * 3 + 7).toFixed(1);
-
-        document.getElementById('appearanceResults').style.display = 'block';
-        showStatus('appearanceStatus', '✅ Đánh giá hoàn tất!', 'success');
-
-    } catch (error) {
-        console.error('Error:', error);
-        showStatus('appearanceStatus', `❌ Lỗi: ${error.message}`, 'error');
-    }
-});
 
 // ===== TAB 7: VIDEO CALL =====
 // Video call functionality is in separate videocall.html/videocall.js

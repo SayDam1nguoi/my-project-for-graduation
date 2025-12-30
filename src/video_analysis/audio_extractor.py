@@ -10,7 +10,7 @@ import logging
 from pathlib import Path
 
 try:
-    from moviepy import VideoFileClip
+    from moviepy.editor import VideoFileClip
 except ImportError:
     VideoFileClip = None
 
@@ -47,17 +47,9 @@ class AudioExtractor:
             target_channels: Target number of channels (1=mono, 2=stereo)
             enable_enhancement: Whether to apply audio enhancement
         """
-        if VideoFileClip is None:
-            raise ImportError(
-                "moviepy is required for audio extraction. "
-                "Install it with: pip install moviepy"
-            )
-        
-        if librosa is None:
-            raise ImportError(
-                "librosa is required for audio resampling. "
-                "Install it with: pip install librosa"
-            )
+        # Lazy check - only check when actually using
+        self._moviepy_checked = False
+        self._librosa_checked = False
         
         self.target_sample_rate = target_sample_rate
         self.target_channels = target_channels
@@ -65,7 +57,11 @@ class AudioExtractor:
         
         # Initialize audio cleaner for enhancement
         if enable_enhancement:
-            self.audio_cleaner = AudioCleaner(sample_rate=target_sample_rate)
+            try:
+                self.audio_cleaner = AudioCleaner(sample_rate=target_sample_rate)
+            except:
+                self.audio_cleaner = None
+                logger.warning("AudioCleaner not available, enhancement disabled")
         else:
             self.audio_cleaner = None
         
@@ -80,7 +76,7 @@ class AudioExtractor:
         audio_track_index: int = 0
     ) -> np.ndarray:
         """
-        Extract audio from video.
+        Extract audio from video - Simplified version.
         
         Args:
             video_path: Path to video file
@@ -92,6 +88,19 @@ class AudioExtractor:
         Raises:
             AudioExtractionError: If extraction fails
         """
+        # Check dependencies when actually using
+        if VideoFileClip is None:
+            raise AudioExtractionError(
+                "moviepy is required for audio extraction. "
+                "Install it with: pip install moviepy"
+            )
+        
+        if librosa is None:
+            raise AudioExtractionError(
+                "librosa is required for audio resampling. "
+                "Install it with: pip install librosa"
+            )
+        
         video_path = Path(video_path)
         
         if not video_path.exists():
@@ -108,64 +117,52 @@ class AudioExtractor:
                 video.close()
                 raise AudioExtractionError(f"Video has no audio track: {video_path}")
             
-            # Extract audio
-            audio_clip = video.audio
-            
             # Get audio properties
-            fps = audio_clip.fps
-            duration = audio_clip.duration
+            fps = video.audio.fps
+            duration = video.audio.duration
             
-            logger.debug(
-                f"Video audio properties: fps={fps}, duration={duration:.2f}s"
-            )
+            logger.debug(f"Video audio properties: fps={fps}, duration={duration:.2f}s")
             
-            # Extract audio as array
-            # moviepy returns audio as (n_samples, n_channels) for stereo
-            # or (n_samples,) for mono
-            audio_array = audio_clip.to_soundarray(fps=fps)
+            # Extract audio as array - FIX for moviepy 1.0.3 bug
+            # Bug: to_soundarray() has issue with numpy stacking
+            # Solution: Use write_audiofile then load with librosa
+            import tempfile
+            import os
             
-            # Close video to free resources
-            video.close()
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp_file:
+                tmp_path = tmp_file.name
             
-            # Convert to float32 if needed
-            if audio_array.dtype != np.float32:
-                audio_array = audio_array.astype(np.float32)
-            
-            # Handle channel conversion
-            if len(audio_array.shape) == 2:
-                # Stereo or multi-channel
-                if self.target_channels == 1:
-                    # Convert to mono by averaging channels
-                    audio_array = np.mean(audio_array, axis=1)
-                elif audio_array.shape[1] > self.target_channels:
-                    # Take only the required number of channels
-                    audio_array = audio_array[:, :self.target_channels]
-            elif len(audio_array.shape) == 1:
-                # Already mono
-                if self.target_channels > 1:
-                    # Duplicate mono to stereo if needed
-                    audio_array = np.stack([audio_array] * self.target_channels, axis=1)
-            
-            # Ensure 1D array for mono
-            if self.target_channels == 1 and len(audio_array.shape) > 1:
-                audio_array = audio_array.flatten()
-            
-            # Resample if needed
-            if fps != self.target_sample_rate:
-                logger.debug(f"Resampling from {fps} Hz to {self.target_sample_rate} Hz")
-                audio_array = self.resample_audio(audio_array, int(fps))
-            
-            # Apply enhancement if enabled
-            if self.enable_enhancement and self.audio_cleaner is not None:
-                logger.debug("Applying audio enhancement")
-                audio_array = self.enhance_audio(audio_array)
-            
-            logger.info(
-                f"Audio extracted successfully: shape={audio_array.shape}, "
-                f"duration={len(audio_array) / self.target_sample_rate:.2f}s"
-            )
-            
-            return audio_array
+            try:
+                # Write audio to temp file
+                video.audio.write_audiofile(
+                    tmp_path,
+                    fps=16000,  # Target sample rate
+                    nbytes=2,
+                    codec='pcm_s16le',
+                    logger=None,
+                    verbose=False
+                )
+                
+                # Close video
+                video.close()
+                
+                # Load audio with librosa
+                audio_array, sr = librosa.load(tmp_path, sr=self.target_sample_rate, mono=True)
+                
+                logger.info(
+                    f"Audio extracted successfully: shape={audio_array.shape}, "
+                    f"duration={len(audio_array) / self.target_sample_rate:.2f}s"
+                )
+                
+                return audio_array
+                
+            finally:
+                # Clean up temp file
+                if os.path.exists(tmp_path):
+                    try:
+                        os.unlink(tmp_path)
+                    except:
+                        pass
             
         except AudioExtractionError:
             raise
@@ -180,7 +177,7 @@ class AudioExtractor:
         audio_track_index: int = 0
     ) -> np.ndarray:
         """
-        Extract audio segment from video.
+        Extract audio segment from video - Simplified version.
         
         Args:
             video_path: Path to video file
@@ -224,47 +221,44 @@ class AudioExtractor:
             # Extract audio segment
             audio_clip = video.audio.subclip(start_time, end_time)
             
-            # Get audio properties
-            fps = audio_clip.fps
+            # Extract audio - FIX for moviepy 1.0.3 bug
+            import tempfile
+            import os
             
-            # Extract audio as array
-            audio_array = audio_clip.to_soundarray(fps=fps)
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp_file:
+                tmp_path = tmp_file.name
             
-            # Close video to free resources
-            video.close()
-            
-            # Convert to float32 if needed
-            if audio_array.dtype != np.float32:
-                audio_array = audio_array.astype(np.float32)
-            
-            # Handle channel conversion
-            if len(audio_array.shape) == 2:
-                if self.target_channels == 1:
-                    audio_array = np.mean(audio_array, axis=1)
-                elif audio_array.shape[1] > self.target_channels:
-                    audio_array = audio_array[:, :self.target_channels]
-            elif len(audio_array.shape) == 1:
-                if self.target_channels > 1:
-                    audio_array = np.stack([audio_array] * self.target_channels, axis=1)
-            
-            # Ensure 1D array for mono
-            if self.target_channels == 1 and len(audio_array.shape) > 1:
-                audio_array = audio_array.flatten()
-            
-            # Resample if needed
-            if fps != self.target_sample_rate:
-                audio_array = self.resample_audio(audio_array, int(fps))
-            
-            # Apply enhancement if enabled
-            if self.enable_enhancement and self.audio_cleaner is not None:
-                audio_array = self.enhance_audio(audio_array)
-            
-            logger.info(
-                f"Audio segment extracted: shape={audio_array.shape}, "
-                f"duration={len(audio_array) / self.target_sample_rate:.2f}s"
-            )
-            
-            return audio_array
+            try:
+                # Write audio to temp file
+                audio_clip.write_audiofile(
+                    tmp_path,
+                    fps=16000,
+                    nbytes=2,
+                    codec='pcm_s16le',
+                    logger=None,
+                    verbose=False
+                )
+                
+                # Close video
+                video.close()
+                
+                # Load audio with librosa
+                audio_array, sr = librosa.load(tmp_path, sr=self.target_sample_rate, mono=True)
+                
+                logger.info(
+                    f"Audio segment extracted: shape={audio_array.shape}, "
+                    f"duration={len(audio_array) / self.target_sample_rate:.2f}s"
+                )
+                
+                return audio_array
+                
+            finally:
+                # Clean up temp file
+                if os.path.exists(tmp_path):
+                    try:
+                        os.unlink(tmp_path)
+                    except:
+                        pass
             
         except AudioExtractionError:
             raise

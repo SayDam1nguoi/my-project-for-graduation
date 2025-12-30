@@ -16,18 +16,19 @@ class EmotionCriteriaAnalyzer:
     """
     Analyzes 4 core emotional criteria from facial features.
     
-    D. Cảm xúc - 5% (0-10 → x0.5 điểm)
+    D. Cảm xúc - 5% (trọng số trong tổng điểm)
     
     This class provides methods to evaluate 4 emotional criteria:
-    1. Emotion Stability (40%) - Ổn định cảm xúc
-    2. Emotion-Content Alignment (35%) - Khớp cảm xúc & nội dung
-    3. Positive Ratio (15%) - Tích cực
-    4. Negative Overload (10%) - Mức tiêu cực vượt ngưỡng
+    1. Emotion Stability (100%) - Ổn định cảm xúc (hiện tại chỉ dùng tiêu chí này)
+    2. Emotion-Content Alignment (0%) - Khớp cảm xúc & nội dung (tạm tắt)
+    3. Positive Ratio (0%) - Tích cực (tạm tắt)
+    4. Negative Overload (0%) - Mức tiêu cực vượt ngưỡng (tạm tắt)
     
     Chú ý: Không dùng để đánh giá năng lực, chỉ đánh giá hành vi thể hiện.
     
     Each method returns a raw analysis score (0-1) that will be scaled
-    to 0-10 by the EmotionScoringEngine, then multiplied by 0.5 for final score.
+    to 0-10 by the EmotionScoringEngine.
+    Trọng số 5% được áp dụng ở OverallInterviewScorer.
     """
     
     def __init__(self):

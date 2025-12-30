@@ -1,6 +1,9 @@
-# Emotion Scoring Configuration - New 4-Criterion System
-# D. Cảm xúc - 5% (0-10 → x0.5 điểm)
+# Emotion Scoring Configuration - New System
+# D. Cảm xúc - 5% (trọng số trong tổng điểm)
 # Chú ý: Không dùng để đánh giá năng lực, chỉ đánh giá hành vi thể hiện
+# 
+# Emotion score: 0-10 (giống các tiêu chí khác)
+# Trọng số 5% được áp dụng ở OverallInterviewScorer
 
 # Criterion weights (must sum to 1.0)
 # CHỈ ĐÁNH GIÁ ỔN ĐỊNH CẢM XÚC

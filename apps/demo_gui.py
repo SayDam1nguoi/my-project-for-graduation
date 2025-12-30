@@ -1855,13 +1855,12 @@ class EmotionRecognitionGUI:
         frame_shape: Tuple[int, int]
     ) -> float:
         """
-        Tính điểm emotion scoring real-time cho 1 frame - CHÍNH XÁC.
+        Tính điểm emotion scoring real-time cho 1 frame - HỆ THỐNG MỚI.
         
-        Sử dụng 4 tiêu chí chính (Big Tech mode):
-        1. Confidence (Tự tin): 30%
-        2. Positivity (Tích cực): 30%
-        3. Professionalism (Chuyên nghiệp): 20%
-        4. Engagement (Tương tác): 20%
+        Hệ thống mới: Chỉ đánh giá Emotion Stability (Ổn định cảm xúc)
+        - Neutral/Happy: Điểm cao (7-10)
+        - Surprise: Điểm trung bình (5-7)
+        - Negative emotions: Điểm thấp (2-5)
         
         Returns:
             float: Điểm từ 0-10
@@ -1876,104 +1875,41 @@ class EmotionRecognitionGUI:
             fear_prob = emotion_probs.get('fear', 0.0)
             disgust_prob = emotion_probs.get('disgust', 0.0)
             
-            # 1. CONFIDENCE SCORE (30%) - Tự tin
-            # Chỉ tính emotion chính, không trừ quá nhiều
-            if emotion == 'happy':
-                confidence_score = 8.0 + (happy_prob * 2.0)  # 8-10
-            elif emotion == 'neutral':
-                confidence_score = 9.0 + (neutral_prob * 1.0)  # 9-10
+            # Tính Emotion Stability Score (0-10)
+            # Dựa trên emotion chính và probability
+            if emotion == 'neutral':
+                emotion_stability_score = 8.0 + (neutral_prob * 2.0)  # 8-10 (rất ổn định)
+            elif emotion == 'happy':
+                emotion_stability_score = 7.5 + (happy_prob * 2.5)  # 7.5-10 (ổn định tích cực)
             elif emotion == 'surprise':
-                confidence_score = 6.0 + (surprise_prob * 2.0)  # 6-8
+                emotion_stability_score = 5.0 + (surprise_prob * 2.0)  # 5-7 (trung bình)
             elif emotion == 'sad':
-                confidence_score = 4.0 - (sad_prob * 2.0)  # 2-4
+                emotion_stability_score = 4.0 - (sad_prob * 2.0)  # 2-4 (kém ổn định)
             elif emotion == 'fear':
-                confidence_score = 3.0 - (fear_prob * 2.0)  # 1-3
+                emotion_stability_score = 3.0 - (fear_prob * 2.0)  # 1-3 (rất kém)
             elif emotion == 'angry':
-                confidence_score = 5.0 - (angry_prob * 2.0)  # 3-5
+                emotion_stability_score = 3.5 - (angry_prob * 2.0)  # 1.5-3.5 (rất kém)
             elif emotion == 'disgust':
-                confidence_score = 4.0 - (disgust_prob * 2.0)  # 2-4
+                emotion_stability_score = 3.0 - (disgust_prob * 2.0)  # 1-3 (rất kém)
             else:
-                confidence_score = 7.0
+                emotion_stability_score = 7.0  # Default
             
-            confidence_score = max(0.0, min(10.0, confidence_score))
+            # Clamp vào [0, 10]
+            emotion_stability_score = max(0.0, min(10.0, emotion_stability_score))
             
-            # 2. POSITIVITY SCORE (30%) - Tích cực
-            # Chỉ tính emotion chính
-            if emotion == 'happy':
-                positivity_score = 9.0 + (happy_prob * 1.0)  # 9-10
-            elif emotion == 'neutral':
-                positivity_score = 7.0 + (neutral_prob * 1.0)  # 7-8
-            elif emotion == 'surprise':
-                positivity_score = 6.0 + (surprise_prob * 1.0)  # 6-7
-            elif emotion == 'sad':
-                positivity_score = 3.0 - (sad_prob * 2.0)  # 1-3
-            elif emotion == 'angry':
-                positivity_score = 2.0 - (angry_prob * 1.5)  # 0.5-2
-            elif emotion == 'fear':
-                positivity_score = 3.5 - (fear_prob * 2.0)  # 1.5-3.5
-            elif emotion == 'disgust':
-                positivity_score = 2.5 - (disgust_prob * 1.5)  # 1-2.5
-            else:
-                positivity_score = 7.0
-            
-            positivity_score = max(0.0, min(10.0, positivity_score))
-            
-            # 3. PROFESSIONALISM SCORE (20%) - Dựa vào emotion stability và appropriateness
-            professionalism_score = 7.0  # Base score
-            
-            # Cảm xúc phù hợp với môi trường chuyên nghiệp
-            if emotion in ['neutral', 'happy']:
-                professionalism_score = 8.0 + (neutral_prob * 2.0)  # Neutral tốt nhất
-            elif emotion == 'surprise':
-                professionalism_score = 6.0
-            elif emotion in ['sad', 'fear']:
-                professionalism_score = 4.0
-            elif emotion in ['angry', 'disgust']:
-                professionalism_score = 2.0  # Rất không phù hợp
-            
-            professionalism_score = max(0.0, min(10.0, professionalism_score))
-            
-            # 4. ENGAGEMENT SCORE (20%) - Dựa vào attention và facial activity
-            engagement_score = 7.0  # Default
-            
-            # Nếu có attention detector, dùng attention score
-            if self.attention_detector and len(self.attention_scores) > 0:
-                recent_attention = self.attention_scores[-1] if self.attention_scores else 70
-                engagement_score = recent_attention / 10.0  # Convert 0-100 to 0-10
-            else:
-                # Nếu không có attention, dùng emotion activity
-                # Surprise và Happy cho thấy engagement cao
-                negative_emotions = sad_prob + angry_prob + fear_prob + disgust_prob
-                engagement_score = (
-                    happy_prob * 9.0 +
-                    surprise_prob * 8.0 +
-                    neutral_prob * 6.0 +
-                    (1 - negative_emotions) * 5.0
-                )
-            
-            engagement_score = max(0.0, min(10.0, engagement_score))
-            
-            # Tính weighted average
-            total_score = (
-                confidence_score * 0.30 +
-                positivity_score * 0.30 +
-                professionalism_score * 0.20 +
-                engagement_score * 0.20
-            )
-            
-            # Đảm bảo trong khoảng 0-10
-            total_score = max(0.0, min(10.0, total_score))
-            
-            # Lưu điểm từng tiêu chí
+            # Lưu điểm (hệ thống mới)
             self.emotion_criteria_scores = {
-                'confidence': round(confidence_score, 1),
-                'positivity': round(positivity_score, 1),
-                'professionalism': round(professionalism_score, 1),
-                'engagement': round(engagement_score, 1),
-                'total': round(total_score, 2)
+                'emotion_stability': round(emotion_stability_score, 1),
+                'total': round(emotion_stability_score, 2)
             }
             
-            return total_score
+            # Debug: Verify the score was saved correctly
+            if not hasattr(self, '_emotion_score_debug_shown'):
+                print(f"[DEBUG] Emotion scoring system: NEW (emotion_stability)")
+                print(f"[DEBUG] Score saved: {self.emotion_criteria_scores}")
+                self._emotion_score_debug_shown = True
+            
+            return emotion_stability_score
         
         except Exception as e:
             print(f"Error calculating emotion score: {e}")
@@ -2515,6 +2451,16 @@ class EmotionRecognitionGUI:
         
         stats = f"""
 ================================
+    BAO CAO TONG HOP
+================================
+
+LUU Y QUAN TRONG:
+Diem TONG ben duoi la diem CHINH THUC
+se duoc gui sang tab "Tong Hop Diem".
+Diem nay TRUNG KHOP voi popup khi
+ban nhan nut "GUI DIEM SANG TONG HOP".
+
+================================
     THONG KE PHIEN LAM VIEC
 ================================
 
@@ -2548,19 +2494,29 @@ Tong so khuon mat: {self.total_faces}
 ================================
 
 """
-            score = self.current_emotion_score
-            bar_length = int(score)
+            # QUAN TRỌNG: Dùng calculate_emotion_score() để TRÙNG KHỚP với popup
+            final_emotion_score = self.calculate_emotion_score()
+            bar_length = int(final_emotion_score)
             bar = "★" * bar_length
-            stats += f"Diem hien tai: {score:.2f}/10\n{bar}\n\n"
+            stats += f"DIEM TONG: {final_emotion_score:.2f}/10\n{bar}\n\n"
             
-            if self.emotion_criteria_scores:
-                stats += "--- CHI TIET TIEU CHI ---\n\n"
-                criteria = self.emotion_criteria_scores
-                stats += f"Tu tin:        {criteria.get('confidence', 0):.1f}/10 (30%)\n"
-                stats += f"Tich cuc:      {criteria.get('positivity', 0):.1f}/10 (30%)\n"
-                stats += f"Chuyen nghiep: {criteria.get('professionalism', 0):.1f}/10 (20%)\n"
-                stats += f"Tuong tac:     {criteria.get('engagement', 0):.1f}/10 (20%)\n\n"
+            # Giải thích cách tính
+            stats += "--- CACH TINH DIEM ---\n\n"
+            if self.emotion_counts:
+                total = sum(self.emotion_counts.values())
+                stats += "Dua tren phan tich cam xuc:\n"
+                for emotion, count in sorted(self.emotion_counts.items(), key=lambda x: x[1], reverse=True):
+                    if count > 0:
+                        percentage = (count / total) * 100
+                        stats += f"  {emotion:10s}: {count:4d} frames ({percentage:5.1f}%)\n"
+                stats += "\n"
+                
+                # Hiển thị cảm xúc chủ đạo
+                dominant = max(self.emotion_counts.items(), key=lambda x: x[1])
+                stats += f"Cam xuc chu dao: {dominant[0]} ({dominant[1]}/{total})\n\n"
             
+            # Thống kê real-time (tham khảo)
+            stats += "--- THONG KE REAL-TIME (tham khao) ---\n\n"
             stats += f"So mau:        {len(self.emotion_scores_history)} frames\n"
             stats += f"Diem TB:       {np.mean(self.emotion_scores_history):.2f}/10\n"
             stats += f"Diem cao nhat: {np.max(self.emotion_scores_history):.2f}/10\n"
@@ -2574,13 +2530,19 @@ Tong so khuon mat: {self.total_faces}
 ================================
 
 """
-            score = self.current_focus_score
-            bar_length = int(score)
+            # QUAN TRỌNG: Dùng calculate_focus_score() để TRÙNG KHỚP với popup
+            final_focus_score = self.calculate_focus_score()
+            bar_length = int(final_focus_score)
             bar = "●" * bar_length
-            stats += f"Diem hien tai: {score:.2f}/10\n{bar}\n\n"
+            stats += f"DIEM TONG: {final_focus_score:.2f}/10\n{bar}\n\n"
+            
+            # Giải thích cách tính
+            stats += "--- CACH TINH DIEM ---\n\n"
+            stats += "Dua tren phan tich tap trung (attention):\n"
+            stats += f"  Trung binh attention score: {final_focus_score:.2f}/10\n\n"
             
             if self.focus_components:
-                stats += "--- CONG THUC FOCUS SCORE (MOI) ---\n\n"
+                stats += "--- CHI TIET THANH PHAN ---\n\n"
                 comp = self.focus_components
                 stats += f"Face Presence:  {comp.get('face_presence', 0):.1f}% (40%)\n"
                 stats += f"Gaze Focus:     {comp.get('gaze_focus', 0):.1f}% (30%)\n"
@@ -2592,6 +2554,8 @@ Tong so khuon mat: {self.total_faces}
                 stats += f"---\n"
                 stats += f"Tong diem:      {comp.get('total_score', 0):.2f}/10\n\n"
             
+            # Thống kê real-time (tham khảo)
+            stats += "--- THONG KE REAL-TIME (tham khao) ---\n\n"
             stats += f"So mau:        {len(self.focus_scores_history)} frames\n"
             stats += f"Diem TB:       {np.mean(self.focus_scores_history):.2f}/10\n"
             stats += f"Diem cao nhat: {np.max(self.focus_scores_history):.2f}/10\n"
@@ -3195,23 +3159,51 @@ File duoc luu tai: {filename}
         print(f"    Emotion in manager: {all_scores['emotion']['score']:.1f}")
         print(f"    Focus in manager: {all_scores['focus']['score']:.1f}")
         
-        # Thông báo thành công
+        # Thông báo thành công với giải thích chi tiết
         message = "✅ ĐÃ GỬI ĐIỂM THÀNH CÔNG!\n\n"
+        message += "=" * 40 + "\n"
+        message += "ĐIỂM TỔNG HỢP\n"
+        message += "=" * 40 + "\n\n"
         message += f"😊 Cảm xúc (Emotion): {emotion_score:.2f}/10\n"
         message += f"🎯 Tập trung (Focus): {focus_score:.2f}/10\n\n"
         
-        # Thêm chi tiết
+        # Giải thích cách tính điểm Cảm xúc
+        message += "--- CÁCH TÍNH ĐIỂM CẢM XÚC ---\n\n"
         if self.emotion_counts:
             total_emotions = sum(self.emotion_counts.values())
             dominant = max(self.emotion_counts.items(), key=lambda x: x[1])
-            message += f"Cảm xúc chủ đạo: {dominant[0]} ({dominant[1]}/{total_emotions})\n"
+            message += f"Dựa trên phân tích {total_emotions} frames:\n"
+            message += f"• Cảm xúc chủ đạo: {dominant[0]}\n"
+            message += f"  ({dominant[1]}/{total_emotions} frames = {dominant[1]/total_emotions*100:.1f}%)\n\n"
+            
+            # Hiển thị top 3 cảm xúc
+            top_emotions = sorted(self.emotion_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+            message += "Top 3 cảm xúc:\n"
+            for i, (emotion, count) in enumerate(top_emotions, 1):
+                if count > 0:
+                    percentage = (count / total_emotions) * 100
+                    message += f"  {i}. {emotion}: {percentage:.1f}%\n"
+            message += "\n"
         
+        # Giải thích cách tính điểm Tập trung
+        message += "--- CÁCH TÍNH ĐIỂM TẬP TRUNG ---\n\n"
         if self.attention_scores:
-            message += f"Số frame đã quét: {len(self.attention_scores)}\n"
+            message += f"Dựa trên phân tích {len(self.attention_scores)} frames:\n"
+            message += f"• Trung bình attention score: {focus_score:.2f}/10\n"
+            
+            # Hiển thị thành phần nếu có
+            if self.focus_components:
+                comp = self.focus_components
+                message += f"• Face Presence: {comp.get('face_presence', 0):.1f}%\n"
+                message += f"• Gaze Focus: {comp.get('gaze_focus', 0):.1f}%\n"
+                message += f"• Head Focus: {comp.get('head_focus', 0):.1f}%\n"
+            message += "\n"
         
-        message += "\n"
-        message += "Điểm đã được gửi sang tab 'Tổng Hợp Điểm'.\n"
-        message += "Vui lòng chuyển sang tab đó để xem và tính điểm tổng!"
+        message += "=" * 40 + "\n\n"
+        message += "📊 Điểm đã được gửi sang tab 'Tổng Hợp Điểm'.\n"
+        message += "Vui lòng chuyển sang tab đó để xem và tính điểm tổng!\n\n"
+        message += "💡 LƯU Ý: Điểm trong popup này TRÙNG KHỚP\n"
+        message += "với điểm hiển thị trong báo cáo bên phải."
         
         messagebox.showinfo("Gửi Điểm Thành Công", message)
     

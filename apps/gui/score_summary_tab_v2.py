@@ -31,10 +31,11 @@ class ScoreSummaryTab:
         self.content_score = tk.DoubleVar(value=0.0)
         self.total_score = tk.DoubleVar(value=0.0)
         
-        # Trọng số (theo công thức: N=40%, T=20%, G=35%, O=5%)
+        # Trọng số mặc định (Content=40%, Clarity=35%, Focus=20%, Emotion=5%)
+        # Phù hợp với công thức: Total = (C×40% + Cl×35% + F×20% + E×5%)
         self.weight_content = tk.DoubleVar(value=40.0)    # Nội dung (N)
+        self.weight_clarity = tk.DoubleVar(value=35.0)    # Rõ ràng (G)
         self.weight_focus = tk.DoubleVar(value=20.0)      # Tập trung (T)
-        self.weight_clarity = tk.DoubleVar(value=35.0)    # Giọng nói (G)
         self.weight_emotion = tk.DoubleVar(value=5.0)     # Cảm xúc (O)
         
         # Thông tin ứng viên

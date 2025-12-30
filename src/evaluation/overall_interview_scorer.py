@@ -3,8 +3,8 @@ Overall Interview Scorer
 
 Kết hợp 4 đầu điểm để tạo điểm tổng hợp cho phỏng vấn:
 1. Cảm xúc (Emotion) - 5% (0-10 điểm)
-2. Tập trung (Focus/Attention) - 20% (0-10 điểm)
-3. Rõ ràng lời nói (Speech Clarity) - 35% (0-10 điểm)
+2. Tập trung (Focus/Attention) - 30% (0-10 điểm)
+3. Rõ ràng lời nói (Speech Clarity) - 25% (0-10 điểm)
 4. Nội dung (Content) - 40% (0-10 điểm)
 
 Tất cả điểm đều trên thang 0-10, trọng số được áp dụng khi tính tổng.
@@ -82,48 +82,49 @@ class OverallInterviewScorer:
     
     Kết hợp 4 tiêu chí (tất cả đều 0-10 điểm):
     1. Cảm xúc (Emotion) - 5% - Đánh giá biểu cảm, thái độ
-    2. Tập trung (Focus) - 20% - Đánh giá sự tập trung, chú ý
-    3. Rõ ràng (Clarity) - 35% - Đánh giá độ rõ ràng lời nói
+    2. Tập trung (Focus) - 30% - Đánh giá sự tập trung, chú ý
+    3. Rõ ràng (Clarity) - 25% - Đánh giá độ rõ ràng lời nói
     4. Nội dung (Content) - 40% - Đánh giá chất lượng câu trả lời
     
-    Công thức: Total = (E×5% + F×20% + C×35% + N×40%) = 0-10 điểm
+    Công thức: Total = (E×5% + F×30% + C×25% + N×40%) = 0-10 điểm
     """
     
     # Cấu hình trọng số mặc định
-    # CHỈ ĐÁNH GIÁ CẢM XÚC (ỔN ĐỊNH CẢM XÚC)
+    # ĐÁNH GIÁ TOÀN DIỆN 4 TIÊU CHÍ
+    # Công thức: Total = (Content×40% + Clarity×35% + Focus×20% + Emotion×5%)
     DEFAULT_WEIGHTS = {
-        'emotion': 1.0,    # 100% - Chỉ đánh giá ổn định cảm xúc
-        'focus': 0.0,      # 0% - Không đánh giá
-        'clarity': 0.0,    # 0% - Không đánh giá
-        'content': 0.0     # 0% - Không đánh giá
+        'emotion': 0.05,   # 5% - Đánh giá ổn định cảm xúc
+        'focus': 0.20,     # 20% - Đánh giá tập trung (giảm từ 30%)
+        'clarity': 0.35,   # 35% - Đánh giá rõ ràng lời nói (tăng từ 25%)
+        'content': 0.40    # 40% - Đánh giá nội dung
     }
     
     # Cấu hình trọng số cho các vị trí khác nhau
-    # TẤT CẢ CHỈ ĐÁNH GIÁ CẢM XÚC (ỔN ĐỊNH CẢM XÚC)
+    # ĐÁNH GIÁ TOÀN DIỆN 4 TIÊU CHÍ
     POSITION_WEIGHTS = {
         'technical': {
-            'emotion': 1.0,
-            'focus': 0.0,
-            'clarity': 0.0,
-            'content': 0.0
+            'emotion': 0.05,
+            'focus': 0.20,
+            'clarity': 0.30,   # Kỹ thuật: giảm clarity
+            'content': 0.45    # Kỹ thuật: tăng content (kiến thức quan trọng)
         },
         'sales': {
-            'emotion': 1.0,
-            'focus': 0.0,
-            'clarity': 0.0,
-            'content': 0.0
+            'emotion': 0.10,   # Bán hàng: tăng emotion (thái độ quan trọng)
+            'focus': 0.20,
+            'clarity': 0.35,   # Bán hàng: clarity quan trọng
+            'content': 0.35    # Bán hàng: giảm content
         },
         'customer_service': {
-            'emotion': 1.0,
-            'focus': 0.0,
-            'clarity': 0.0,
-            'content': 0.0
+            'emotion': 0.10,   # Dịch vụ: tăng emotion (thái độ quan trọng)
+            'focus': 0.20,
+            'clarity': 0.40,   # Dịch vụ: clarity rất quan trọng
+            'content': 0.30    # Dịch vụ: giảm content
         },
         'management': {
-            'emotion': 1.0,
-            'focus': 0.0,
-            'clarity': 0.0,
-            'content': 0.0
+            'emotion': 0.05,
+            'focus': 0.20,
+            'clarity': 0.30,   # Quản lý: giảm clarity
+            'content': 0.45    # Quản lý: tăng content (kinh nghiệm quan trọng)
         },
         'default': DEFAULT_WEIGHTS
     }
